@@ -1,0 +1,85 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  unit:
+    name: Unit and architecture tests (${{ matrix.os }})
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, macos-latest]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-go@v5
+        with:
+          go-version-file: go.mod
+      - name: Formatting
+        run: test -z "$(gofmt -l .)" || { gofmt -l .; exit 1; }
+      - name: Vet
+        run: go vet ./...
+      - name: Unit and architecture tests
+        run: go test ./internal/... ./test/arch/
+      - name: Build
+        run: go build -o dist/ ./cmd/gtt
+
+  integration:
+    name: Integration tests against GTT Bootstrap
+    runs-on: ubuntu-latest
+    timeout-minutes: 40
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          path: gtt-cli
+      # The integration suite drives the real CLI against a real Bootstrap
+      # catalog. The ref can be pinned to a release tag once one is published.
+      - uses: actions/checkout@v4
+        with:
+          repository: GTT-Community/gtt-bootstrap
+          path: gtt-bootstrap
+      - uses: actions/setup-go@v5
+        with:
+          go-version-file: gtt-cli/go.mod
+          cache-dependency-path: gtt-cli/go.sum
+      - name: Integration tests
+        working-directory: gtt-cli
+        env:
+          GTT_TEST_BOOTSTRAP: ${{ github.workspace }}/gtt-bootstrap
+        run: go test -timeout 35m ./test/integration/
+
+  # The development repository is governed with GTT; the public repository is
+  # a clean export without it. The gate runs only where GTT is installed.
+  governance:
+    name: GTT governance gate
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Detect GTT
+        id: gtt
+        run: |
+          if [ -f .gtt/contract/release.json ]; then echo "installed=true" >> "$GITHUB_OUTPUT"; else echo "installed=false" >> "$GITHUB_OUTPUT"; fi
+      - uses: actions/setup-go@v5
+        if: steps.gtt.outputs.installed == 'true'
+        with:
+          go-version-file: go.mod
+      - name: Build
+        if: steps.gtt.outputs.installed == 'true'
+        run: go build -o dist/gtt ./cmd/gtt
+      - name: Validate the governed project
+        if: steps.gtt.outputs.installed == 'true'
+        run: ./dist/gtt validate --ci
+      - name: Check the agent context
+        if: steps.gtt.outputs.installed == 'true'
+        run: ./dist/gtt agents check --ci
