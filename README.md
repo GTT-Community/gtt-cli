@@ -46,11 +46,26 @@ GTT Method -> GTT Bootstrap -> versioned contracts -> GTT CLI -> ADE -> Human
 
 ## Installation
 
-Prebuilt binaries and package-manager installs are coming with the first tagged release. Until then:
+`gtt` is a single static binary. Download it for your platform from
+[Releases](https://github.com/GTT-Community/gtt-cli/releases/latest) (Linux and macOS, amd64 and arm64):
 
 ```bash
-go install github.com/GTT-Community/gtt-cli/cmd/gtt@latest   # needs Go 1.27 or later
+VERSION=1.0.0
+OS=$(uname -s | tr '[:upper:]' '[:lower:]')                       # linux | darwin
+ARCH=$(uname -m | sed -e 's/x86_64/amd64/' -e 's/aarch64/arm64/')  # amd64 | arm64
+curl -fsSLO "https://github.com/GTT-Community/gtt-cli/releases/download/v${VERSION}/gtt_${VERSION}_${OS}_${ARCH}.tar.gz"
+tar -xzf "gtt_${VERSION}_${OS}_${ARCH}.tar.gz" gtt
+sudo mv gtt /usr/local/bin/        # or any directory on your PATH
 gtt version
+```
+
+Each release carries `checksums.txt` (SHA-256) to verify the download. Installs through package managers
+(uv, npm, Homebrew) are planned.
+
+With Go 1.27 or later:
+
+```bash
+go install github.com/GTT-Community/gtt-cli/cmd/gtt@latest
 ```
 
 Or from a clone:

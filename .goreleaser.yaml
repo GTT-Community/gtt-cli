@@ -1,0 +1,54 @@
+# GoReleaser configuration: builds the single `gtt` binary per platform and
+# publishes it to GitHub Releases when a v* tag is pushed to the public
+# repository. Local check: goreleaser release --snapshot --clean
+version: 2
+
+project_name: gtt
+
+before:
+  hooks:
+    - go mod tidy
+    - go vet ./...
+
+builds:
+  - id: gtt
+    main: ./cmd/gtt
+    binary: gtt
+    env:
+      - CGO_ENABLED=0
+    goos: [linux, darwin]
+    goarch: [amd64, arm64]
+    flags:
+      - -trimpath
+    ldflags:
+      - -s -w -X github.com/GTT-Community/gtt-cli/internal/core.Version={{ .Version }}
+    mod_timestamp: "{{ .CommitTimestamp }}"
+
+archives:
+  - id: gtt
+    ids: [gtt]
+    formats: [tar.gz]
+    name_template: "gtt_{{ .Version }}_{{ .Os }}_{{ .Arch }}"
+    files:
+      - LICENSE
+      - README.md
+
+checksum:
+  name_template: checksums.txt
+  algorithm: sha256
+
+snapshot:
+  version_template: "{{ incpatch .Version }}-snapshot"
+
+changelog:
+  use: git
+  sort: asc
+
+release:
+  github:
+    owner: GTT-Community
+    name: gtt-cli
+  name_template: "gtt {{ .Version }}"
+  footer: |
+    Install: download the archive for your platform, extract it and put `gtt` on your PATH.
+    Verify with `sha256sum -c checksums.txt --ignore-missing`, then run `gtt version`.
