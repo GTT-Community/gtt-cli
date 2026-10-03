@@ -151,7 +151,9 @@ func (r Resolver) remote(ctx context.Context, req ports.ResolveRequest) (ports.P
 	defer os.RemoveAll(tmp)
 	clone := func(extra ...string) (ports.Result, error) {
 		os.RemoveAll(filepath.Join(tmp, "pkg"))
-		args := append([]string{"clone", "--quiet", "--depth", "1"}, extra...)
+		// Bootstrap scripts must keep LF line endings: a Windows Git
+		// configured with core.autocrlf would otherwise break them in bash.
+		args := append([]string{"-c", "core.autocrlf=false", "-c", "core.eol=lf", "clone", "--quiet", "--depth", "1"}, extra...)
 		args = append(args, "--", source, filepath.Join(tmp, "pkg"))
 		return r.Runner.Run(ctx, ports.Command{Path: git, Args: args, Env: []string{"GIT_TERMINAL_PROMPT=0"}})
 	}

@@ -552,7 +552,7 @@
       "title": "Project Backlog",
       "authority": "development-line",
       "version": "v2.1",
-      "sha256": "4a657d1e3ddf39780271b10c7783530eb1ef1ff4f4bf0214c8d0526316775142",
+      "sha256": "dc5dc18db07ee7f86c2eb0f6e5bde9a8d0798c6701e73f546004d00556446f66",
       "aliases": [],
       "sections": [
         {
@@ -561,7 +561,7 @@
           "anchor": "project-backlog",
           "path": "Project Backlog",
           "line_start": 1,
-          "line_end": 583
+          "line_end": 584
         },
         {
           "heading": "Development Line",
@@ -1129,15 +1129,15 @@
           "anchor": "next-work",
           "path": "Project Backlog > Next Work",
           "line_start": 566,
-          "line_end": 570
+          "line_end": 571
         },
         {
           "heading": "Blocked",
           "level": 2,
           "anchor": "blocked",
           "path": "Project Backlog > Blocked",
-          "line_start": 571,
-          "line_end": 583
+          "line_start": 572,
+          "line_end": 584
         }
       ],
       "references": [],

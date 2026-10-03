@@ -16,7 +16,7 @@ GTT Method -> GTT Bootstrap -> versioned contracts -> GTT CLI -> ADE -> Human
 |---|---|
 | Version | 1.0.0 |
 | Works with | GTT Bootstrap 1.x (compatibility is negotiated on every run) |
-| Platforms | Linux, macOS |
+| Platforms | Linux, macOS, Windows |
 | License | Apache 2.0 |
 
 ## Features
@@ -43,11 +43,16 @@ GTT Method -> GTT Bootstrap -> versioned contracts -> GTT CLI -> ADE -> Human
 
 - `git`, to download GTT Bootstrap (or pass a local copy with `--bootstrap`).
 - `bash` and `python3`: GTT Bootstrap's own scripts use them. The CLI itself needs neither.
+- On Windows: [Git for Windows](https://git-scm.com/download/win), which provides bash, and
+  [Python 3](https://www.python.org/downloads/windows/). The CLI finds Git Bash on its own and never uses the WSL
+  `bash.exe`; set `GTT_BASH` to point it at another bash.
 
 ## Installation
 
 `gtt` is a single static binary. Download it for your platform from
-[Releases](https://github.com/GTT-Community/gtt-cli/releases/latest) (Linux and macOS, amd64 and arm64):
+[Releases](https://github.com/GTT-Community/gtt-cli/releases/latest) (Linux, macOS and Windows; amd64 and arm64).
+
+Linux and macOS:
 
 ```bash
 VERSION=1.0.0
@@ -56,6 +61,17 @@ ARCH=$(uname -m | sed -e 's/x86_64/amd64/' -e 's/aarch64/arm64/')  # amd64 | arm
 curl -fsSLO "https://github.com/GTT-Community/gtt-cli/releases/download/v${VERSION}/gtt_${VERSION}_${OS}_${ARCH}.tar.gz"
 tar -xzf "gtt_${VERSION}_${OS}_${ARCH}.tar.gz" gtt
 sudo mv gtt /usr/local/bin/        # or any directory on your PATH
+gtt version
+```
+
+Windows (PowerShell):
+
+```powershell
+$Version = "1.0.0"
+$Arch = if ($env:PROCESSOR_ARCHITECTURE -eq "ARM64") { "arm64" } else { "amd64" }
+Invoke-WebRequest "https://github.com/GTT-Community/gtt-cli/releases/download/v$Version/gtt_${Version}_windows_$Arch.zip" -OutFile gtt.zip
+Expand-Archive gtt.zip -DestinationPath "$env:LOCALAPPDATA\Programs\gtt" -Force
+# add %LOCALAPPDATA%\Programs\gtt to your PATH, open a new terminal, then:
 gtt version
 ```
 
