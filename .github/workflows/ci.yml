@@ -64,6 +64,10 @@ jobs:
         with:
           repository: GTT-Community/gtt-bootstrap
           path: gtt-bootstrap
+      # GTT Bootstrap scripts need Python 3 (on Windows it is not on PATH by default).
+      - uses: actions/setup-python@v6
+        with:
+          python-version: "3.x"
       - uses: actions/setup-go@v6
         with:
           go-version-file: gtt-cli/go.mod

@@ -17,14 +17,28 @@ import (
 // IgnoredDirs are never hashed, copied or exported as package content.
 var IgnoredDirs = map[string]bool{".git": true, "__pycache__": true}
 
-// SafeJoin joins rel under root and rejects absolute paths, traversal and
-// any existing symlink component that resolves outside root.
+// rooted reports a path that is not relative on some platform: absolute,
+// carrying a volume name (C:, \\server\share), or starting with a separator.
+// On Windows "/etc/passwd" is not absolute, yet it names the current drive's
+// root: it is never accepted as a path relative to the project.
+func rooted(p string) bool {
+	return filepath.IsAbs(p) || filepath.VolumeName(p) != "" || strings.HasPrefix(p, "/") || strings.HasPrefix(p, `\`) ||
+		(len(p) >= 2 && p[1] == ':')
+}
+
+// escapes reports whether a cleaned relative path leaves its base.
+func escapes(clean string) bool {
+	return clean == ".." || strings.HasPrefix(clean, ".."+string(filepath.Separator))
+}
+
+// SafeJoin joins rel under root and rejects absolute or rooted paths,
+// traversal and any existing symlink component that resolves outside root.
 func SafeJoin(root, rel string) (string, error) {
-	if rel == "" || filepath.IsAbs(rel) || strings.HasPrefix(rel, "~") {
+	if rel == "" || rooted(rel) || strings.HasPrefix(rel, "~") {
 		return "", fmt.Errorf("unsafe path %q: must be relative to the project", rel)
 	}
 	clean := filepath.Clean(filepath.FromSlash(rel))
-	if clean == ".." || strings.HasPrefix(clean, ".."+string(filepath.Separator)) {
+	if escapes(clean) {
 		return "", fmt.Errorf("unsafe path %q: escapes the project", rel)
 	}
 	full := filepath.Join(root, clean)
@@ -57,6 +71,24 @@ func withinResolved(root, full string) error {
 		}
 		probe = parent
 	}
+}
+
+// linkStaysInside checks a symlink's target as written, whether or not it
+// exists: a dangling link that points outside root is as unsafe as a live
+// one, and cannot be caught by resolving it.
+func linkStaysInside(root, link string) error {
+	target, err := os.Readlink(link)
+	if err != nil {
+		return err
+	}
+	if rooted(target) {
+		return fmt.Errorf("unsafe symlink %q: points to %q, outside the project", link, target)
+	}
+	rel, err := filepath.Rel(root, filepath.Join(filepath.Dir(link), target))
+	if err != nil || escapes(rel) {
+		return fmt.Errorf("unsafe symlink %q: points to %q, outside the project", link, target)
+	}
+	return nil
 }
 
 // HashFile returns the hex sha256 of a file.
@@ -92,6 +124,9 @@ func ListFiles(root string) ([]string, error) {
 			return nil
 		}
 		if d.Type()&fs.ModeSymlink != 0 {
+			if err := linkStaysInside(root, p); err != nil {
+				return err
+			}
 			if err := withinResolved(root, p); err != nil {
 				return err
 			}

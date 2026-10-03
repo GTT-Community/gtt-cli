@@ -6,6 +6,7 @@ import (
 	"encoding/base64"
 	"os"
 	"path/filepath"
+	"runtime"
 	"strings"
 	"testing"
 
@@ -100,7 +101,8 @@ func TestKeygenNeverOverwrites(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	if info, err := os.Stat(pair.Private); err != nil || info.Mode().Perm() != 0o600 {
+	// Windows has no Unix permission bits; elsewhere the key is owner-only.
+	if info, err := os.Stat(pair.Private); err != nil || (runtime.GOOS != "windows" && info.Mode().Perm() != 0o600) {
 		t.Errorf("the private key must be readable by its owner only: %v %v", info.Mode(), err)
 	}
 	if _, err := (Signer{}).Keygen(dir, "release"); core.CodeOf(err) != core.ExitConflict {

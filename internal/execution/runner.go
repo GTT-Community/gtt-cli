@@ -27,7 +27,8 @@ func New() *Runner { return &Runner{} }
 // base name and each argument up to its "=", so that no path, credential or
 // other value an argument carries is ever written.
 func describe(c ports.Command) string {
-	parts := []string{filepath.Base(c.Path)}
+	// The base name without ".exe", so a log reads the same on every platform.
+	parts := []string{strings.TrimSuffix(filepath.Base(c.Path), ".exe")}
 	for _, a := range c.Args {
 		if i := strings.IndexByte(a, '='); i >= 0 {
 			a = a[:i+1] + "..."
