@@ -1,0 +1,51 @@
+{
+  "schema": 1,
+  "notice": "Initial MD tracking: which content the gtt CLI read, applied and validated. Derived state, never an authority.",
+  "entries": {
+    "GTT_BOOTSTRAP_1.0_CLI_CONTRACT_IMPLEMENTATION_TASK.md": {
+      "path": "GTT_BOOTSTRAP_1.0_CLI_CONTRACT_IMPLEMENTATION_TASK.md",
+      "sha256": "5b682b4b907c76815e9e7503e87693adeef0f12c4ecee15767ddc0dc4da79b43",
+      "state": "VALIDATED",
+      "discovered_at": "2026-10-02T02:07:59Z",
+      "read_at": "2026-10-02T02:08:35Z",
+      "applied_at": "2026-10-02T02:08:35Z",
+      "validated_at": "2026-10-02T02:08:42Z"
+    },
+    "GTT_CLI_Agent_ADE_Context_Discovery_Synchronization.md": {
+      "path": "GTT_CLI_Agent_ADE_Context_Discovery_Synchronization.md",
+      "sha256": "d20d3a204cd0f3a68cede26971d4aea7f076b390b860530154ef1b786e605036",
+      "state": "VALIDATED",
+      "discovered_at": "2026-10-02T02:07:59Z",
+      "read_at": "2026-10-02T02:08:35Z",
+      "applied_at": "2026-10-02T02:08:35Z",
+      "validated_at": "2026-10-02T02:08:42Z"
+    },
+    "GTT_CLI_MD_Initial_Tracking_261001.md": {
+      "path": "GTT_CLI_MD_Initial_Tracking_261001.md",
+      "sha256": "01ac0a176056bea608dea9f96c0c082ee0b1d5fbc31e2a3b73c9607e3c39f698",
+      "state": "VALIDATED",
+      "discovered_at": "2026-10-02T02:07:59Z",
+      "read_at": "2026-10-02T02:08:35Z",
+      "applied_at": "2026-10-02T02:08:35Z",
+      "validated_at": "2026-10-02T02:08:42Z"
+    },
+    "GTT_CLI_Method_Plans_Automation_Policy.md": {
+      "path": "GTT_CLI_Method_Plans_Automation_Policy.md",
+      "sha256": "cf83b6f12aff08a994358114cbf65fe3fb866f13ad20cc60121da7324e98425b",
+      "state": "VALIDATED",
+      "discovered_at": "2026-10-02T02:07:59Z",
+      "read_at": "2026-10-02T02:08:35Z",
+      "applied_at": "2026-10-02T02:08:35Z",
+      "validated_at": "2026-10-02T02:08:42Z"
+    },
+    "GTT_Developer_Friction_Minimization_Rule.md": {
+      "path": "GTT_Developer_Friction_Minimization_Rule.md",
+      "sha256": "b70d059a5d921103ee8fde86330d6820fe03b4093ab1760cb1434cfab0b1adee",
+      "state": "VALIDATED",
+      "discovered_at": "2026-10-02T02:07:59Z",
+      "read_at": "2026-10-02T02:08:35Z",
+      "applied_at": "2026-10-02T02:08:35Z",
+      "validated_at": "2026-10-02T02:08:42Z"
+    }
+  }
+}

@@ -1,0 +1,22 @@
+{
+  "schema": 1,
+  "contract_version": 1,
+  "notice": "Capability registry: what this Bootstrap offers, negotiable by a CLI without knowing GTT methodology internals. Each capability lists the declared operations (operations.json) that realise it.",
+  "capabilities": [
+    { "id": "project.detect", "version": 1, "operations": ["project.detect"], "summary": "Describe the project: GTT state, layout, freeze, candidate design sources." },
+    { "id": "ade.detect", "version": 1, "operations": ["ade.registry", "ade.detect", "ade.state", "ade.owned"], "summary": "Supported ADEs, candidates, participation state and GTT-owned ADE surfaces." },
+    { "id": "ade.install", "version": 1, "operations": ["ade.install", "ade.adopt", "ade.validate", "ade.set-primary", "ade.update", "ade.remove", "ade.record"], "summary": "Install, validate, change Primary and remove ADE integrations without touching unrelated ones." },
+    { "id": "template.materialize", "version": 1, "operations": ["template.list", "template.show", "template.materialize"], "summary": "Bootstrap-owned templates, including the Initial Design Questionnaire." },
+    { "id": "methodology.profile", "version": 1, "operations": ["methodology.profile.get", "methodology.profile.set"], "summary": "Method Plans - Light / Medium / Hard / Team: the human selects, the CLI records the selection, the Bootstrap defines the meaning." },
+    { "id": "source.select", "version": 1, "operations": ["source.select", "source.list"], "summary": "Record initial sources; a selected source is never a governed authority." },
+    { "id": "validation", "version": 1, "operations": ["validation.run", "contract.check"], "summary": "One authoritative validation entry point with structured results." },
+    { "id": "status", "version": 1, "operations": ["status"], "summary": "Structured project status." },
+    { "id": "freeze", "version": 1, "operations": ["freeze"], "summary": "Human-authority freeze. There is no unfreeze operation." },
+    { "id": "session-context", "version": 1, "operations": ["session-context", "session-context.text"], "summary": "Deterministic session context derived from project state." },
+    { "id": "export-policy", "version": 1, "operations": ["export-policy", "clean.plan"], "summary": "Clean-export policy and the ownership set that `clean` would remove." },
+    { "id": "recovery", "version": 1, "operations": ["recovery.snapshot", "recovery.restore"], "summary": "What must be preserved to recover GTT configuration." },
+    { "id": "guard", "version": 1, "operations": ["guard.validate", "guard.sync"], "summary": "GTTGuard protection validation and registry sync." },
+    { "id": "retrieval", "version": 1, "operations": ["index", "reconcile", "query"], "summary": "Artifact index, reconciliation and query (not a second retrieval implementation)." },
+    { "id": "developer-experience", "version": 1, "operations": ["artifact.next-id", "maintain"], "summary": "Minimum developer friction: the next free id without a question, and the deterministic post-operation work (registry, index, validation) in one run with a brief report. The policy itself is profiles.json -> developer_experience." }
+  ]
+}

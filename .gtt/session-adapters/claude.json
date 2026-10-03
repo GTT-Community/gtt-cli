@@ -1,0 +1,32 @@
+{
+  "schema": 1,
+  "ade": "claude",
+  "display_name": "Claude Code",
+  "adapter_status": "installed",
+  "coverage": "N1",
+  "files": [
+    { "role": "script", "install_path": ".claude/hooks/session-start.py", "staged_path": "gtt-domain/proposals/claude-adapter/session-start.py" },
+    { "role": "config", "install_path": ".claude/settings.json" }
+  ],
+  "registration": { "file": ".claude/settings.json", "event": "SessionStart", "token": ".claude/hooks/session-start.py" },
+  "command": "bash .gtt/scripts/gtt-run-python.sh .claude/hooks/session-start.py",
+  "output": "json-hookSpecificOutput",
+  "events": {
+    "startup": "verified",
+    "resume": "verified",
+    "clear": "documented",
+    "compact": "documented",
+    "fork": "documented"
+  },
+  "verification": {
+    "static": "checked by gtt-check-session-adapter.sh",
+    "runtime": "runtime-verified",
+    "notes": "Real `claude -p` sessions 2026-09-25: startup and resume both fired the hook (session_source observed as startup and resume) and the agent quoted the payload. clear/compact/fork not provoked; documented only. No matcher is set, so every source fires."
+  },
+  "ade_binary": "claude",
+  "limitations": [
+    "Exit code 2 from a SessionStart hook blocks session start; the adapter therefore only ever exits 0 or 1.",
+    "On resume the hook fires, but delivery cannot be told apart from context already in the resumed transcript.",
+    "Adapter files are governance machinery: a change goes through the Solution Designer."
+  ]
+}

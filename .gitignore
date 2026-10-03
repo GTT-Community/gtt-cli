@@ -1,0 +1,14 @@
+# build output
+/gtt
+/dist/
+
+# Python bytecode written by the GTT Engine scripts
+__pycache__/
+*.pyc
+
+# GTT: local, per-person state and CLI transaction leftovers
+.gtt/local/
+.gtt-staging-*/
+.gtt-update-backup/
+.gtt-init-transaction.json
+.gtt/cli/operations.log

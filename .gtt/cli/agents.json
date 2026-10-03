@@ -1,0 +1,10 @@
+{
+  "version": 1,
+  "notice": "Agent context synchronisation state. Reconstructible from the Bootstrap ADE state; never a source of truth.",
+  "agents": {
+    "claude": {
+      "status": "synchronized",
+      "last_sync": "2026-10-02T02:07:58Z"
+    }
+  }
+}

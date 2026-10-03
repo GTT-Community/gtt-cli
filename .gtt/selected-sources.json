@@ -1,0 +1,50 @@
+{
+  "schema": 1,
+  "sources": [
+    {
+      "authority_status": "unassigned",
+      "path": "GTT_BOOTSTRAP_1.0_CLI_CONTRACT_IMPLEMENTATION_TASK.md",
+      "precedence_status": "unassigned",
+      "selected_at": "2026-10-02T01:44:46Z",
+      "selected_by": "human",
+      "type": "design-document",
+      "version": null
+    },
+    {
+      "authority_status": "unassigned",
+      "path": "GTT_CLI_Agent_ADE_Context_Discovery_Synchronization.md",
+      "precedence_status": "unassigned",
+      "selected_at": "2026-10-02T01:44:46Z",
+      "selected_by": "human",
+      "type": "requirements",
+      "version": null
+    },
+    {
+      "authority_status": "unassigned",
+      "path": "GTT_Developer_Friction_Minimization_Rule.md",
+      "precedence_status": "unassigned",
+      "selected_at": "2026-10-02T01:44:46Z",
+      "selected_by": "human",
+      "type": "requirements",
+      "version": null
+    },
+    {
+      "authority_status": "unassigned",
+      "path": "GTT_CLI_Method_Plans_Automation_Policy.md",
+      "precedence_status": "unassigned",
+      "selected_at": "2026-10-02T01:44:47Z",
+      "selected_by": "human",
+      "type": "requirements",
+      "version": null
+    },
+    {
+      "authority_status": "unassigned",
+      "path": "GTT_CLI_MD_Initial_Tracking_261001.md",
+      "precedence_status": "unassigned",
+      "selected_at": "2026-10-02T01:44:47Z",
+      "selected_by": "human",
+      "type": "requirements",
+      "version": null
+    }
+  ]
+}

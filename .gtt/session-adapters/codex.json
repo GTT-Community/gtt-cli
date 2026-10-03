@@ -1,0 +1,34 @@
+{
+  "schema": 1,
+  "ade": "codex",
+  "display_name": "Codex",
+  "adapter_status": "staged",
+  "coverage": "N1",
+  "files": [
+    { "role": "script", "install_path": ".codex/gtt-session-start.sh", "staged_path": "gtt-domain/proposals/session-adapters/codex/.codex/gtt-session-start.sh" },
+    { "role": "config", "install_path": ".codex/hooks.json", "staged_path": "gtt-domain/proposals/session-adapters/codex/.codex/hooks.json" }
+  ],
+  "registration": { "file": ".codex/hooks.json", "event": "SessionStart", "token": ".codex/gtt-session-start.sh" },
+  "command": "bash .codex/gtt-session-start.sh",
+  "output": "text",
+  "events": {
+    "startup": "documented",
+    "resume": "documented",
+    "clear": "documented",
+    "compact": "documented",
+    "fork": "unknown"
+  },
+  "verification": {
+    "static": "checked by gtt-check-session-adapter.sh",
+    "runtime": "not-verified",
+    "notes": "NOT VERIFIED. Sandbox run 2026-09-25 (codex-cli 0.153.4, copy of the repo with the staged hook at .codex/, project trust passed per-invocation with -c, no change to ~/.codex/config.toml): `codex exec` answered NONE and an instrumented copy of the hook never created its marker file, so the hook did not execute. Consistent with the documented requirement that a non-managed hook be approved by the user (persisted, by hash). Whether the project-trust override or the missing hook approval blocked it was not isolated. `codex exec --dangerously-bypass-hook-trust` exists and would probably prove delivery, but it bypasses the approval control and was deliberately not used. To verify: run Codex interactively in a project containing .codex/, trust the project, review and approve the hook, start a session, and ask the agent to quote the 'authority:' line."
+  },
+  "ade_binary": "codex",
+  "limitations": [
+    "Project-local hooks load only when the project .codex/ layer is trusted, and a non-managed hook needs explicit user approval (tracked by hash; a changed hook needs re-approval).",
+    "additionalContextLimit defaults to about 2500 tokens; larger output is saved to disk and only a preview is sent. The staged hook sets 5000.",
+    "Codex documents plain stdout as developer context; SessionStart exit-code and stderr behavior is not documented, so the adapter only exits 0 or 1.",
+    "Assumes the session working directory is the project root.",
+    "Adding .codex/ contradicts the current matrix rule 'Codex takes no adapter file beyond AGENTS.md'; needs a governed change."
+  ]
+}

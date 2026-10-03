@@ -1,0 +1,33 @@
+{
+  "schema": 1,
+  "contract_version": 1,
+  "notice": "Clean-export and clean policy. The Bootstrap defines what is GTT-owned; the CLI consumes this policy (gtt-project.sh export-policy resolves it against the project) and never keeps its own exclusion list. `export --clean` creates a separate delivery artifact; `clean` removes GTT from the current project.",
+  "ownership": {
+    "static": [
+      { "pattern": ".gtt/", "reason": "GTT Engine: scripts, contracts, index, protection registry, session-adapter declarations, GTT documentation, per-project state" },
+      { "pattern": "gtt-domain/", "reason": "The domain governed by GTT: context, ADRs, proposals, backlog, change request, session, freeze marker" },
+      { "pattern": "AGENTS.md", "reason": "Portable agent contract installed by the bootstrap" },
+      { "pattern": "readme-gtt.md", "reason": "GTT human entry point" },
+      { "pattern": "readme-gtt.es.md", "reason": "GTT human entry point (Spanish)" },
+      { "pattern": "SOURCE-BRIEF.*", "reason": "Preserved original design source of the bootstrap (GTT evidence artifact)" }
+    ],
+    "dynamic": [
+      { "source": "ade.owned", "operation": "ade.owned", "reason": "GTT-installed ADE overlay files recorded in the ledger (.gtt/ade.json). Directories that merely resemble an ADE's are never matched by name." }
+    ],
+    "never_by_name": [".claude/", ".kiro/", ".copilot/", ".codex/", ".github/"]
+  },
+  "export": {
+    "clean": {
+      "creates": "a separate delivery artifact; the source project is not modified",
+      "exclude": "ownership.static + ownership.dynamic (unmodified ledger files)",
+      "include": "everything else, byte for byte",
+      "requires_confirmation": "files of an adopted ADE with no install record, and ledger files modified since install, are listed for the CLI to confirm; they are not excluded silently"
+    }
+  },
+  "clean": {
+    "removes": "the same ownership set, from the current project",
+    "plus": ["derived and per-project state under .gtt/ and gtt-domain/"],
+    "confirmation": "required from the human (CLI lifecycle); the plan is produced by `clean.plan` and removes nothing itself",
+    "keeps": "the host project's own files, including its own ADE configuration"
+  }
+}

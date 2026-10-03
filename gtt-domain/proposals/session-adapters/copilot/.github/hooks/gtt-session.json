@@ -1,0 +1,13 @@
+{
+  "version": 1,
+  "hooks": {
+    "sessionStart": [
+      {
+        "type": "command",
+        "bash": "bash .gtt/scripts/gtt-run-python.sh .github/hooks/gtt-session-start.py",
+        "powershell": "bash .gtt/scripts/gtt-run-python.sh .github/hooks/gtt-session-start.py",
+        "timeoutSec": 60
+      }
+    ]
+  }
+}

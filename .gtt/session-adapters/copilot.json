@@ -1,0 +1,35 @@
+{
+  "schema": 1,
+  "ade": "copilot",
+  "display_name": "GitHub Copilot",
+  "adapter_status": "staged",
+  "coverage": "N1",
+  "files": [
+    { "role": "script", "install_path": ".github/hooks/gtt-session-start.py", "staged_path": "gtt-domain/proposals/session-adapters/copilot/.github/hooks/gtt-session-start.py" },
+    { "role": "config", "install_path": ".github/hooks/gtt-session.json", "staged_path": "gtt-domain/proposals/session-adapters/copilot/.github/hooks/gtt-session.json" }
+  ],
+  "registration": { "file": ".github/hooks/gtt-session.json", "event": "sessionStart", "token": ".github/hooks/gtt-session-start.py" },
+  "command": "bash .gtt/scripts/gtt-run-python.sh .github/hooks/gtt-session-start.py",
+  "output": "json-additionalContext",
+  "events": {
+    "startup": "documented",
+    "resume": "unsupported",
+    "clear": "unknown",
+    "compact": "unknown",
+    "fork": "unknown"
+  },
+  "verification": {
+    "static": "checked by gtt-check-session-adapter.sh",
+    "runtime": "requires-interactive-session",
+    "notes": "VERIFICATION REQUIRES INTERACTIVE SESSION. Copilot docs: sessionStart fires for a new interactive Copilot CLI session, not on resume and not in non-interactive -p mode; the cloud agent fires it once per job."
+  },
+  "ade_binary": "copilot",
+  "limitations": [
+    "Documented not to fire on resume or with -p, so resume gets no injection from this adapter (only N3 instructions could cover it).",
+    "Copilot ignores plain-text stdout for this event; the output must be JSON with a top-level additionalContext, which is why this adapter is Python-based.",
+    "The powershell key also calls bash (Git for Windows must be on PATH); a native PowerShell path is not provided.",
+    "For the cloud agent the hook file must be on the default branch.",
+    "The hook must live at .github/hooks/, not .copilot/ (same discovery gap already documented for the instructions file).",
+    "The CLI binary is bundled in the VS Code extension here; whether the account has an active Copilot license was not checked."
+  ]
+}

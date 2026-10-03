@@ -1,0 +1,28 @@
+{
+  "schema": 1,
+  "contract_version": 1,
+  "notice": "Recovery contract: what a snapshot of GTT configuration must preserve. The CLI implements storage and lifecycle; the Bootstrap defines the content (gtt-project.sh recovery snapshot|restore). A snapshot preserves GTT configuration, NOT the governed domain content (context, ADRs, backlog): that lives in the project's version control, and `export --clean` deliberately drops it.",
+  "snapshot": {
+    "kind": "gtt-recovery-snapshot",
+    "required": ["schema", "contract_version", "kind", "bootstrap", "compatibility", "ade", "methodology", "sources", "operational", "recovery"],
+    "fields": {
+      "bootstrap": "identity of the Bootstrap that produced it: id, version, schema_version, channel",
+      "compatibility": "the CLI compatibility range of that Bootstrap",
+      "ade": "primary, participating, excluded (never file contents: overlays are reinstalled from the catalog)",
+      "methodology": "profile and language",
+      "sources": "selected initial sources (path, type, version, selection metadata; authority and precedence stay in the governed manifest)",
+      "operational": "freeze state (frozen flag and marker time); derived state such as session.md is not preserved",
+      "recovery": "created_at, note, and the restore rules"
+    }
+  },
+  "restore": {
+    "refuses_when": [
+      "the snapshot schema is newer than this Bootstrap understands",
+      "the snapshot was produced by a different bootstrap id",
+      "the target project is frozen and the snapshot would relax the methodology profile",
+      "a state file to restore already exists (never overwritten)"
+    ],
+    "does": "restores methodology, selected sources; with --from re-installs the recorded ADEs from the catalog; never restores a freeze marker (freeze is a human act)",
+    "then": "validation.run"
+  }
+}

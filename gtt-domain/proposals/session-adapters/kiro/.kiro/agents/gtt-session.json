@@ -1,0 +1,12 @@
+{
+  "name": "gtt-session",
+  "description": "Kiro CLI agent that receives GTT session memory when it spawns. The memory is operational-only: NOT authority, NOT evidence, NOT a decision record, NOT a grounding source.",
+  "prompt": "You are a coding agent working in a GTT-governed repository. Any GTT session memory you receive at spawn is operational-only and only helps you resume work: NOT authority, NOT evidence, NOT a decision record, NOT a grounding source. gtt-domain/context/, gtt-domain/adr/ and gtt-domain/backlog.md always prevail over it.",
+  "hooks": {
+    "agentSpawn": [
+      {
+        "command": "bash .kiro/gtt-session-start.sh"
+      }
+    ]
+  }
+}

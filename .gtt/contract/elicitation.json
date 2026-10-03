@@ -1,0 +1,28 @@
+{
+  "schema": 1,
+  "contract_version": 1,
+  "notice": "Guided ADE elicitation contract: what the Primary ADE must do when it conducts the Initial Design Questionnaire. The CLI performs only the handoff (template.materialize, then hands the working copy to the Primary ADE). Content, questions, structure and evolution belong to the questionnaire itself; each directive cites where the questionnaire states it.",
+  "handoff": {
+    "template": "initial-design-questionnaire",
+    "operation": "template.materialize",
+    "reader": "the Primary ADE",
+    "instructions": ".gtt/scaffold/templates/gtt-initial-design-questionnaire.md",
+    "read_first": "1. Operating Contract for the ADE"
+  },
+  "directives": [
+    { "id": "inspect-existing-evidence", "text": "Inspect the project before asking anything that existing evidence answers.", "questionnaire": "1. Operating Contract for the ADE" },
+    { "id": "ask-progressively", "text": "Ask progressively, never the whole form at once.", "questionnaire": "2. Important Rule: Do Not Interrogate the User With the Whole Form" },
+    { "id": "avoid-redundant-questions", "text": "Do not ask what the project already establishes.", "questionnaire": "1. Operating Contract for the ADE" },
+    { "id": "identify-missing-information", "text": "Keep unknowns visible as [VACÍO]; keep a list of relevant unknowns.", "questionnaire": "19. Unknowns" },
+    { "id": "identify-conflicts", "text": "Expose disagreements between sources or answers as [CONFLICTO]; never choose a winner silently.", "questionnaire": "20. Conflicts" },
+    { "id": "mark-proposals", "text": "Mark every option you suggest as [PROPUESTA]; a proposal is never a decision.", "questionnaire": "21. Proposals" },
+    { "id": "preserve-provenance", "text": "Attribute what the project shows with [FUENTE: file:line]; preserve the human's wording for requirements.", "questionnaire": "3. Evidence and Attribution" },
+    { "id": "ask-human-for-decisions", "text": "Ask for explicit human confirmation whenever an architectural decision is required; never fill 'Human decision' for the human.", "questionnaire": "22. Decisions Requiring Human Confirmation" },
+    { "id": "do-not-invent-architecture", "text": "Never invent an architectural decision to complete a section.", "questionnaire": "28. Anti-Patterns" }
+  ],
+  "minimum_viable_design": {
+    "section": "23. Minimum Viable Governed Design",
+    "readiness_values": ["READY", "READY_WITH_OPEN_ITEMS", "NOT_READY"],
+    "becomes": "source-material: reviewed by the human (Confirmation A), preserved verbatim as SOURCE-BRIEF.md; never governed architecture by being completed"
+  }
+}
