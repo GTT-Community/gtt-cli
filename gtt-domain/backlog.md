@@ -445,7 +445,7 @@ a Story never silently overrides architecture.
     a symlink whose target leaves the project is refused even when the target does not exist.
   - Unit and integration tests pass on Windows in CI.
   - The README documents the Windows requirements (Git for Windows, Python 3) and installation.
-- **Notes:** implemented 2026-10-03; Done after the Windows CI jobs pass and v1.0.1 publishes the Windows binaries.
+- **Notes:** CLI side done and unit-tested on Windows in CI; Windows binaries ship with v1.0.1. Integration on Windows is blocked by the Bootstrap, which launches its scripts with the WSL bash.exe: `reports/BUG-bootstrap-windows-wsl-bash.md`. The CLI already passes GTT_BASH to the Bootstrap; the Windows integration CI job is informative until the Bootstrap fix ships.
 
 ### EPIC-008 — Agent/ADE context discovery and synchronisation
 
@@ -591,7 +591,7 @@ Work tracked here that is not tied to a specific Story.
 
 What is actively being worked on right now.
 
-- STORY-047 — Windows support: waiting for the Windows CI jobs, then v1.0.1
+- STORY-047 — Windows support: waiting for the Bootstrap fix (reports/BUG-bootstrap-windows-wsl-bash.md)
 
 ## Next Work
 
