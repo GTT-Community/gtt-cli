@@ -4383,97 +4383,6 @@
       }
     },
     {
-      "id": "PROP-CONTEXT-STACK-ADR-003",
-      "type": "proposal",
-      "path": "gtt-domain/proposals/context-stack-ADR-003.md",
-      "title": "Stack & Architecture Map",
-      "authority": "draft",
-      "version": "v2.1",
-      "sha256": "de543b80716dd5acb7116c7cb1cf7fb0008858c5f5e2014cb7df68e820fac13a",
-      "aliases": [],
-      "sections": [
-        {
-          "heading": "Stack & Architecture Map",
-          "level": 1,
-          "anchor": "stack--architecture-map",
-          "path": "Stack & Architecture Map",
-          "line_start": 1,
-          "line_end": 153
-        },
-        {
-          "heading": "1. Stack at a glance",
-          "level": 2,
-          "anchor": "1-stack-at-a-glance",
-          "path": "Stack & Architecture Map > 1. Stack at a glance",
-          "line_start": 14,
-          "line_end": 35
-        },
-        {
-          "heading": "2. Component map",
-          "level": 2,
-          "anchor": "2-component-map",
-          "path": "Stack & Architecture Map > 2. Component map",
-          "line_start": 36,
-          "line_end": 72
-        },
-        {
-          "heading": "3. Deployment topology",
-          "level": 2,
-          "anchor": "3-deployment-topology",
-          "path": "Stack & Architecture Map > 3. Deployment topology",
-          "line_start": 73,
-          "line_end": 90
-        },
-        {
-          "heading": "4. Observability",
-          "level": 2,
-          "anchor": "4-observability",
-          "path": "Stack & Architecture Map > 4. Observability",
-          "line_start": 91,
-          "line_end": 107
-        },
-        {
-          "heading": "5. Dependency rules",
-          "level": 2,
-          "anchor": "5-dependency-rules",
-          "path": "Stack & Architecture Map > 5. Dependency rules",
-          "line_start": 108,
-          "line_end": 120
-        },
-        {
-          "heading": "6. Map change log",
-          "level": 2,
-          "anchor": "6-map-change-log",
-          "path": "Stack & Architecture Map > 6. Map change log",
-          "line_start": 121,
-          "line_end": 130
-        },
-        {
-          "heading": "7. Drift signals",
-          "level": 2,
-          "anchor": "7-drift-signals",
-          "path": "Stack & Architecture Map > 7. Drift signals",
-          "line_start": 131,
-          "line_end": 140
-        },
-        {
-          "heading": "8. Gap register",
-          "level": 2,
-          "anchor": "8-gap-register",
-          "path": "Stack & Architecture Map > 8. Gap register",
-          "line_start": 141,
-          "line_end": 153
-        }
-      ],
-      "references": [],
-      "referenced_by": [],
-      "relationships": [],
-      "provenance": {
-        "history": [],
-        "referenced_by_proposals": []
-      }
-    },
-    {
       "id": "PROP-README",
       "type": "proposal",
       "path": "gtt-domain/proposals/README.md",
@@ -5709,8 +5618,7 @@
       "GTT-GTT-INITIAL-DESIGN-QUESTIONNAIRE#1-operating-contract-for-the-ade"
     ],
     "1. stack at a glance": [
-      "CTX-STACK#1-stack-at-a-glance",
-      "PROP-CONTEXT-STACK-ADR-003#1-stack-at-a-glance"
+      "CTX-STACK#1-stack-at-a-glance"
     ],
     "1. start from governed context": [
       "GTT-USAGE#1-start-from-governed-context"
@@ -5836,8 +5744,7 @@
       "GTT-GTT-INITIAL-DESIGN-QUESTIONNAIRE#19-unknowns"
     ],
     "2. component map": [
-      "CTX-STACK#2-component-map",
-      "PROP-CONTEXT-STACK-ADR-003#2-component-map"
+      "CTX-STACK#2-component-map"
     ],
     "2. context change": [
       "SKILL-GTT-PROPOSE-CHANGE#2-context-change"
@@ -5924,8 +5831,7 @@
       "SKILL-GTT-PROPOSE-CHANGE#3-context-conflict"
     ],
     "3. deployment topology": [
-      "CTX-STACK#3-deployment-topology",
-      "PROP-CONTEXT-STACK-ADR-003#3-deployment-topology"
+      "CTX-STACK#3-deployment-topology"
     ],
     "3. detect an architectural change": [
       "GTT-USAGE#3-detect-an-architectural-change"
@@ -5964,8 +5870,7 @@
       "GTT-INSTALLATION#4-merge"
     ],
     "4. observability": [
-      "CTX-STACK#4-observability",
-      "PROP-CONTEXT-STACK-ADR-003#4-observability"
+      "CTX-STACK#4-observability"
     ],
     "4. project identity": [
       "GTT-GTT-INITIAL-DESIGN-QUESTIONNAIRE#4-project-identity"
@@ -5998,8 +5903,7 @@
       "SKILL-GTT-BOOTSTRAP#5-confirm-before-drafting"
     ],
     "5. dependency rules": [
-      "CTX-STACK#5-dependency-rules",
-      "PROP-CONTEXT-STACK-ADR-003#5-dependency-rules"
+      "CTX-STACK#5-dependency-rules"
     ],
     "5. poblar el contexto": [
       "GTT-INSTALLATION-ES#5-poblar-el-contexto"
@@ -6023,8 +5927,7 @@
       "GTT-GTT-INITIAL-DESIGN-QUESTIONNAIRE#53-scope-boundaries"
     ],
     "6. map change log": [
-      "CTX-STACK#6-map-change-log",
-      "PROP-CONTEXT-STACK-ADR-003#6-map-change-log"
+      "CTX-STACK#6-map-change-log"
     ],
     "6. record the decision": [
       "GTT-USAGE#6-record-the-decision"
@@ -6054,8 +5957,7 @@
       "GTT-GTT-INITIAL-DESIGN-QUESTIONNAIRE#63-internal-consumers"
     ],
     "7. drift signals": [
-      "CTX-STACK#7-drift-signals",
-      "PROP-CONTEXT-STACK-ADR-003#7-drift-signals"
+      "CTX-STACK#7-drift-signals"
     ],
     "7. freeze": [
       "GTT-INSTALLATION#7-freeze",
@@ -6074,8 +5976,7 @@
       "GTT-GTT-INITIAL-DESIGN-QUESTIONNAIRE#8-functional-requirements"
     ],
     "8. gap register": [
-      "CTX-STACK#8-gap-register",
-      "PROP-CONTEXT-STACK-ADR-003#8-gap-register"
+      "CTX-STACK#8-gap-register"
     ],
     "8. verificar el guardrail": [
       "GTT-INSTALLATION-ES#8-verificar-el-guardrail"
@@ -7022,8 +6923,7 @@
       "GTT-GTT-SOURCES-MANIFEST#sources"
     ],
     "stack & architecture map": [
-      "CTX-STACK#stack--architecture-map",
-      "PROP-CONTEXT-STACK-ADR-003#stack--architecture-map"
+      "CTX-STACK#stack--architecture-map"
     ],
     "stack map delta": [
       "ADR-002#stack-map-delta",
