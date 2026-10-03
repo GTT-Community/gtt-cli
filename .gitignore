@@ -12,3 +12,5 @@ __pycache__/
 .gtt-update-backup/
 .gtt-init-transaction.json
 .gtt/cli/operations.log
+npm/vendor/
+*.tgz

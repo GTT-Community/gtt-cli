@@ -1,0 +1,25 @@
+{
+  "name": "gtt-cli",
+  "version": "0.0.0",
+  "description": "GTT CLI - the operational doorway into GTT Bootstrap (installs the native gtt binary)",
+  "license": "Apache-2.0",
+  "homepage": "https://github.com/GTT-Community/gtt-cli#readme",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/GTT-Community/gtt-cli.git"
+  },
+  "bugs": "https://github.com/GTT-Community/gtt-cli/issues",
+  "keywords": ["gtt", "governance", "architecture", "ai", "cli", "claude", "copilot", "kiro", "codex"],
+  "bin": {
+    "gtt": "bin/gtt.js"
+  },
+  "files": ["bin/", "install.js", "README.md"],
+  "scripts": {
+    "postinstall": "node install.js"
+  },
+  "engines": {
+    "node": ">=18"
+  },
+  "os": ["linux", "darwin", "win32"],
+  "cpu": ["x64", "arm64"]
+}

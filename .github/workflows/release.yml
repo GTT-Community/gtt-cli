@@ -30,3 +30,27 @@ jobs:
           args: release --clean
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+  npm:
+    # Publishes the npm wrapper (`npm install -g gtt-cli`) once the binaries
+    # are released. Needs the repository secret NPM_TOKEN; skipped without it.
+    needs: release
+    if: github.repository == 'GTT-Community/gtt-cli'
+    runs-on: ubuntu-latest
+    env:
+      NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-node@v5
+        with:
+          node-version: "22"
+          registry-url: "https://registry.npmjs.org"
+      - name: Publish gtt-cli to npm
+        working-directory: npm
+        run: |
+          if [ -z "$NODE_AUTH_TOKEN" ]; then
+            echo "::warning::NPM_TOKEN is not set: the npm package was not published."
+            exit 0
+          fi
+          npm pkg set version="${GITHUB_REF_NAME#v}"
+          npm publish --access public

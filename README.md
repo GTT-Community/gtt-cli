@@ -49,32 +49,30 @@ GTT Method -> GTT Bootstrap -> versioned contracts -> GTT CLI -> ADE -> Human
 
 ## Installation
 
-`gtt` is a single static binary. Download it for your platform from
-[Releases](https://github.com/GTT-Community/gtt-cli/releases/latest) (Linux, macOS and Windows; amd64 and arm64).
+One command. Each installs the single `gtt` binary for your platform (Linux, macOS, Windows; amd64, arm64) from the
+latest [release](https://github.com/GTT-Community/gtt-cli/releases/latest), verified against its SHA-256 checksum.
 
-Linux and macOS:
+**Linux and macOS**
 
 ```bash
-OS=$(uname -s | tr '[:upper:]' '[:lower:]')                       # linux | darwin
-ARCH=$(uname -m | sed -e 's/x86_64/amd64/' -e 's/aarch64/arm64/')  # amd64 | arm64
-curl -fsSLO "https://github.com/GTT-Community/gtt-cli/releases/latest/download/gtt_${OS}_${ARCH}.tar.gz"
-tar -xzf "gtt_${OS}_${ARCH}.tar.gz" gtt
-sudo mv gtt /usr/local/bin/        # or any directory on your PATH
-gtt version
+curl -fsSL https://raw.githubusercontent.com/GTT-Community/gtt-cli/main/install.sh | sh
 ```
 
-Windows (PowerShell):
+**Windows** (PowerShell)
 
 ```powershell
-$Arch = if ($env:PROCESSOR_ARCHITECTURE -eq "ARM64") { "arm64" } else { "amd64" }
-Invoke-WebRequest "https://github.com/GTT-Community/gtt-cli/releases/latest/download/gtt_windows_$Arch.zip" -OutFile gtt.zip
-Expand-Archive gtt.zip -DestinationPath "$env:LOCALAPPDATA\Programs\gtt" -Force
-# add %LOCALAPPDATA%\Programs\gtt to your PATH, open a new terminal, then:
-gtt version
+irm https://raw.githubusercontent.com/GTT-Community/gtt-cli/main/install.ps1 | iex
 ```
 
-Each release carries `checksums.txt` (SHA-256) to verify the download. Installs through package managers
-(uv, npm, Homebrew) are planned.
+**npm** (any platform with Node.js 18+)
+
+```bash
+npm install -g gtt-cli
+```
+
+Then check it with `gtt version`. The installers accept `GTT_VERSION` (a specific release) and `GTT_INSTALL_DIR`
+(default `/usr/local/bin` or `~/.local/bin`; on Windows `%LOCALAPPDATA%\Programs\gtt`, added to your PATH).
+You can also download an archive by hand from [Releases](https://github.com/GTT-Community/gtt-cli/releases/latest).
 
 With Go 1.27 or later:
 
