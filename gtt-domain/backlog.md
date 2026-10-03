@@ -567,6 +567,7 @@ What is actively being worked on right now.
 
 What comes after Current Focus.
 
+- None
 
 ## Blocked
 
