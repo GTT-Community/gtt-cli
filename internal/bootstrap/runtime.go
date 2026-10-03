@@ -70,8 +70,10 @@ func (r *Runtime) call(ctx context.Context, args ...string) (ports.Result, error
 	}
 	// The Bootstrap tree is content, not a scratch area: keep the interpreter
 	// from leaving bytecode caches in a project or in a verified catalog.
+	// GTT_BASH tells the Bootstrap which bash the CLI resolved, so that its
+	// own scripts run the same one (on Windows, Git Bash rather than WSL's).
 	res, err := r.runner.Run(ctx, ports.Command{Path: bash, Args: append([]string{entryPoint}, args...), Dir: r.root,
-		Env: []string{"PYTHONDONTWRITEBYTECODE=1"}})
+		Env: []string{"PYTHONDONTWRITEBYTECODE=1", "GTT_BASH=" + bash}})
 	if err != nil {
 		return res, &core.Error{Code: core.ExitUnavailable, What: "Could not run the GTT Bootstrap contract.", Err: err, Why: err.Error()}
 	}
