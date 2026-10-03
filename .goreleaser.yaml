@@ -31,7 +31,9 @@ archives:
     format_overrides:
       - goos: windows
         formats: [zip]
-    name_template: "gtt_{{ .Version }}_{{ .Os }}_{{ .Arch }}"
+    # No version in the name: releases/latest/download/gtt_<os>_<arch> always
+    # points at the newest release, so install instructions never change.
+    name_template: "gtt_{{ .Os }}_{{ .Arch }}"
     files:
       - LICENSE
       - README.md

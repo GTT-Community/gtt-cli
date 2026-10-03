@@ -6,3 +6,4 @@ GTT_*.md
 reports/
 scripts/publish.sh
 .publishignore
+scripts/release.sh
