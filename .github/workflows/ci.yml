@@ -22,8 +22,8 @@ jobs:
       matrix:
         os: [ubuntu-latest, macos-latest, windows-latest]
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-go@v5
+      - uses: actions/checkout@v5
+      - uses: actions/setup-go@v6
         with:
           go-version-file: go.mod
       - name: Formatting
@@ -32,7 +32,14 @@ jobs:
       - name: Vet
         run: go vet ./...
       - name: Unit and architecture tests
-        run: go test ./internal/... ./test/arch/
+        shell: bash
+        run: |
+          set -o pipefail
+          status=0
+          go test ./internal/... ./test/arch/ 2>&1 | tee test.log || status=$?
+          # Failures as annotations: visible on the run page without logs access.
+          grep -E -- '--- FAIL|_test\.go:[0-9]+:|^panic:|cannot|not found' test.log | head -40 | while IFS= read -r line; do echo "::error::${line//%/%25}"; done
+          exit $status
       - name: Build
         run: go build -o dist/ ./cmd/gtt
 
@@ -48,16 +55,16 @@ jobs:
       # Bootstrap scripts need LF line endings, also on Windows.
       - name: Keep LF line endings
         run: git config --global core.autocrlf false
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
         with:
           path: gtt-cli
       # The integration suite drives the real CLI against a real Bootstrap
       # catalog. The ref can be pinned to a release tag once one is published.
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
         with:
           repository: GTT-Community/gtt-bootstrap
           path: gtt-bootstrap
-      - uses: actions/setup-go@v5
+      - uses: actions/setup-go@v6
         with:
           go-version-file: gtt-cli/go.mod
           cache-dependency-path: gtt-cli/go.sum
@@ -65,7 +72,14 @@ jobs:
         working-directory: gtt-cli
         env:
           GTT_TEST_BOOTSTRAP: ${{ github.workspace }}/gtt-bootstrap
-        run: go test -timeout 55m ./test/integration/
+        shell: bash
+        run: |
+          set -o pipefail
+          status=0
+          go test -timeout 55m ./test/integration/ 2>&1 | tee test.log || status=$?
+          # Failures as annotations: visible on the run page without logs access.
+          grep -E -- '--- FAIL|_test\.go:[0-9]+:|^panic:|cannot|not found' test.log | head -40 | while IFS= read -r line; do echo "::error::${line//%/%25}"; done
+          exit $status
 
   # The development repository is governed with GTT; the public repository is
   # a clean export without it. The gate runs only where GTT is installed.
@@ -73,12 +87,12 @@ jobs:
     name: GTT governance gate
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
       - name: Detect GTT
         id: gtt
         run: |
           if [ -f .gtt/contract/release.json ]; then echo "installed=true" >> "$GITHUB_OUTPUT"; else echo "installed=false" >> "$GITHUB_OUTPUT"; fi
-      - uses: actions/setup-go@v5
+      - uses: actions/setup-go@v6
         if: steps.gtt.outputs.installed == 'true'
         with:
           go-version-file: go.mod
