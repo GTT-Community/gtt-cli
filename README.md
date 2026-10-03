@@ -14,7 +14,7 @@ GTT Method -> GTT Bootstrap -> versioned contracts -> GTT CLI -> ADE -> Human
 
 | | |
 |---|---|
-| Version | 1.0.0 |
+| Version | see [Releases](https://github.com/GTT-Community/gtt-cli/releases/latest) |
 | Works with | GTT Bootstrap 1.x (compatibility is negotiated on every run) |
 | Platforms | Linux, macOS, Windows |
 | License | Apache 2.0 |
@@ -55,11 +55,10 @@ GTT Method -> GTT Bootstrap -> versioned contracts -> GTT CLI -> ADE -> Human
 Linux and macOS:
 
 ```bash
-VERSION=1.0.0
 OS=$(uname -s | tr '[:upper:]' '[:lower:]')                       # linux | darwin
 ARCH=$(uname -m | sed -e 's/x86_64/amd64/' -e 's/aarch64/arm64/')  # amd64 | arm64
-curl -fsSLO "https://github.com/GTT-Community/gtt-cli/releases/download/v${VERSION}/gtt_${VERSION}_${OS}_${ARCH}.tar.gz"
-tar -xzf "gtt_${VERSION}_${OS}_${ARCH}.tar.gz" gtt
+curl -fsSLO "https://github.com/GTT-Community/gtt-cli/releases/latest/download/gtt_${OS}_${ARCH}.tar.gz"
+tar -xzf "gtt_${OS}_${ARCH}.tar.gz" gtt
 sudo mv gtt /usr/local/bin/        # or any directory on your PATH
 gtt version
 ```
@@ -67,9 +66,8 @@ gtt version
 Windows (PowerShell):
 
 ```powershell
-$Version = "1.0.0"
 $Arch = if ($env:PROCESSOR_ARCHITECTURE -eq "ARM64") { "arm64" } else { "amd64" }
-Invoke-WebRequest "https://github.com/GTT-Community/gtt-cli/releases/download/v$Version/gtt_${Version}_windows_$Arch.zip" -OutFile gtt.zip
+Invoke-WebRequest "https://github.com/GTT-Community/gtt-cli/releases/latest/download/gtt_windows_$Arch.zip" -OutFile gtt.zip
 Expand-Archive gtt.zip -DestinationPath "$env:LOCALAPPDATA\Programs\gtt" -Force
 # add %LOCALAPPDATA%\Programs\gtt to your PATH, open a new terminal, then:
 gtt version
