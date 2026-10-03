@@ -409,13 +409,13 @@ a Story never silently overrides architecture.
 
 ##### STORY-034 — Release packaging and documentation
 
-- **Status:** In Progress
+- **Status:** Done
 - **Priority:** Medium
 - **Source:** master 82, 124 phase 7
 - **Acceptance Criteria:**
   - Release artifacts are produced for the declared channels.
   - User documentation exists for the command surface.
-- **Notes:** README documents the command surface; no release artifacts or packaging exist.
+- **Notes:** GoReleaser builds the single static `gtt` binary for Linux and macOS (amd64, arm64) on a v* tag of the public repository and publishes it with SHA-256 checksums to GitHub Releases; v1.0.0 released 2026-10-03 (run 37099001640) and verified by downloading and running it. README covers installation, version and features. Package-manager channels (uv, npm, Homebrew) are not part of this Story.
 
 ### EPIC-008 — Agent/ADE context discovery and synchronisation
 
@@ -567,7 +567,6 @@ What is actively being worked on right now.
 
 What comes after Current Focus.
 
-- STORY-034 — release packaging (to be decided when development ends)
 
 ## Blocked
 
