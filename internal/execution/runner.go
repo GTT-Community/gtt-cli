@@ -48,8 +48,14 @@ func (r Runner) trace(c ports.Command, res ports.Result, err error) {
 	r.Log.Log("debug", "exec %s: exit %d", describe(c), res.ExitCode)
 }
 
-// LookPath resolves an executable name on PATH.
-func (Runner) LookPath(name string) (string, error) { return exec.LookPath(name) }
+// LookPath resolves an executable name on PATH. bash is resolved with the
+// platform rules of lookBash (Git Bash on Windows, never the WSL launcher).
+func (Runner) LookPath(name string) (string, error) {
+	if name == "bash" {
+		return systemBash(exec.LookPath)
+	}
+	return exec.LookPath(name)
+}
 
 // Run executes one command. A non-zero exit is reported in the result, not
 // as an error; an error means the process could not be run at all.

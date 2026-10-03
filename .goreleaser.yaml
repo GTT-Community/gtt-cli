@@ -16,7 +16,7 @@ builds:
     binary: gtt
     env:
       - CGO_ENABLED=0
-    goos: [linux, darwin]
+    goos: [linux, darwin, windows]
     goarch: [amd64, arm64]
     flags:
       - -trimpath
@@ -28,6 +28,9 @@ archives:
   - id: gtt
     ids: [gtt]
     formats: [tar.gz]
+    format_overrides:
+      - goos: windows
+        formats: [zip]
     name_template: "gtt_{{ .Version }}_{{ .Os }}_{{ .Arch }}"
     files:
       - LICENSE
@@ -50,5 +53,6 @@ release:
     name: gtt-cli
   name_template: "gtt {{ .Version }}"
   footer: |
-    Install: download the archive for your platform, extract it and put `gtt` on your PATH.
+    Install: download the archive for your platform, extract it and put `gtt` (`gtt.exe` on Windows) on your PATH.
+    Windows needs Git for Windows, which provides bash, and Python 3 for the GTT Bootstrap scripts.
     Verify with `sha256sum -c checksums.txt --ignore-missing`, then run `gtt version`.
