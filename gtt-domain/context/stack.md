@@ -7,7 +7,7 @@
 > same commit as the ADR that approves it.
 
 - **Last verified:** `2026-10-03`
-- **Governing ADRs:** ADR-001, ADR-002
+- **Governing ADRs:** ADR-001, ADR-002, ADR-003
 
 ---
 
@@ -16,7 +16,7 @@
 | Layer | Technology | Version | Locked by |
 |---|---|---|---|
 | Language | Go [FUENTE: master] | 1.27 | ADR-001 |
-| Runtime | Native static binary | - | ADR-001 |
+| Runtime | Native static binary: Linux, macOS, Windows (amd64, arm64) | - | ADR-003 |
 | Application framework | Cobra [FUENTE: master] | 1.x | ADR-001 |
 | Compute model | Local CLI process | - | ADR-001 |
 | Datastore (primary) | None - JSON files under `.gtt/cli/` | - | ADR-001 |
@@ -27,6 +27,7 @@
 | IaC | None | - | ADR-001 |
 | CI/CD | GitHub Actions | - | ADR-002 |
 | Release signing | ed25519 detached signature (Go standard library) | - | ADR-002 |
+| Release packaging | GoReleaser to GitHub Releases | v2 | ADR-003 |
 | Observability | Leveled logs to stderr; operation log under `.gtt/cli/` | - | ADR-001 |
 | Testing | Go `testing`: unit plus integration against a real Bootstrap catalog | - | ADR-001 |
 
@@ -123,6 +124,7 @@ flowchart TB
 |---|---|---|
 | 2026-10-01 | ADR-001 | Initial map from the bootstrap |
 | 2026-10-03 | ADR-002 | CI/CD on GitHub Actions; release signing row; GAP-001, GAP-002, GAP-004 resolved; GAP-003 scope updated |
+| 2026-10-03 | ADR-003 | Supported platforms on the Runtime row; Release packaging row (GoReleaser, GitHub Releases) |
 
 ---
 

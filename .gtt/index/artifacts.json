@@ -348,9 +348,11 @@
     {
       "id": "PROP-ADR-DRAFT-RELEASE-PACKAGING-PLATFORMS",
       "type": "proposal",
-      "path": "gtt-domain/proposals/ADR-DRAFT-release-packaging-platforms.md",
+      "path": "gtt-domain/adr/ADR-003-release-packaging-platforms.md",
       "status": "active",
-      "history": [],
+      "history": [
+        "gtt-domain/proposals/ADR-DRAFT-release-packaging-platforms.md"
+      ],
       "aliases": []
     },
     {
@@ -397,7 +399,7 @@
       "id": "PROP-PROPOSAL-RELEASE-AND-WINDOWS-STORIES",
       "type": "proposal",
       "path": "gtt-domain/proposals/PROPOSAL-release-and-windows-stories.md",
-      "status": "active",
+      "status": "retired",
       "history": [],
       "aliases": []
     },

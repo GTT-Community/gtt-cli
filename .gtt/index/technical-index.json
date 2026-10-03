@@ -552,7 +552,7 @@
       "title": "Project Backlog",
       "authority": "development-line",
       "version": "v2.1",
-      "sha256": "dc5dc18db07ee7f86c2eb0f6e5bde9a8d0798c6701e73f546004d00556446f66",
+      "sha256": "7cb69326bad717f8b41c527fb40abed97335211a7cb6837af5568f3336cb2efd",
       "aliases": [],
       "sections": [
         {
@@ -561,7 +561,7 @@
           "anchor": "project-backlog",
           "path": "Project Backlog",
           "line_start": 1,
-          "line_end": 584
+          "line_end": 614
         },
         {
           "heading": "Development Line",
@@ -585,7 +585,7 @@
           "anchor": "epics",
           "path": "Project Backlog > Epics",
           "line_start": 39,
-          "line_end": 553
+          "line_end": 583
         },
         {
           "heading": "EPIC-001 — Foundation",
@@ -913,7 +913,7 @@
           "anchor": "epic-007--hardening",
           "path": "Project Backlog > Epics > EPIC-007 — Hardening",
           "line_start": 352,
-          "line_end": 419
+          "line_end": 449
         },
         {
           "heading": "Stories",
@@ -921,7 +921,7 @@
           "anchor": "stories-6",
           "path": "Project Backlog > Epics > EPIC-007 — Hardening > Stories",
           "line_start": 359,
-          "line_end": 419
+          "line_end": 449
         },
         {
           "heading": "STORY-029 — Path, symlink and archive safety",
@@ -972,172 +972,188 @@
           "line_end": 419
         },
         {
+          "heading": "STORY-046 — Release binaries and one-command publishing",
+          "level": 5,
+          "anchor": "story-046--release-binaries-and-one-command-publishing",
+          "path": "Project Backlog > Epics > EPIC-007 — Hardening > Stories > STORY-046 — Release binaries and one-command publishing",
+          "line_start": 420,
+          "line_end": 434
+        },
+        {
+          "heading": "STORY-047 — Windows support",
+          "level": 5,
+          "anchor": "story-047--windows-support",
+          "path": "Project Backlog > Epics > EPIC-007 — Hardening > Stories > STORY-047 — Windows support",
+          "line_start": 435,
+          "line_end": 449
+        },
+        {
           "heading": "EPIC-008 — Agent/ADE context discovery and synchronisation",
           "level": 3,
           "anchor": "epic-008--agentade-context-discovery-and-synchronisation",
           "path": "Project Backlog > Epics > EPIC-008 — Agent/ADE context discovery and synchronisation",
-          "line_start": 420,
-          "line_end": 469
+          "line_start": 450,
+          "line_end": 499
         },
         {
           "heading": "Stories",
           "level": 4,
           "anchor": "stories-7",
           "path": "Project Backlog > Epics > EPIC-008 — Agent/ADE context discovery and synchronisation > Stories",
-          "line_start": 426,
-          "line_end": 469
+          "line_start": 456,
+          "line_end": 499
         },
         {
           "heading": "STORY-035 — Agent adapters, registry and context manifest",
           "level": 5,
           "anchor": "story-035--agent-adapters-registry-and-context-manifest",
           "path": "Project Backlog > Epics > EPIC-008 — Agent/ADE context discovery and synchronisation > Stories > STORY-035 — Agent adapters, registry and context manifest",
-          "line_start": 428,
-          "line_end": 438
+          "line_start": 458,
+          "line_end": 468
         },
         {
           "heading": "STORY-036 —              and",
           "level": 5,
           "anchor": "story-036---------------and",
           "path": "Project Backlog > Epics > EPIC-008 — Agent/ADE context discovery and synchronisation > Stories > STORY-036 —              and",
-          "line_start": 439,
-          "line_end": 448
+          "line_start": 469,
+          "line_end": 478
         },
         {
           "heading": "STORY-037 —",
           "level": 5,
           "anchor": "story-037-",
           "path": "Project Backlog > Epics > EPIC-008 — Agent/ADE context discovery and synchronisation > Stories > STORY-037 —",
-          "line_start": 449,
-          "line_end": 459
+          "line_start": 479,
+          "line_end": 489
         },
         {
           "heading": "STORY-038 — Integration with             , traceability and CI",
           "level": 5,
           "anchor": "story-038--integration-with--------------traceability-and-ci",
           "path": "Project Backlog > Epics > EPIC-008 — Agent/ADE context discovery and synchronisation > Stories > STORY-038 — Integration with             , traceability and CI",
-          "line_start": 460,
-          "line_end": 469
+          "line_start": 490,
+          "line_end": 499
         },
         {
           "heading": "EPIC-009 — Method Plans and automation policy",
           "level": 3,
           "anchor": "epic-009--method-plans-and-automation-policy",
           "path": "Project Backlog > Epics > EPIC-009 — Method Plans and automation policy",
-          "line_start": 470,
-          "line_end": 515
+          "line_start": 500,
+          "line_end": 545
         },
         {
           "heading": "Stories",
           "level": 4,
           "anchor": "stories-8",
           "path": "Project Backlog > Epics > EPIC-009 — Method Plans and automation policy > Stories",
-          "line_start": 477,
-          "line_end": 515
+          "line_start": 507,
+          "line_end": 545
         },
         {
           "heading": "STORY-039 —                   and",
           "level": 5,
           "anchor": "story-039--------------------and",
           "path": "Project Backlog > Epics > EPIC-009 — Method Plans and automation policy > Stories > STORY-039 —                   and",
-          "line_start": 479,
-          "line_end": 488
+          "line_start": 509,
+          "line_end": 518
         },
         {
           "heading": "STORY-040 —",
           "level": 5,
           "anchor": "story-040-",
           "path": "Project Backlog > Epics > EPIC-009 — Method Plans and automation policy > Stories > STORY-040 —",
-          "line_start": 489,
-          "line_end": 496
+          "line_start": 519,
+          "line_end": 526
         },
         {
           "heading": "STORY-041 — Artifact identity allocator",
           "level": 5,
           "anchor": "story-041--artifact-identity-allocator",
           "path": "Project Backlog > Epics > EPIC-009 — Method Plans and automation policy > Stories > STORY-041 — Artifact identity allocator",
-          "line_start": 497,
-          "line_end": 506
+          "line_start": 527,
+          "line_end": 536
         },
         {
           "heading": "STORY-042 — Team plan operating policy",
           "level": 5,
           "anchor": "story-042--team-plan-operating-policy",
           "path": "Project Backlog > Epics > EPIC-009 — Method Plans and automation policy > Stories > STORY-042 — Team plan operating policy",
-          "line_start": 507,
-          "line_end": 515
+          "line_start": 537,
+          "line_end": 545
         },
         {
           "heading": "EPIC-010 — Initial MD tracking",
           "level": 3,
           "anchor": "epic-010--initial-md-tracking",
           "path": "Project Backlog > Epics > EPIC-010 — Initial MD tracking",
-          "line_start": 516,
-          "line_end": 553
+          "line_start": 546,
+          "line_end": 583
         },
         {
           "heading": "Stories",
           "level": 4,
           "anchor": "stories-9",
           "path": "Project Backlog > Epics > EPIC-010 — Initial MD tracking > Stories",
-          "line_start": 523,
-          "line_end": 553
+          "line_start": 553,
+          "line_end": 583
         },
         {
           "heading": "STORY-043 — Tracking states READ, APPLIED, VALIDATED",
           "level": 5,
           "anchor": "story-043--tracking-states-read-applied-validated",
           "path": "Project Backlog > Epics > EPIC-010 — Initial MD tracking > Stories > STORY-043 — Tracking states READ, APPLIED, VALIDATED",
-          "line_start": 525,
-          "line_end": 533
+          "line_start": 555,
+          "line_end": 563
         },
         {
           "heading": "STORY-044 — Reprocessing avoidance and change detection",
           "level": 5,
           "anchor": "story-044--reprocessing-avoidance-and-change-detection",
           "path": "Project Backlog > Epics > EPIC-010 — Initial MD tracking > Stories > STORY-044 — Reprocessing avoidance and change detection",
-          "line_start": 534,
-          "line_end": 542
+          "line_start": 564,
+          "line_end": 572
         },
         {
           "heading": "STORY-045 — Bootstrap-side tracking structure",
           "level": 5,
           "anchor": "story-045--bootstrap-side-tracking-structure",
           "path": "Project Backlog > Epics > EPIC-010 — Initial MD tracking > Stories > STORY-045 — Bootstrap-side tracking structure",
-          "line_start": 543,
-          "line_end": 553
+          "line_start": 573,
+          "line_end": 583
         },
         {
           "heading": "General Development Work",
           "level": 2,
           "anchor": "general-development-work",
           "path": "Project Backlog > General Development Work",
-          "line_start": 554,
-          "line_end": 559
+          "line_start": 584,
+          "line_end": 589
         },
         {
           "heading": "Current Focus",
           "level": 2,
           "anchor": "current-focus",
           "path": "Project Backlog > Current Focus",
-          "line_start": 560,
-          "line_end": 565
+          "line_start": 590,
+          "line_end": 595
         },
         {
           "heading": "Next Work",
           "level": 2,
           "anchor": "next-work",
           "path": "Project Backlog > Next Work",
-          "line_start": 566,
-          "line_end": 571
+          "line_start": 596,
+          "line_end": 601
         },
         {
           "heading": "Blocked",
           "level": 2,
           "anchor": "blocked",
           "path": "Project Backlog > Blocked",
-          "line_start": 572,
-          "line_end": 584
+          "line_start": 602,
+          "line_end": 614
         }
       ],
       "references": [],
@@ -1535,7 +1551,7 @@
       "title": "Stack & Architecture Map",
       "authority": "L0",
       "version": "v2.1",
-      "sha256": "ec6c3e0521459d6a359899e10b86f5856e2dc72034145a47ebf136d1010b72b9",
+      "sha256": "de543b80716dd5acb7116c7cb1cf7fb0008858c5f5e2014cb7df68e820fac13a",
       "aliases": [],
       "sections": [
         {
@@ -1544,7 +1560,7 @@
           "anchor": "stack--architecture-map",
           "path": "Stack & Architecture Map",
           "line_start": 1,
-          "line_end": 151
+          "line_end": 153
         },
         {
           "heading": "1. Stack at a glance",
@@ -1552,63 +1568,63 @@
           "anchor": "1-stack-at-a-glance",
           "path": "Stack & Architecture Map > 1. Stack at a glance",
           "line_start": 14,
-          "line_end": 34
+          "line_end": 35
         },
         {
           "heading": "2. Component map",
           "level": 2,
           "anchor": "2-component-map",
           "path": "Stack & Architecture Map > 2. Component map",
-          "line_start": 35,
-          "line_end": 71
+          "line_start": 36,
+          "line_end": 72
         },
         {
           "heading": "3. Deployment topology",
           "level": 2,
           "anchor": "3-deployment-topology",
           "path": "Stack & Architecture Map > 3. Deployment topology",
-          "line_start": 72,
-          "line_end": 89
+          "line_start": 73,
+          "line_end": 90
         },
         {
           "heading": "4. Observability",
           "level": 2,
           "anchor": "4-observability",
           "path": "Stack & Architecture Map > 4. Observability",
-          "line_start": 90,
-          "line_end": 106
+          "line_start": 91,
+          "line_end": 107
         },
         {
           "heading": "5. Dependency rules",
           "level": 2,
           "anchor": "5-dependency-rules",
           "path": "Stack & Architecture Map > 5. Dependency rules",
-          "line_start": 107,
-          "line_end": 119
+          "line_start": 108,
+          "line_end": 120
         },
         {
           "heading": "6. Map change log",
           "level": 2,
           "anchor": "6-map-change-log",
           "path": "Stack & Architecture Map > 6. Map change log",
-          "line_start": 120,
-          "line_end": 128
+          "line_start": 121,
+          "line_end": 130
         },
         {
           "heading": "7. Drift signals",
           "level": 2,
           "anchor": "7-drift-signals",
           "path": "Stack & Architecture Map > 7. Drift signals",
-          "line_start": 129,
-          "line_end": 138
+          "line_start": 131,
+          "line_end": 140
         },
         {
           "heading": "8. Gap register",
           "level": 2,
           "anchor": "8-gap-register",
           "path": "Stack & Architecture Map > 8. Gap register",
-          "line_start": 139,
-          "line_end": 151
+          "line_start": 141,
+          "line_end": 153
         }
       ],
       "references": [],
@@ -4284,7 +4300,7 @@
     {
       "id": "PROP-ADR-DRAFT-RELEASE-PACKAGING-PLATFORMS",
       "type": "proposal",
-      "path": "gtt-domain/proposals/ADR-DRAFT-release-packaging-platforms.md",
+      "path": "gtt-domain/adr/ADR-003-release-packaging-platforms.md",
       "title": "ADR-003 — Release packaging with GoReleaser for Linux, macOS and Windows",
       "authority": "draft",
       "version": "v2.1",
@@ -4360,7 +4376,9 @@
       "referenced_by": [],
       "relationships": [],
       "provenance": {
-        "history": [],
+        "history": [
+          "gtt-domain/proposals/ADR-DRAFT-release-packaging-platforms.md"
+        ],
         "referenced_by_proposals": []
       }
     },
@@ -4445,89 +4463,6 @@
           "path": "Stack & Architecture Map > 8. Gap register",
           "line_start": 141,
           "line_end": 153
-        }
-      ],
-      "references": [],
-      "referenced_by": [],
-      "relationships": [],
-      "provenance": {
-        "history": [],
-        "referenced_by_proposals": []
-      }
-    },
-    {
-      "id": "PROP-PROPOSAL-RELEASE-AND-WINDOWS-STORIES",
-      "type": "proposal",
-      "path": "gtt-domain/proposals/PROPOSAL-release-and-windows-stories.md",
-      "title": "PROPOSAL — Stories for release automation and Windows support",
-      "authority": "draft",
-      "version": "v2.1",
-      "sha256": "66978c2e77f489bcd6c9ea19ac6deb003adc6fa938c7646844a33f7ba2340ea1",
-      "aliases": [],
-      "sections": [
-        {
-          "heading": "PROPOSAL — Stories for release automation and Windows support",
-          "level": 1,
-          "anchor": "proposal--stories-for-release-automation-and-windows-support",
-          "path": "PROPOSAL — Stories for release automation and Windows support",
-          "line_start": 1,
-          "line_end": 59
-        },
-        {
-          "heading": "Requested change",
-          "level": 2,
-          "anchor": "requested-change",
-          "path": "PROPOSAL — Stories for release automation and Windows support > Requested change",
-          "line_start": 9,
-          "line_end": 14
-        },
-        {
-          "heading": "Proposed Stories",
-          "level": 2,
-          "anchor": "proposed-stories",
-          "path": "PROPOSAL — Stories for release automation and Windows support > Proposed Stories",
-          "line_start": 15,
-          "line_end": 46
-        },
-        {
-          "heading": "STORY-046 — Release binaries and one-command publishing",
-          "level": 5,
-          "anchor": "story-046--release-binaries-and-one-command-publishing",
-          "path": "PROPOSAL — Stories for release automation and Windows support > Proposed Stories > STORY-046 — Release binaries and one-command publishing",
-          "line_start": 17,
-          "line_end": 31
-        },
-        {
-          "heading": "STORY-047 — Windows support",
-          "level": 5,
-          "anchor": "story-047--windows-support",
-          "path": "PROPOSAL — Stories for release automation and Windows support > Proposed Stories > STORY-047 — Windows support",
-          "line_start": 32,
-          "line_end": 46
-        },
-        {
-          "heading": "Impact",
-          "level": 2,
-          "anchor": "impact",
-          "path": "PROPOSAL — Stories for release automation and Windows support > Impact",
-          "line_start": 47,
-          "line_end": 51
-        },
-        {
-          "heading": "Risk",
-          "level": 2,
-          "anchor": "risk",
-          "path": "PROPOSAL — Stories for release automation and Windows support > Risk",
-          "line_start": 52,
-          "line_end": 55
-        },
-        {
-          "heading": "Alternatives",
-          "level": 2,
-          "anchor": "alternatives",
-          "path": "PROPOSAL — Stories for release automation and Windows support > Alternatives",
-          "line_start": 56,
-          "line_end": 59
         }
       ],
       "references": [],
@@ -6233,9 +6168,6 @@
       "ART-GTT-DOMAIN-WORKING-AGREEMENTS#agreements",
       "GTT-GTT-WORKING-AGREEMENTS#agreements"
     ],
-    "alternatives": [
-      "PROP-PROPOSAL-RELEASE-AND-WINDOWS-STORIES#alternatives"
-    ],
     "alternatives considered": [
       "ADR-001#alternatives-considered",
       "ADR-002#alternatives-considered",
@@ -6696,9 +6628,6 @@
     "if your team uses more than one ade": [
       "DOC-DOCS#if-your-team-uses-more-than-one-ade"
     ],
-    "impact": [
-      "PROP-PROPOSAL-RELEASE-AND-WINDOWS-STORIES#impact"
-    ],
     "implementation work (l3)": [
       "RULE-IMPLEMENTATION#implementation-work-l3"
     ],
@@ -6948,9 +6877,6 @@
     "proposals — staging area": [
       "PROP-README#proposals--staging-area"
     ],
-    "proposed stories": [
-      "PROP-PROPOSAL-RELEASE-AND-WINDOWS-STORIES#proposed-stories"
-    ],
     "protected artifacts (gttguard)": [
       "AGENTS#protected-artifacts-gttguard",
       "GTT-USAGE#protected-artifacts-gttguard",
@@ -6999,9 +6925,6 @@
     "removing a marker": [
       "SKILL-GTT-GUARD#removing-a-marker"
     ],
-    "requested change": [
-      "PROP-PROPOSAL-RELEASE-AND-WINDOWS-STORIES#requested-change"
-    ],
     "required agent report": [
       "GTT-INSTALLATION#required-agent-report"
     ],
@@ -7026,9 +6949,6 @@
     ],
     "retrieve by identity, reconcile moves": [
       "SKILL-GTT-RETRIEVE#retrieve-by-identity-reconcile-moves"
-    ],
-    "risk": [
-      "PROP-PROPOSAL-RELEASE-AND-WINDOWS-STORIES#risk"
     ],
     "risks": [
       "ADR-001#risks",
@@ -7278,10 +7198,10 @@
       "BACKLOG#story-045--bootstrap-side-tracking-structure"
     ],
     "story-046 — release binaries and one-command publishing": [
-      "PROP-PROPOSAL-RELEASE-AND-WINDOWS-STORIES#story-046--release-binaries-and-one-command-publishing"
+      "BACKLOG#story-046--release-binaries-and-one-command-publishing"
     ],
     "story-047 — windows support": [
-      "PROP-PROPOSAL-RELEASE-AND-WINDOWS-STORIES#story-047--windows-support"
+      "BACKLOG#story-047--windows-support"
     ],
     "structure": [
       "README-GTT#structure"

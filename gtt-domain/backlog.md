@@ -417,6 +417,36 @@ a Story never silently overrides architecture.
   - User documentation exists for the command surface.
 - **Notes:** GoReleaser builds the single static `gtt` binary for Linux and macOS (amd64, arm64) on a v* tag of the public repository and publishes it with SHA-256 checksums to GitHub Releases; v1.0.0 released 2026-10-03 (run 37099001640) and verified by downloading and running it. README covers installation, version and features. Package-manager channels (uv, npm, Homebrew) are not part of this Story.
 
+##### STORY-046 — Release binaries and one-command publishing
+
+- **Status:** Done
+- **Priority:** High
+- **Source:** master 82, 85, 124 phase 7; Solution Designer request of 2026-10-03
+- **Acceptance Criteria:**
+  - A v* tag on the public repository builds the single `gtt` binary for every supported platform and publishes it
+    with SHA-256 checksums to GitHub Releases.
+  - Download names carry no version, so `releases/latest/download/gtt_<os>_<arch>` always points at the newest
+    release and the install instructions never change.
+  - One command (`scripts/release.sh [version]`) pushes the development history to the private repository,
+    publishes the clean product (no GTT, no development material) to the public one and, with a version, tags it.
+  - Nothing reaches the public repository without one explicit human confirmation.
+- **Notes:** v1.0.0 released 2026-10-03 for Linux and macOS and verified by download.
+
+##### STORY-047 — Windows support
+
+- **Status:** In Progress
+- **Priority:** High
+- **Source:** Solution Designer request of 2026-10-03
+- **Acceptance Criteria:**
+  - Windows binaries (amd64, arm64) are released as zip archives.
+  - The CLI runs the Bootstrap with Git for Windows' bash (or `GTT_BASH`) and never with the WSL `bash.exe`.
+  - A Bootstrap downloaded on Windows keeps LF line endings whatever the user's Git configuration.
+  - Paths that are rooted or carry a drive on Windows (`/x`, `\x`, `C:\x`, `C:x`) are refused as project paths, and
+    a symlink whose target leaves the project is refused even when the target does not exist.
+  - Unit and integration tests pass on Windows in CI.
+  - The README documents the Windows requirements (Git for Windows, Python 3) and installation.
+- **Notes:** implemented 2026-10-03; Done after the Windows CI jobs pass and v1.0.1 publishes the Windows binaries.
+
 ### EPIC-008 — Agent/ADE context discovery and synchronisation
 
 **Status:** Completed
@@ -561,7 +591,7 @@ Work tracked here that is not tied to a specific Story.
 
 What is actively being worked on right now.
 
-- None
+- STORY-047 — Windows support: waiting for the Windows CI jobs, then v1.0.1
 
 ## Next Work
 
