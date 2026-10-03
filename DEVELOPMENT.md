@@ -42,7 +42,8 @@ then commits, tags and pushes the public repository. The tag starts `.github/wor
 3. The `npm/` wrapper is published as `gtt-cli` (repository secret `NPM_TOKEN`; skipped with a warning when it is
    missing).
 
-The version is set by the tag; nothing else needs editing.
+The version is set by the tag; nothing else needs editing. (`baseVersion` in `internal/core/identity.go` only
+labels plain source builds; bump it now and then.)
 
 ## How users install it
 
