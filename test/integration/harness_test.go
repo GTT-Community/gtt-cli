@@ -13,6 +13,7 @@ import (
 	"io/fs"
 	"os"
 	"path/filepath"
+	"runtime"
 	"sort"
 	"strings"
 	"testing"
@@ -96,9 +97,14 @@ func project(t *testing.T, files map[string]string) string {
 	return root
 }
 
-// minimalPath exposes only the tools the Bootstrap needs.
+// minimalPath exposes only the tools the Bootstrap needs. On Windows the
+// real PATH is kept: tools carry ".exe" and symlinks need privileges there,
+// and CI runners have no ADE binary that could leak into detection.
 func minimalPath(t *testing.T) string {
 	t.Helper()
+	if runtime.GOOS == "windows" {
+		return os.Getenv("PATH")
+	}
 	bin := filepath.Join(t.TempDir(), "bin")
 	os.MkdirAll(bin, 0o755)
 	for _, tool := range []string{"bash", "python3", "git", "date", "grep", "cat", "head", "ls", "rm", "dirname", "sed", "awk", "sort",
