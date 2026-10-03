@@ -7,3 +7,4 @@ reports/
 scripts/publish.sh
 .publishignore
 scripts/release.sh
+DEVELOPMENT.md

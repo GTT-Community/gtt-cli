@@ -49,30 +49,27 @@ GTT Method -> GTT Bootstrap -> versioned contracts -> GTT CLI -> ADE -> Human
 
 ## Installation
 
-One command. Each installs the single `gtt` binary for your platform (Linux, macOS, Windows; amd64, arm64) from the
-latest [release](https://github.com/GTT-Community/gtt-cli/releases/latest), verified against its SHA-256 checksum.
+One command, on any platform. Every option installs the same single `gtt` binary (Linux, macOS, Windows; amd64 and
+arm64) from the latest [release](https://github.com/GTT-Community/gtt-cli/releases/latest), verified against its
+SHA-256 checksum.
 
-**Linux and macOS**
+| Method | Command |
+|---|---|
+| **curl** (Linux, macOS) | `curl -fsSL https://raw.githubusercontent.com/GTT-Community/gtt-cli/main/install.sh \| sh` |
+| **PowerShell** (Windows) | `irm https://raw.githubusercontent.com/GTT-Community/gtt-cli/main/install.ps1 \| iex` |
+| **uv** (Python) | `uv tool install gtt-cli` |
+| **npm** (Node.js 18+) | `npm install -g gtt-cli` |
 
-```bash
-curl -fsSL https://raw.githubusercontent.com/GTT-Community/gtt-cli/main/install.sh | sh
-```
+Then check it with `gtt version`.
 
-**Windows** (PowerShell)
-
-```powershell
-irm https://raw.githubusercontent.com/GTT-Community/gtt-cli/main/install.ps1 | iex
-```
-
-**npm** (any platform with Node.js 18+)
-
-```bash
-npm install -g gtt-cli
-```
-
-Then check it with `gtt version`. The installers accept `GTT_VERSION` (a specific release) and `GTT_INSTALL_DIR`
-(default `/usr/local/bin` or `~/.local/bin`; on Windows `%LOCALAPPDATA%\Programs\gtt`, added to your PATH).
-You can also download an archive by hand from [Releases](https://github.com/GTT-Community/gtt-cli/releases/latest).
+- Run it once without installing: `uvx --from gtt-cli gtt version` or `npx gtt-cli version`.
+- Upgrade: run the installer again, `uv tool upgrade gtt-cli`, or `npm update -g gtt-cli`.
+- A specific version: `GTT_VERSION=1.0.1` with the curl or PowerShell installer, `uv tool install gtt-cli==1.0.1`, or
+  `npm install -g gtt-cli@1.0.1`.
+- Install location for curl and PowerShell: `GTT_INSTALL_DIR` (default `/usr/local/bin` or `~/.local/bin`; on Windows
+  `%LOCALAPPDATA%\Programs\gtt`, added to your PATH).
+- `pipx install gtt-cli` works as well, and every archive can be downloaded by hand from
+  [Releases](https://github.com/GTT-Community/gtt-cli/releases/latest).
 
 With Go 1.27 or later:
 

@@ -30,6 +30,19 @@ jobs:
           args: release --clean
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      # PyPI wheels carrying the same binaries: uv tool install gtt-cli, uvx gtt-cli.
+      # Needs the repository secret PYPI_TOKEN; skipped without it.
+      - uses: astral-sh/setup-uv@v6
+      - name: Publish gtt-cli to PyPI
+        env:
+          UV_PUBLISH_TOKEN: ${{ secrets.PYPI_TOKEN }}
+        run: |
+          python3 packaging/pypi/build_wheels.py --dist dist --version "${GITHUB_REF_NAME#v}" --out wheels
+          if [ -z "$UV_PUBLISH_TOKEN" ]; then
+            echo "::warning::PYPI_TOKEN is not set: the PyPI package was not published."
+            exit 0
+          fi
+          uv publish wheels/*.whl
 
   npm:
     # Publishes the npm wrapper (`npm install -g gtt-cli`) once the binaries
