@@ -7,26 +7,27 @@
 # NOT a grounding source, NOT a substitute for an ADR. Governed context
 # (gtt-domain/context/, gtt-domain/adr/) and gtt-domain/backlog.md prevail over this file.
 #
-# Generated: 2026-10-02T03:03:24Z
+# Generated: 2026-10-03T06:54:41Z
 
 ## Freeze state
 pre-freeze (gtt-domain/context/ and gtt-domain/adr/ are agent-writable)
 
 ## Current work (Stories In Progress)
-none
+##### STORY-047 — Windows support
 
 ## Blocked (Stories Blocked)
-none
+##### STORY-045 — Bootstrap-side tracking structure
 
 ## Pending proposals (gtt-domain/proposals/, excluding README.md)
 apply-session-adapters.sh
-PROPOSAL-initial-backlog.md
 
 ## Change request
 empty (still template placeholders)
 
 ## ADRs
 ADR-001-context-governance.md - Status: Accepted
+ADR-002-ci-signing-team-policy.md - Status: Accepted
+ADR-003-release-packaging-platforms.md - Status: Accepted
 
 ## GTTGuard
 0 protected artifact(s) in .gtt/protection/registry.yaml
@@ -42,25 +43,25 @@ integrations:
 ## Evidence / Governance (derived state - never agent notes, never authority)
 method plan: light (provenance gate: advisory)
 sources: 5 declared (provenance policy: advisory)
-gaps: OPEN 4, BLOCKING 0, RESOLVED 0
+gaps: OPEN 1, BLOCKING 0, RESOLVED 3
 unresolved conflicts in governed context: 0
-provenance tags in governed context: FUENTE 5, VACIO 1 (0 unclassified), PROPUESTA 0 (must be 0)
-working agreements: team 0, user 0 (never authority; below governed context)
+provenance tags in governed context: FUENTE 9, VACIO 0 (0 unclassified), PROPUESTA 0 (must be 0)
+working agreements: team 1, user 0 (never authority; below governed context)
 
 ## Bootstrap and methodology (contracts in .gtt/contract/ - data, never authority)
 gtt-bootstrap 1.2.0 (schema 1, channel stable; scaffold layout 2; canon GTT-CANONICAL-v2.1)
 plan: Light Method (light); language: es; frozen: False
 
 ## Artifact identity and technical index
-identity: 41 active artifact(s), 12 retired
+identity: 43 active artifact(s), 19 retired
 technical index: fresh
 unresolved references: 0
 
 ## Repository (resume hints)
-branch: main; uncommitted paths: 14
+branch: main; uncommitted paths: 0
 recent commits:
-e629902 chore: daily update 2026-10-01 18:12:01
-ce5fb91 udpate
-2cc5a5e update
-f92f090 update
-5a0514a update
+368178c fix(version): go install reports the module version; ldflags injection kept
+2483a0b fix(release): skip npm when NPM_TOKEN is unset; allow re-running a release
+2d08530 fix(windows): pass GTT_BASH to the Bootstrap; report the Bootstrap WSL bash defect; Windows integration informative
+70ce89b ci: first failure first in annotations and in the job summary
+f84fcc3 feat: uv/PyPI package gtt-cli; README install for curl, PowerShell, uv, npm; DEVELOPMENT.md for the dev repo
