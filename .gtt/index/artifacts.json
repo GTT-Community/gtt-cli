@@ -346,6 +346,14 @@
       "aliases": []
     },
     {
+      "id": "PROP-ADR-DRAFT-RELEASE-PACKAGING-PLATFORMS",
+      "type": "proposal",
+      "path": "gtt-domain/proposals/ADR-DRAFT-release-packaging-platforms.md",
+      "status": "active",
+      "history": [],
+      "aliases": []
+    },
+    {
       "id": "PROP-CONTEXT-ARCHITECTURE",
       "type": "proposal",
       "path": "gtt-domain/proposals/context-architecture.md",
@@ -362,6 +370,14 @@
       "aliases": []
     },
     {
+      "id": "PROP-CONTEXT-STACK-ADR-003",
+      "type": "proposal",
+      "path": "gtt-domain/proposals/context-stack-ADR-003.md",
+      "status": "active",
+      "history": [],
+      "aliases": []
+    },
+    {
       "id": "PROP-PROPOSAL-BACKLOG-STORIES",
       "type": "proposal",
       "path": "gtt-domain/proposals/PROPOSAL-backlog-stories.md",
@@ -374,6 +390,14 @@
       "type": "proposal",
       "path": "gtt-domain/proposals/PROPOSAL-initial-backlog.md",
       "status": "retired",
+      "history": [],
+      "aliases": []
+    },
+    {
+      "id": "PROP-PROPOSAL-RELEASE-AND-WINDOWS-STORIES",
+      "type": "proposal",
+      "path": "gtt-domain/proposals/PROPOSAL-release-and-windows-stories.md",
+      "status": "active",
       "history": [],
       "aliases": []
     },

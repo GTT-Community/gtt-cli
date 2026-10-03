@@ -14,7 +14,7 @@ cd "$(dirname "${BASH_SOURCE[0]}")/../.." # run from the project root regardless
 
 ADR_DRAFT="gtt-domain/proposals/ADR-DRAFT-release-packaging-platforms.md"
 ADR_TARGET="gtt-domain/adr/ADR-003-release-packaging-platforms.md"
-STACK_DRAFT="gtt-domain/proposals/context-stack.md"
+STACK_DRAFT="gtt-domain/proposals/context-stack-ADR-003.md"
 STACK_TARGET="gtt-domain/context/stack.md"
 
 for f in "$ADR_DRAFT" "$STACK_DRAFT" "$STACK_TARGET"; do
