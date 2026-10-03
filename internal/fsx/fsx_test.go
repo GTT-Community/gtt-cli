@@ -12,7 +12,8 @@ func TestSafeJoinRejectsEscapes(t *testing.T) {
 	if err := os.Symlink(outside, filepath.Join(root, "link")); err != nil {
 		t.Skip("symlinks unavailable")
 	}
-	for _, bad := range []string{"../x", "a/../../x", "/etc/passwd", "", "~/x", "link/secret", ".."} {
+	for _, bad := range []string{"../x", "a/../../x", "/etc/passwd", "", "~/x", "link/secret", "..",
+		`\Windows\win.ini`, `C:\Windows\win.ini`, `C:relative`, `\\server\share\x`} {
 		if _, err := SafeJoin(root, bad); err == nil {
 			t.Errorf("%q must be rejected", bad)
 		}
@@ -64,5 +65,30 @@ func TestCopyFileRefusesOverwrite(t *testing.T) {
 	}
 	if data, _ := os.ReadFile(dst); string(data) != "mine" {
 		t.Error("the existing file changed")
+	}
+}
+
+func TestDanglingSymlinkPointingOutsideIsRejected(t *testing.T) {
+	root := t.TempDir()
+	os.WriteFile(filepath.Join(root, "f.txt"), []byte("x"), 0o644)
+	for name, target := range map[string]string{
+		"absolute, missing": filepath.Join(t.TempDir(), "gone", "secret"),
+		"relative, missing": filepath.Join("..", "..", "nowhere"),
+	} {
+		link := filepath.Join(root, "escape")
+		os.Remove(link)
+		if err := os.Symlink(target, link); err != nil {
+			t.Skip("symlinks unavailable")
+		}
+		if _, err := ListFiles(root); err == nil {
+			t.Errorf("%s: a link whose target leaves the tree is unsafe even when the target does not exist", name)
+		}
+	}
+	os.Remove(filepath.Join(root, "escape"))
+	if err := os.Symlink("f.txt", filepath.Join(root, "inside")); err != nil {
+		t.Skip("symlinks unavailable")
+	}
+	if files, err := ListFiles(root); err != nil || len(files) != 2 {
+		t.Errorf("a link inside the tree is fine: %v %v", files, err)
 	}
 }
