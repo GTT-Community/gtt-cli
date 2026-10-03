@@ -400,12 +400,12 @@ a Story never silently overrides architecture.
 
 ##### STORY-033 — CI pipeline
 
-- **Status:** In Progress
+- **Status:** Done
 - **Priority:** Medium
 - **Source:** master 85
 - **Acceptance Criteria:**
   - A CI pipeline runs the tests (provider: GAP-002, open).
-- **Notes:** `.github/workflows/ci.yml` (unit and architecture on Linux and macOS, integration against GTT-Community/gtt-bootstrap, governance gate) written 2026-10-03; Done after its first green run on GitHub. Provider decided by the Solution Designer (ADR-002).
+- **Notes:** GitHub Actions (ADR-002). First run green on the public repository, 2026-10-03: unit and architecture tests on Linux and macOS, integration against GTT-Community/gtt-bootstrap (run 37098138258). The governance gate runs only where GTT is installed (the private development repository).
 
 ##### STORY-034 — Release packaging and documentation
 
@@ -567,7 +567,6 @@ What is actively being worked on right now.
 
 What comes after Current Focus.
 
-- STORY-033 — first green run of the GitHub Actions workflow (after the first push)
 - STORY-034 — release packaging (to be decided when development ends)
 
 ## Blocked
