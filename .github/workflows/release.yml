@@ -1,0 +1,32 @@
+name: Release
+
+# A v* tag on the public repository builds the `gtt` binary for every
+# platform and publishes it, with checksums, to GitHub Releases.
+on:
+  push:
+    tags: ["v*"]
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    # Releases are published only from the public repository.
+    if: github.repository == 'GTT-Community/gtt-cli'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-go@v5
+        with:
+          go-version-file: go.mod
+      - name: Unit and architecture tests
+        run: go test ./internal/... ./test/arch/
+      - uses: goreleaser/goreleaser-action@v6
+        with:
+          distribution: goreleaser
+          version: "~> v2"
+          args: release --clean
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
