@@ -38,12 +38,14 @@ jobs:
           status=0
           go test ./internal/... ./test/arch/ 2>&1 | tee test.log || status=$?
           # Failures as annotations: visible on the run page without logs access.
-          grep -aE -- '--- FAIL|^panic:' test.log | head -20 | while IFS= read -r line; do echo "::error::${line//%/%25}"; done || true
+          # GitHub keeps 10 annotations per step: the first failure's full output goes first.
           first=$(grep -anE -m1 -- '_test\.go:[0-9]+:|^panic:' test.log | cut -d: -f1 || true)
           if [ -n "$first" ]; then
-            block=$(tail -n +"$first" test.log | head -n 40 | tr -d '\r' | sed -e 's/%/%25/g' | awk '{printf "%s%%0A", $0}')
+            block=$(tail -n +"$first" test.log | head -n 60 | tr -d '\r' | sed -e 's/%/%25/g' | awk '{printf "%s%%0A", $0}')
             echo "::error title=First failure::${block}"
+            { echo '### First failure'; echo '```'; tail -n +"$first" test.log | head -n 120 | tr -d '\r'; echo '```'; } >> "$GITHUB_STEP_SUMMARY"
           fi
+          grep -aE -- '--- FAIL|^panic:' test.log | head -8 | while IFS= read -r line; do echo "::error::${line//%/%25}"; done || true
           exit $status
       - name: Build
         run: go build -o dist/ ./cmd/gtt
@@ -87,12 +89,14 @@ jobs:
           status=0
           go test -timeout 55m ./test/integration/ 2>&1 | tee test.log || status=$?
           # Failures as annotations: visible on the run page without logs access.
-          grep -aE -- '--- FAIL|^panic:' test.log | head -20 | while IFS= read -r line; do echo "::error::${line//%/%25}"; done || true
+          # GitHub keeps 10 annotations per step: the first failure's full output goes first.
           first=$(grep -anE -m1 -- '_test\.go:[0-9]+:|^panic:' test.log | cut -d: -f1 || true)
           if [ -n "$first" ]; then
-            block=$(tail -n +"$first" test.log | head -n 40 | tr -d '\r' | sed -e 's/%/%25/g' | awk '{printf "%s%%0A", $0}')
+            block=$(tail -n +"$first" test.log | head -n 60 | tr -d '\r' | sed -e 's/%/%25/g' | awk '{printf "%s%%0A", $0}')
             echo "::error title=First failure::${block}"
+            { echo '### First failure'; echo '```'; tail -n +"$first" test.log | head -n 120 | tr -d '\r'; echo '```'; } >> "$GITHUB_STEP_SUMMARY"
           fi
+          grep -aE -- '--- FAIL|^panic:' test.log | head -8 | while IFS= read -r line; do echo "::error::${line//%/%25}"; done || true
           exit $status
 
   # The development repository is governed with GTT; the public repository is
