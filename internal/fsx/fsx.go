@@ -2,6 +2,7 @@
 package fsx
 
 import (
+	"bytes"
 	"crypto/sha256"
 	"encoding/hex"
 	"encoding/json"
@@ -212,4 +213,87 @@ func ReadJSON(path string, v any) error {
 		return err
 	}
 	return json.Unmarshal(data, v)
+}
+
+// DiffFiles returns a compact line diff from the file at oldPath to the file
+// at newPath, in unified style with two lines of context and at most limit
+// lines of output. Binary or very large files are summarized, not printed.
+func DiffFiles(oldPath, newPath, oldLabel, newLabel string, limit int) string {
+	a, errA := os.ReadFile(oldPath)
+	b, errB := os.ReadFile(newPath)
+	head := "--- " + oldLabel + "\n+++ " + newLabel + "\n"
+	switch {
+	case errA != nil:
+		return head + "(not present: " + oldLabel + ")\n"
+	case errB != nil:
+		return head + "(not present: " + newLabel + ")\n"
+	case bytes.IndexByte(a, 0) >= 0 || bytes.IndexByte(b, 0) >= 0:
+		return head + "(binary files differ)\n"
+	}
+	x, y := strings.Split(strings.TrimSuffix(string(a), "\n"), "\n"), strings.Split(strings.TrimSuffix(string(b), "\n"), "\n")
+	if len(x)*len(y) > 4_000_000 {
+		return head + fmt.Sprintf("(%d lines against %d: too large to show)\n", len(x), len(y))
+	}
+	// Longest common subsequence, then walk it back into edit operations.
+	lcs := make([][]int, len(x)+1)
+	for i := range lcs {
+		lcs[i] = make([]int, len(y)+1)
+	}
+	for i := len(x) - 1; i >= 0; i-- {
+		for j := len(y) - 1; j >= 0; j-- {
+			if x[i] == y[j] {
+				lcs[i][j] = lcs[i+1][j+1] + 1
+			} else {
+				lcs[i][j] = max(lcs[i+1][j], lcs[i][j+1])
+			}
+		}
+	}
+	type op struct {
+		kind byte // ' ', '-', '+'
+		text string
+	}
+	var ops []op
+	for i, j := 0, 0; i < len(x) || j < len(y); {
+		switch {
+		case i < len(x) && j < len(y) && x[i] == y[j]:
+			ops = append(ops, op{' ', x[i]})
+			i, j = i+1, j+1
+		case i < len(x) && (j == len(y) || lcs[i+1][j] >= lcs[i][j+1]):
+			ops = append(ops, op{'-', x[i]})
+			i++
+		default:
+			ops = append(ops, op{'+', y[j]})
+			j++
+		}
+	}
+	const context = 2
+	keep := make([]bool, len(ops))
+	for i, o := range ops {
+		if o.kind == ' ' {
+			continue
+		}
+		for k := max(0, i-context); k <= min(len(ops)-1, i+context); k++ {
+			keep[k] = true
+		}
+	}
+	var out strings.Builder
+	out.WriteString(head)
+	shown, gap := 0, false
+	for i, o := range ops {
+		if !keep[i] {
+			gap = true
+			continue
+		}
+		if shown == limit {
+			out.WriteString("... (diff truncated)\n")
+			break
+		}
+		if gap && shown > 0 {
+			out.WriteString("...\n")
+		}
+		gap = false
+		out.WriteString(string(o.kind) + o.text + "\n")
+		shown++
+	}
+	return out.String()
 }

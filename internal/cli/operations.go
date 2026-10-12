@@ -28,6 +28,9 @@ func updateCmd(e *env) *cobra.Command {
 				case "updated":
 					p.Line("PASS\n\nBootstrap updated successfully: %s -> %s", res.From, res.To)
 					p.Line("  replaced %d, added %d, removed %d, preserved (changed locally) %d", len(res.Replaced), len(res.Added), len(res.Removed), len(res.Preserved))
+					if len(res.Overwritten) > 0 {
+						p.Line("  replaced on your confirmation (changed locally): %s", strings.Join(res.Overwritten, ", "))
+					}
 					if e.opts.Verbose {
 						p.Line("\nPreserved:\n  %s", strings.Join(res.Preserved, "\n  "))
 					}
@@ -101,14 +104,18 @@ func cleanCmd(e *env) *cobra.Command {
 func versionCmd(e *env) *cobra.Command {
 	return &cobra.Command{
 		Use:   "version",
-		Short: "Show the CLI version and the installed Bootstrap",
+		Short: "Show the CLI version, the Bootstrap it ships with and the installed Bootstrap",
 		Args:  cobra.NoArgs,
 		RunE: func(cmd *cobra.Command, _ []string) error {
 			res := e.app.Version(cmd.Context())
 			return e.emit(res, nil, func(p output.Printer) {
 				p.Line("GTT CLI       %s", res.CLI)
+				p.Line("Ships with    GTT Bootstrap %s (release tag %s)", res.Pinned.Version, res.Pinned.Tag)
 				if b := res.Bootstrap; b != nil {
 					p.Line("Bootstrap     %s\nSchema        %d\nCompatibility %s", b.Version, b.Schema, b.Compatibility)
+					if !b.MatchesPin {
+						p.Line("Note          this project runs a Bootstrap other than the one this CLI ships with (see: gtt init)")
+					}
 				}
 			})
 		},

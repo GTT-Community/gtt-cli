@@ -4383,6 +4383,49 @@
       }
     },
     {
+      "id": "PROP-PROPOSAL-UNIFIED-CLI-BOOTSTRAP-INSTALL",
+      "type": "proposal",
+      "path": "gtt-domain/proposals/PROPOSAL-unified-cli-bootstrap-install.md",
+      "title": "PROPOSAL — Unified CLI / Bootstrap installation",
+      "authority": "draft",
+      "version": "v2.1",
+      "sha256": "079a7958ade31043678af0c11760698fded1b7826caba9d011b803d91929de5a",
+      "aliases": [],
+      "sections": [
+        {
+          "heading": "PROPOSAL — Unified CLI / Bootstrap installation",
+          "level": 1,
+          "anchor": "proposal--unified-cli--bootstrap-installation",
+          "path": "PROPOSAL — Unified CLI / Bootstrap installation",
+          "line_start": 1,
+          "line_end": 80
+        },
+        {
+          "heading": "Architectural decision carried by this Story (for an ADR, if approved)",
+          "level": 2,
+          "anchor": "architectural-decision-carried-by-this-story-for-an-adr-if-approved",
+          "path": "PROPOSAL — Unified CLI / Bootstrap installation > Architectural decision carried by this Story (for an ADR, if approved)",
+          "line_start": 64,
+          "line_end": 70
+        },
+        {
+          "heading": "Decisions taken as defaults during implementation — each is the Solution Designer's to confirm or change",
+          "level": 2,
+          "anchor": "decisions-taken-as-defaults-during-implementation--each-is-the-solution-designers-to-confirm-or-change",
+          "path": "PROPOSAL — Unified CLI / Bootstrap installation > Decisions taken as defaults during implementation — each is the Solution Designer's to confirm or change",
+          "line_start": 71,
+          "line_end": 80
+        }
+      ],
+      "references": [],
+      "referenced_by": [],
+      "relationships": [],
+      "provenance": {
+        "history": [],
+        "referenced_by_proposals": []
+      }
+    },
+    {
       "id": "PROP-README",
       "type": "proposal",
       "path": "gtt-domain/proposals/README.md",
@@ -6771,6 +6814,9 @@
     ],
     "project backlog": [
       "BACKLOG#project-backlog"
+    ],
+    "proposal — unified cli / bootstrap installation": [
+      "PROP-PROPOSAL-UNIFIED-CLI-BOOTSTRAP-INSTALL#proposal--unified-cli--bootstrap-installation"
     ],
     "proposals": [
       "GTT-GTT-INITIAL-DESIGN-QUESTIONNAIRE#proposals"

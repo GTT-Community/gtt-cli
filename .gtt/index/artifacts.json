@@ -404,6 +404,14 @@
       "aliases": []
     },
     {
+      "id": "PROP-PROPOSAL-UNIFIED-CLI-BOOTSTRAP-INSTALL",
+      "type": "proposal",
+      "path": "gtt-domain/proposals/PROPOSAL-unified-cli-bootstrap-install.md",
+      "status": "active",
+      "history": [],
+      "aliases": []
+    },
+    {
       "id": "PROP-README",
       "type": "proposal",
       "path": "gtt-domain/proposals/README.md",

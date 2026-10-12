@@ -128,6 +128,6 @@ func usage(format string, args ...any) error {
 func addResolveFlags(cmd *cobra.Command, r *app.ResolveOptions) {
 	f := cmd.Flags()
 	f.StringVar(&r.Path, "bootstrap", "", "path to a local GTT Bootstrap package")
-	f.StringVar(&r.Version, "bootstrap-version", "", "exact Bootstrap version to use")
+	f.StringVar(&r.Version, "bootstrap-version", "", "exact Bootstrap release to use instead of the one this CLI ships with")
 	f.BoolVar(&r.Offline, "offline", false, "use only a local path or the verified cache")
 }

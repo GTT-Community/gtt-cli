@@ -16,7 +16,7 @@ func TestInitInstallsOnlyWhatTheHumanChose(t *testing.T) {
 	root := project(t, map[string]string{".kiro/settings.json": "{}\n", "docs/requirements.md": "# requirements\n"})
 	initProject(t, root, pristine, "--ade", "claude,copilot", "--primary", "copilot", "--language", "es", "--method", "hard", "--sources", "docs/requirements.md")
 
-	for _, p := range []string{".gtt/contract/release.json", "gtt-domain/context/stack.md", "AGENTS.md", ".claude/CLAUDE.md", ".copilot/copilot-instructions.md", ".gtt/cli/state.json"} {
+	for _, p := range []string{".gtt/contract/release.json", "gtt-domain/context/stack.md", "AGENTS.md", ".claude/CLAUDE.md", overlayEntry(t, "copilot"), ".gtt/cli/state.json"} {
 		if !exists(root, p) {
 			t.Errorf("missing %s", p)
 		}
@@ -198,7 +198,7 @@ func TestUnsafeSourcePathIsRefused(t *testing.T) {
 // The ADE matrix: whatever combination the human chooses is installed, with
 // exactly one Primary, and nothing that was not chosen.
 func TestADEMatrix(t *testing.T) {
-	overlay := map[string]string{"claude": ".claude/CLAUDE.md", "copilot": ".copilot/copilot-instructions.md", "kiro": ".kiro/steering"}
+	overlay := map[string]string{"claude": ".claude/CLAUDE.md", "copilot": overlayEntry(t, "copilot"), "kiro": ".kiro/steering"}
 	for name, c := range map[string]struct{ ades, primary string }{
 		"copilot alone":                  {"copilot", "copilot"},
 		"claude and codex":               {"claude,codex", "claude"},

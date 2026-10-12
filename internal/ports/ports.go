@@ -210,6 +210,10 @@ type CoreLayout struct {
 	// Package are the paths that hold Bootstrap package content (the engine
 	// and the entry points); the governed domain is never among them.
 	Package []string
+	// Rewritten are the engine paths the manifest declares as derived or as
+	// state (a trailing slash names a directory): the Bootstrap's own scripts
+	// rewrite them, so a difference there is never a local customization.
+	Rewritten []string
 	// Tracking is where the Bootstrap declares the initial-source tracking
 	// record (manifest section `tracking:`); empty when it declares none.
 	Tracking string

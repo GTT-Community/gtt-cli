@@ -3,6 +3,7 @@ package fsx
 import (
 	"os"
 	"path/filepath"
+	"strings"
 	"testing"
 )
 
@@ -90,5 +91,27 @@ func TestDanglingSymlinkPointingOutsideIsRejected(t *testing.T) {
 	}
 	if files, err := ListFiles(root); err != nil || len(files) != 2 {
 		t.Errorf("a link inside the tree is fine: %v %v", files, err)
+	}
+}
+
+func TestDiffFilesShowsWhatReplacingWouldChange(t *testing.T) {
+	dir := t.TempDir()
+	local, release := filepath.Join(dir, "local"), filepath.Join(dir, "release")
+	os.WriteFile(local, []byte("one\ntwo\nthree\nfour\nfive\nsix\nmy glob\n"), 0o644)
+	os.WriteFile(release, []byte("one\ntwo\nthree\nfour\nfive\nsix\nnew line\n"), 0o644)
+	got := DiffFiles(local, release, "a (this project)", "a (release)", 40)
+	want := "--- a (this project)\n+++ a (release)\n five\n six\n-my glob\n+new line\n"
+	if got != want {
+		t.Errorf("got:\n%s\nwant:\n%s", got, want)
+	}
+	if d := DiffFiles(local, release, "a", "b", 1); !strings.Contains(d, "(diff truncated)") {
+		t.Errorf("a long diff must be cut at the limit:\n%s", d)
+	}
+	os.WriteFile(release, []byte{0, 1, 2}, 0o644)
+	if d := DiffFiles(local, release, "a", "b", 40); !strings.Contains(d, "binary files differ") {
+		t.Errorf("binary content must not be printed:\n%s", d)
+	}
+	if d := DiffFiles(local, filepath.Join(dir, "absent"), "a", "b", 40); !strings.Contains(d, "not present: b") {
+		t.Errorf("a missing side must be named:\n%s", d)
 	}
 }

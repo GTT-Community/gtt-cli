@@ -1,6 +1,7 @@
 package integration
 
 import (
+	"github.com/GTT-Community/gtt-cli/internal/core"
 	"os"
 	"path/filepath"
 	"strings"
@@ -91,11 +92,15 @@ func TestOfflineWithoutACacheFailsClearly(t *testing.T) {
 
 func TestTamperedCacheIsAnIntegrityFailure(t *testing.T) {
 	root := project(t, nil)
-	cache := filepath.Join(os.Getenv("GTT_HOME"), "cache", "bootstrap")
-	if err := copyTree(pristine, filepath.Join(cache, "1.2.0")); err != nil {
+	// The cache entry of the release this CLI pins, with a wrong checksum.
+	entry := filepath.Join(os.Getenv("GTT_HOME"), "cache", "bootstrap", core.BootstrapPin)
+	if err := copyTree(pristine, entry); err != nil {
 		t.Fatal(err)
 	}
-	os.WriteFile(filepath.Join(cache, "1.2.0.sha256"), []byte("0000\n"), 0o644)
+	edit(t, filepath.Join(entry, ".gtt/contract/release.json"), func(d map[string]any) {
+		d["bootstrap"].(map[string]any)["version"] = core.BootstrapPin
+	})
+	os.WriteFile(entry+".sha256", []byte("0000\n"), 0o644)
 	r := gtt(t, root, append([]string{"init", "--offline", "--yes"}, defaults...)...).must(t, 6)
 	if !strings.Contains(r.err, "checksum mismatch") || exists(root, ".gtt") {
 		t.Errorf("got:\n%s", r.err)

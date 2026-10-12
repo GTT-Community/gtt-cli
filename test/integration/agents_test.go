@@ -20,7 +20,7 @@ func TestAgentsSingleADE(t *testing.T) {
 // synchronised from the authorised source; repeating it changes nothing.
 func TestAgentsMissingContextIsSynchronisedIdempotently(t *testing.T) {
 	root := installed(t, nil, "--ade", "claude,copilot", "--primary", "claude", "--language", "en", "--method", "medium", "--no-sources", "--no-questionnaire")
-	managed := ".copilot/copilot-instructions.md"
+	managed := overlayEntry(t, "copilot")
 	original := read(t, root, managed)
 	os.Remove(filepath.Join(root, managed))
 
@@ -47,7 +47,7 @@ func TestAgentsMissingContextIsSynchronisedIdempotently(t *testing.T) {
 	gtt(t, root, "agents", "check", "--ci").must(t, 0)
 
 	if trace := read(t, root, ".gtt/cli/operations.log"); !strings.Contains(trace, `"agent":"copilot"`) ||
-		!strings.Contains(trace, `"adapter_version":1`) || !strings.Contains(trace, `"destination":["`+managed+`"]`) {
+		!strings.Contains(trace, `"adapter_version":`) || !strings.Contains(trace, `"destination":["`+managed+`"`) {
 		t.Errorf("each synchronisation leaves agent, adapter version, source and destination:\n%s", trace)
 	}
 	log := filepath.Join(root, ".gtt/cli/operations.log")

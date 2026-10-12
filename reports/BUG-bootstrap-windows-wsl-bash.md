@@ -10,6 +10,53 @@
 | Severidad | Alta: en Windows ninguna operación declarada del Bootstrap se puede ejecutar |
 | Origen | Bootstrap. El CLI ya ejecuta el contrato con Git Bash |
 
+## Estado al 2026-10-12: sigue vigente en Bootstrap 1.5.0
+
+Revisado contra `gtt-bootstrap` `main` (`0e1b86d`, release 1.5.0, el que fija GTT CLI). El defecto no está corregido
+y tiene más puntos de llamada que en 1.2.0. Ningún script lee `GTT_BASH`.
+
+| Archivo (1.5.0) | Línea | Llamada |
+|---|---|---|
+| `.gtt/scripts/gtt_contract.py` | 300 | `["bash", impl] + argv` (todas las operaciones declaradas) |
+| `.gtt/scripts/gtt_project.py` | 75 | `["bash", *cmd]` |
+| `.gtt/scripts/gtt_template.py` | 114 | `["bash", index]` |
+| `.gtt/scripts/gtt_session_adapter.py` | 264 | `["bash", "-c", command]` |
+| `.gtt/scripts/gtt_session_hook.py` | 32 | `["bash", WRAPPER]` (Cursor, OpenHands) |
+| `.gtt/scripts/gtt_design.py` | 735 | `["bash", ".gtt/scripts/gtt-freeze.sh"]` |
+| `.gtt/scripts/gtt_flow.py` | 679, 694 | `gtt-freeze.sh`, `gtt-maintain.sh` |
+| `.claude/hooks/session-start.py` (y su copia en `gtt-domain/proposals/claude-adapter/`) | 32 | `["bash", WRAPPER]` |
+| `.claude/hooks/detect-drift.py` | 50 | `["bash", ENGINE, "observe", ...]` |
+| `gtt-domain/proposals/session-adapters/copilot/.github/hooks/gtt-session-start.py` | 34 | `["bash", SERVICE]` |
+
+Los tres últimos corren dentro del ADE, no del CLI: en Windows fallan aunque nadie use `gtt`. Tampoco existe
+`.gitattributes` todavía.
+
+### Corrección lista para aplicar
+
+`reports/bootstrap-1.5.0-windows-bash.patch` (12 archivos, contra `0e1b86d`): añade `.gtt/scripts/gtt_bash.py` con el
+resolutor `bash_executable()` de este reporte y lo usa en todas las llamadas de la tabla. Los hooks de ADE lo importan
+desde `.gtt/scripts/` y, si el Engine no lo trae, siguen usando `bash` por nombre.
+
+```bash
+git -C ../gtt-bootstrap apply ../gtt-cli/reports/bootstrap-1.5.0-windows-bash.patch
+```
+
+No se aplicó al repositorio `gtt-bootstrap`: es decisión de quien lo mantiene.
+
+### Verificación por emulación (sin Windows)
+
+`test/integration/windows_emulation_test.go` reproduce en Linux y macOS la regla de `CreateProcess`: un
+`sitecustomize` hace que todo proceso Python resuelva un nombre sin ruta primero en un "System32" falso, donde hay un
+`bash` que falla como el lanzador de WSL. Las shells siguen usando el PATH, igual que Git Bash.
+
+| Prueba | Bootstrap | Resultado |
+|---|---|---|
+| `TestWindowsEmulationTheBootstrapUnderTest` | 1.5.0 sin corregir | reproduce el fallo de este reporte (`gtt init` se revierte con el mensaje de WSL); el proyecto queda intacto; la prueba se marca SKIP "blocked by the Bootstrap" y pasará sola cuando el Bootstrap traiga la corrección |
+| `TestWindowsEmulationTheCLIHandsItsBashToTheBootstrap` | 1.5.0 + parche | `init` (Claude + Copilot, con fuente), `validate --ci`, `status`, `doctor`, `agents check --ci`, `sync`, segundo `init` y `update` a un release posterior: todo pasa |
+
+Límite de la emulación: prueba el orden de búsqueda del ejecutable, que es la causa de este fallo. No prueba rutas con
+`\`, finales de línea CRLF ni permisos de Windows; eso solo lo cubre el job `windows-latest` del CI.
+
 ## Síntoma
 
 `gtt init` en Windows resuelve el Bootstrap, verifica integridad y compatibilidad (esas consultas pasan), pero la

@@ -7,7 +7,7 @@
 # NOT a grounding source, NOT a substitute for an ADR. Governed context
 # (gtt-domain/context/, gtt-domain/adr/) and gtt-domain/backlog.md prevail over this file.
 #
-# Generated: 2026-10-03T06:54:41Z
+# Generated: 2026-10-12T20:17:36Z
 
 ## Freeze state
 pre-freeze (gtt-domain/context/ and gtt-domain/adr/ are agent-writable)
@@ -58,10 +58,10 @@ technical index: fresh
 unresolved references: 0
 
 ## Repository (resume hints)
-branch: main; uncommitted paths: 0
+branch: main; uncommitted paths: 1
 recent commits:
+112a50a gtt: refresh session state
 368178c fix(version): go install reports the module version; ldflags injection kept
 2483a0b fix(release): skip npm when NPM_TOKEN is unset; allow re-running a release
 2d08530 fix(windows): pass GTT_BASH to the Bootstrap; report the Bootstrap WSL bash defect; Windows integration informative
 70ce89b ci: first failure first in annotations and in the job summary
-f84fcc3 feat: uv/PyPI package gtt-cli; README install for curl, PowerShell, uv, npm; DEVELOPMENT.md for the dev repo

@@ -21,12 +21,17 @@ type fakeBootstrap struct {
 	results    map[string]ports.OperationResult // by operation, or "op:apply" for the applied run
 	shows      map[string]string
 	requests   []ports.OperationRequest
+	version    string   // installed release; empty means 1.2.0
+	problems   []string // what the Bootstrap's own contract check reports
 }
 
 func (f *fakeBootstrap) Root() string { return f.root }
 func (f *fakeBootstrap) Release(context.Context) (ports.Release, error) {
 	var r ports.Release
 	r.Bootstrap.ID, r.Bootstrap.Version = core.BootstrapID, "1.2.0"
+	if f.version != "" {
+		r.Bootstrap.Version = f.version
+	}
 	return r, nil
 }
 func (f *fakeBootstrap) Negotiate(context.Context) (ports.Negotiation, error) {
@@ -42,7 +47,7 @@ func (f *fakeBootstrap) Operations(context.Context) (map[string]ports.Operation,
 func (f *fakeBootstrap) Show(_ context.Context, contract string) (json.RawMessage, error) {
 	return json.RawMessage(f.shows[contract]), nil
 }
-func (f *fakeBootstrap) CheckContracts(context.Context) ([]string, error) { return nil, nil }
+func (f *fakeBootstrap) CheckContracts(context.Context) ([]string, error) { return f.problems, nil }
 func (f *fakeBootstrap) Execute(_ context.Context, req ports.OperationRequest) (ports.OperationResult, error) {
 	f.requests = append(f.requests, req)
 	key := req.Operation

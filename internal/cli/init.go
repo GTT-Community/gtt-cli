@@ -1,6 +1,7 @@
 package cli
 
 import (
+	"fmt"
 	"strings"
 
 	"github.com/spf13/cobra"
@@ -31,7 +32,7 @@ func initCmd(e *env) *cobra.Command {
 			}
 			res, err := e.app.Init(cmd.Context(), o)
 			if err == nil && res.Outcome == "already-initialized" && !e.opts.JSON && e.app.Prompt.Interactive() {
-				return existing(e, cmd)
+				return existing(e, cmd, res.Installed)
 			}
 			if err := e.emit(res, err, func(p output.Printer) { renderInit(p, res) }); err != nil {
 				return err
@@ -71,7 +72,15 @@ func renderInit(p output.Printer, r app.InitResult) {
 	switch r.Outcome {
 	case "already-initialized":
 		p.Line("GTT is already initialized in this project. Nothing was changed.")
+		renderCheck(p, r.Installed)
 		p.Line("See: gtt status")
+		return
+	case "updated":
+		if u := r.Update; u != nil {
+			p.Line("\nGTT Bootstrap updated: %s -> %s", u.From, u.To)
+			p.Line("  replaced %d, added %d, removed %d, preserved (changed locally) %d", len(u.Replaced), len(u.Added), len(u.Removed), len(u.Preserved))
+		}
+		renderCheck(p, r.Installed)
 		return
 	case "rolled-back":
 		p.Line("The incomplete initialization was rolled back. No GTT files remain.")
@@ -94,6 +103,23 @@ func renderInit(p output.Printer, r app.InitResult) {
 	}
 	if h := r.Handoff; h != nil && h.PrimaryName != "" {
 		p.Line("\nNext:\nLaunch %s to continue the Bootstrap-guided initialization.", h.PrimaryName)
+	}
+}
+
+// renderCheck reports the Bootstrap that was already in the project.
+func renderCheck(p output.Printer, c *app.BootstrapCheck) {
+	if c == nil {
+		return
+	}
+	origin := "the release this GTT CLI ships with"
+	if c.Required != c.Pinned {
+		origin = "chosen explicitly; this GTT CLI ships with " + c.Pinned
+	}
+	if c.Verified {
+		p.Line("GTT Bootstrap %s is present and verified (%s).", c.Version, origin)
+	}
+	if len(c.Modified) > 0 {
+		p.Line("Bootstrap files modified in this project (kept; see them with: gtt update):\n  %s", strings.Join(c.Modified, "\n  "))
 	}
 }
 
@@ -139,11 +165,17 @@ func afterInit(e *env, cmd *cobra.Command, r app.InitResult, launch bool) error 
 
 // existing is the menu shown when `gtt init` finds GTT already installed.
 // It never reinstalls.
-func existing(e *env, cmd *cobra.Command) error {
+func existing(e *env, cmd *cobra.Command, check *app.BootstrapCheck) error {
 	v := e.app.Version(cmd.Context())
 	title := "GTT is already initialized in this project.\n\nCLI:        " + v.CLI
 	if v.Bootstrap != nil {
 		title = "GTT is already initialized in this project.\n\nBootstrap: " + v.Bootstrap.Version + "\nCLI:       " + v.CLI
+	}
+	if check != nil && check.Verified {
+		title += "\n\nThe Bootstrap is present and verified."
+		if n := len(check.Modified); n > 0 {
+			title += fmt.Sprintf(" %d of its files are modified in this project (kept; Update shows them).", n)
+		}
 	}
 	choice, err := e.app.Prompt.Select(title, []ports.Option{{Label: "Inspect"}, {Label: "Validate"}, {Label: "Update"},
 		{Label: "Reconfigure operational settings"}, {Label: "Abort"}})

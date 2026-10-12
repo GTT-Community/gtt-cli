@@ -52,7 +52,8 @@ func (i Installer) Install(pkg ports.Package, projectRoot string) (map[string]st
 	}
 	stage, err := os.MkdirTemp(projectRoot, ".gtt-staging-")
 	if err != nil {
-		return nil, err
+		return nil, &core.Error{Code: core.ExitFailure, Unmodified: true, What: "Cannot write to the project directory " + projectRoot + ".",
+			Why: err.Error(), Next: "Make the project directory writable and run gtt init again."}
 	}
 	defer os.RemoveAll(stage)
 	ledger := map[string]string{}
