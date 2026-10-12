@@ -125,3 +125,28 @@ func TestOnlyTheContractEntryPointIsKnown(t *testing.T) {
 		})
 	}
 }
+
+// The CLI is installed on the machine; the Bootstrap belongs to a project.
+// No install channel may fetch or place Bootstrap files: that happens in
+// `gtt init`, where there is a project. The channels only deliver the binary.
+func TestInstallChannelsNeverPlaceTheBootstrap(t *testing.T) {
+	root := filepath.Join("..", "..")
+	for _, rel := range []string{"install.sh", "install.ps1", "npm/install.js", "npm/bin/gtt.js", "npm/package.json", "packaging/pypi/build_wheels.py"} {
+		data, err := os.ReadFile(filepath.Join(root, filepath.FromSlash(rel)))
+		if err != nil {
+			t.Errorf("install channel %s: %v", rel, err)
+			continue
+		}
+		for _, m := range []string{"gtt-bootstrap", "git clone", "gtt init", ".gtt/", "gtt-domain"} {
+			if strings.Contains(string(data), m) {
+				t.Errorf("%s mentions %q: a machine install must not fetch, place or initialize a Bootstrap", rel, m)
+			}
+		}
+	}
+	// The npm package runs nothing at install time but the binary download.
+	pkg, _ := os.ReadFile(filepath.Join(root, "npm", "package.json"))
+	if got := strings.Count(string(pkg), `"postinstall"`) + strings.Count(string(pkg), `"preinstall"`) + strings.Count(string(pkg), `"install"`); got != 1 ||
+		!strings.Contains(string(pkg), `"postinstall": "node install.js"`) {
+		t.Errorf("npm/package.json must run only the binary download at install time")
+	}
+}

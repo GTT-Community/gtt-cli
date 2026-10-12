@@ -323,18 +323,28 @@ type VersionResult struct {
 	CLI          string   `json:"cli_version"`
 	Capabilities []string `json:"cli_capabilities"`
 	Schemas      []int    `json:"bootstrap_schemas"`
-	Bootstrap    *struct {
+	// Pinned is the Bootstrap release this CLI release ships with.
+	Pinned    BootstrapPin `json:"pinned_bootstrap"`
+	Bootstrap *struct {
 		Version       string `json:"version"`
 		Schema        int    `json:"schema"`
 		Channel       string `json:"channel"`
 		Compatibility string `json:"compatibility"`
+		MatchesPin    bool   `json:"matches_pin"`
 	} `json:"bootstrap,omitempty"`
 }
 
-// Version reports the CLI release and, in a GTT project, the installed
-// Bootstrap. The two versions are independent.
+// BootstrapPin names the Bootstrap release a CLI release ships with.
+type BootstrapPin struct {
+	Version string `json:"version"`
+	Tag     string `json:"tag"`
+}
+
+// Version reports the CLI release, the Bootstrap release it pins and, in a
+// GTT project, the installed Bootstrap.
 func (a *App) Version(ctx context.Context) VersionResult {
-	res := VersionResult{Schema: core.OutputSchema, CLI: core.Version, Capabilities: core.CLICapabilities, Schemas: core.BootstrapSchemas}
+	res := VersionResult{Schema: core.OutputSchema, CLI: core.Version, Capabilities: core.CLICapabilities, Schemas: core.BootstrapSchemas,
+		Pinned: BootstrapPin{Version: core.BootstrapPin, Tag: core.BootstrapTag(core.BootstrapPin)}}
 	det := a.detect(ctx)
 	if !a.Factory.Installed(det.Root) {
 		return res
@@ -349,7 +359,8 @@ func (a *App) Version(ctx context.Context) VersionResult {
 		Schema        int    `json:"schema"`
 		Channel       string `json:"channel"`
 		Compatibility string `json:"compatibility"`
-	}{rel.Bootstrap.Version, rel.Bootstrap.SchemaVersion, rel.Bootstrap.Channel, "REFUSE"}
+		MatchesPin    bool   `json:"matches_pin"`
+	}{rel.Bootstrap.Version, rel.Bootstrap.SchemaVersion, rel.Bootstrap.Channel, "REFUSE", rel.Bootstrap.Version == core.BootstrapPin}
 	if n, err := b.Negotiate(ctx); err == nil && n.Compatible {
 		info.Compatibility = "PASS"
 	}

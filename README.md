@@ -41,13 +41,14 @@ GTT Method -> GTT Bootstrap -> versioned contracts -> GTT CLI -> ADE -> Human
 
 ## Requirements
 
-- `git`, to download GTT Bootstrap (or pass a local copy with `--bootstrap`).
+- `git`, to download GTT Bootstrap the first time `gtt init` runs (or pass a local copy with `--bootstrap`).
 - `bash` and `python3`: GTT Bootstrap's own scripts use them. The CLI itself needs neither.
 - On Windows: [Git for Windows](https://git-scm.com/download/win), which provides bash, and
   [Python 3](https://www.python.org/downloads/windows/). The CLI finds Git Bash on its own and never uses the WSL
   `bash.exe`; set `GTT_BASH` to point it at another bash.
-  Note: GTT Bootstrap 1.2.0 still launches its own scripts with the WSL `bash.exe` on Windows, so `gtt init` and other
-  operations fail there until a Bootstrap release fixes it; the CLI already passes the right bash (`GTT_BASH`) to it.
+  Note: GTT Bootstrap up to 1.5.0 starts its own scripts with `bash` by name, which on Windows is the WSL `bash.exe`,
+  so `gtt init` and other operations fail there. Bootstrap 1.5.1 - the release this CLI ships with - runs them with
+  the bash the CLI hands it (`GTT_BASH`).
 
 ## Installation
 
@@ -121,10 +122,10 @@ The integration tests drive the real CLI against a real Bootstrap catalog: `GTT_
 | `gtt freeze` | Facade over the Bootstrap freeze; a human act, never unattended. There is no `unfreeze` |
 | `gtt doctor` | Operational diagnostics: PASS / WARN / FAIL / CANNOT DETERMINE. Never repairs |
 | `gtt audit [--md]` | Operational traceability |
-| `gtt update` | Transactional Bootstrap update; project state and locally changed files are preserved |
+| `gtt update` | Transactional Bootstrap update; project state is preserved; a locally changed file is shown and replaced only on your confirmation |
 | `gtt export --clean [dest]` | A clean delivery copy; the project is not modified |
 | `gtt clean` | Remove GTT from the project (asks; offers a recovery snapshot) |
-| `gtt version` | CLI and installed Bootstrap versions |
+| `gtt version` | CLI version, the Bootstrap release it ships with, and the Bootstrap installed in the project |
 | `gtt method [show\|set\|check]` | Method Plan: Light, Medium, Hard, Team (`gtt config methodology` is an alias of `set`) |
 | `gtt config primary-ade\|language` | Operational configuration, validated by the Bootstrap |
 | `gtt agents [list\|check\|sync\|manifest]` | ADE/agent context discovery and synchronisation (`check --ci` for pipelines); `manifest` lists the paths each agent's adapter manages and their state |
@@ -149,6 +150,31 @@ gtt init --bootstrap ../gtt-bootstrap --ade claude,copilot --primary claude \
 Bootstrap resolution order: `--bootstrap PATH`, the source the project recorded, the verified cache
 (`~/.gtt/cache/bootstrap/<version>/`), `GTT_BOOTSTRAP_SOURCE`, the canonical repository. `--offline` uses only
 a local path or the cache. `GTT_HOME` relocates the cache and the snapshots.
+
+### The CLI and the Bootstrap go together
+
+Installing the CLI puts one binary on the machine and nothing else: there is no project yet. The Bootstrap arrives
+with `gtt init`, which always leaves the project with the Bootstrap release this CLI ships with, installed and
+verified - or fails and says why.
+
+- **One version.** Each CLI release pins one exact Bootstrap release; `gtt version` shows both. Pinning the CLI
+  (`GTT_VERSION=x.y.z`, `gtt-cli==x.y.z`, `gtt-cli@x.y.z`) pins the Bootstrap. The release is downloaded from its
+  tag (`v<version>`) and checked against the commit that tag names; a branch head is never installed. Another
+  release is used only when you name it: `--bootstrap PATH` or `--bootstrap-version X.Y.Z`.
+- **Missing** - it is downloaded once, staged, verified and moved into place; later projects reuse the verified cache.
+- **Present and matching** - it is reused. Nothing is downloaded and nothing is written, however often you run it.
+- **Present, another release** - `gtt init` reports the installed and the required release and changes nothing
+  until you confirm it in a terminal. `--yes` does not give that confirmation; without a terminal it exits 5, and
+  `gtt update` is the explicit command. A project on a newer release is never downgraded (exit 2).
+- **Files you changed** - a Bootstrap file modified in the project is never replaced silently: `gtt update` shows
+  its difference and replaces it only if you say so, in a terminal.
+- **Governed state is not package content.** `gtt-domain/context/`, `gtt-domain/adr/`, `SOURCE-BRIEF.*`,
+  `gtt-domain/change-request.md` and the freeze marker are never created, modified or deleted by an installation,
+  a reinstallation or an update.
+- **Failures are distinct.** The source cannot be reached (exit 7), the release is not published (exit 7), the
+  download is not the release (exit 6), the cache or the project cannot be written (exit 1), the versions differ
+  (exit 5 or 2). A failed or interrupted download leaves nothing in the cache; an interrupted `gtt init` is
+  detected from its recorded state (`gtt init --resume` or `--rollback`).
 
 ### Release signatures
 

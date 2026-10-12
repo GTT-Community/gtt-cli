@@ -51,7 +51,7 @@ type Handoff struct {
 // InitResult is the outcome of `gtt init`.
 type InitResult struct {
 	Schema      int                  `json:"schema"`
-	Outcome     string               `json:"outcome"` // initialized | already-initialized | restored | rolled-back
+	Outcome     string               `json:"outcome"` // initialized | already-initialized | updated | restored | rolled-back
 	Project     string               `json:"project"`
 	Bootstrap   lifecycle.Resolution `json:"bootstrap"`
 	Selections  lifecycle.Selections `json:"selections"`
@@ -59,6 +59,11 @@ type InitResult struct {
 	Validation  string               `json:"validation"`
 	Handoff     *Handoff             `json:"handoff,omitempty"`
 	DesignState string               `json:"design_state"` // sources-selected | questionnaire | none
+	// Installed is the check of a Bootstrap that was already in the project.
+	Installed *BootstrapCheck `json:"installed_bootstrap,omitempty"`
+	// Update is what changed when the human confirmed moving it to the
+	// required release.
+	Update *UpdateResult `json:"update,omitempty"`
 }
 
 // Init is the primary orchestration workflow.
@@ -76,8 +81,7 @@ func (a *App) Init(ctx context.Context, o InitOptions) (InitResult, error) {
 		return a.interrupted(ctx, det.Root, journal, o)
 	}
 	if a.Factory.Installed(det.Root) {
-		res.Outcome = "already-initialized"
-		return res, nil
+		return a.ensure(ctx, det.Root, o, res)
 	}
 	if !det.Confident {
 		a.Report.Info("No project detected.")
@@ -91,12 +95,16 @@ func (a *App) Init(ctx context.Context, o InitOptions) (InitResult, error) {
 	}
 
 	a.Report.Info("GTT Project Initialization\n\nProject:\n  %s\n\nBootstrap:\n  Resolving GTT Bootstrap...", filepath.Base(det.Root))
-	pkg, err := a.resolve(ctx, ports.ResolveRequest{Path: o.Resolve.Path, Version: o.Resolve.Version, Offline: o.Resolve.Offline})
+	pkg, err := a.resolve(ctx, o.Resolve.request())
 	if err != nil {
 		return res, err
 	}
 	res.Bootstrap = resolution(pkg)
-	a.Report.Info("  Version: %s\n  Integrity: PASS\n  Compatibility: PASS", pkg.Release.Bootstrap.Version)
+	origin := "pinned by GTT CLI " + core.Version
+	if v := pkg.Release.Bootstrap.Version; v != core.BootstrapPin {
+		origin = "chosen explicitly; GTT CLI " + core.Version + " pins " + core.BootstrapPin
+	}
+	a.Report.Info("  Version: %s (%s)\n  Integrity: PASS\n  Compatibility: PASS", pkg.Release.Bootstrap.Version, origin)
 	catalog := a.Factory.At(pkg.Root)
 
 	if conflicts, err := a.Installer.Conflicts(pkg, det.Root); err != nil {
@@ -452,6 +460,9 @@ func (a *App) install(ctx context.Context, root string, pkg ports.Package, j *li
 
 	st, _ := store.Load()
 	st.Bootstrap, st.CoreLedger = &j.Bootstrap, j.CoreLedger
+	if layout, lerr := a.Installer.Layout(pkg); lerr == nil {
+		noteRewritten(&st, root, j.CoreLedger, ledgerPaths(j.CoreLedger, layout))
+	}
 	st.History = append(st.History, lifecycle.Event{At: lifecycle.Timestamp(), Event: "init", Detail: "Bootstrap " + j.Bootstrap.Version})
 	if err := store.Save(st); err != nil {
 		return fail(err)
@@ -698,6 +709,7 @@ func (a *App) restore(ctx context.Context, root string, pkg ports.Package, s sna
 	}
 	st, _ := store.Load()
 	st.Bootstrap, st.CoreLedger = &j.Bootstrap, ledger
+	noteRewritten(&st, root, ledger, ledgerPaths(ledger, layout))
 	st.History = append(st.History, lifecycle.Event{At: lifecycle.Timestamp(), Event: "restore", Detail: "snapshot " + s.Snapshot})
 	if err := store.Save(st); err != nil {
 		return fail(err)

@@ -16,10 +16,12 @@ var (
 	layerRE   = regexp.MustCompile(`^\s+(engine|domain):\s*([^\s#]+)`)
 	entryRE   = regexp.MustCompile(`^\s+-\s*\{\s*path:\s*([^,}]+)`)
 	trackRE   = regexp.MustCompile(`^\s+initial_sources:\s*\{\s*path:\s*([^,}]+)`)
+	rewriteRE = regexp.MustCompile(`^\s+-\s*\{\s*path:\s*([^,}]+),(?:.*,)?\s*(?:derived|state):\s*true\s*[,}]`)
 )
 
 // Layout reads from the scaffold manifest what the portable core is: the
-// engine and domain layers, the entry points and, when declared, where the
+// engine and domain layers, the entry points, the engine paths it declares
+// as derived or as state and, when declared, where the
 // initial-source tracking record lives. Only installation
 // structure is read; nothing else in the manifest is interpreted here.
 func Layout(pkg ports.Package) (ports.CoreLayout, error) {
@@ -52,6 +54,10 @@ func Layout(pkg ports.Package) (ports.CoreLayout, error) {
 				if m[1] == "engine" {
 					layout.Package = append(layout.Package, path)
 				}
+			}
+		case "engine":
+			if m := rewriteRE.FindStringSubmatch(line); m != nil {
+				layout.Rewritten = append(layout.Rewritten, strings.TrimSpace(m[1]))
 			}
 		case "tracking":
 			if m := trackRE.FindStringSubmatch(line); m != nil {

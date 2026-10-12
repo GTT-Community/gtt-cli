@@ -49,7 +49,11 @@ type State struct {
 	CLI        map[string]string `json:"cli"`
 	Bootstrap  *Resolution       `json:"bootstrap,omitempty"`
 	CoreLedger map[string]string `json:"core_ledger,omitempty"`
-	History    []Event           `json:"history,omitempty"`
+	// Rewritten are the package files the Bootstrap's own operations were
+	// seen to rewrite during an install or an update. They differ from the
+	// release without having been customized by anyone.
+	Rewritten []string `json:"bootstrap_rewritten,omitempty"`
+	History   []Event  `json:"history,omitempty"`
 }
 
 const notice = "GTT CLI operational state: derived, reconstructible, never an authority. Written only by the gtt CLI."

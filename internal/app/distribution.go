@@ -3,6 +3,8 @@ package app
 import (
 	"context"
 	"encoding/json"
+	"errors"
+	"fmt"
 	"os"
 	"path/filepath"
 	"sort"
@@ -256,13 +258,17 @@ type UpdateResult struct {
 	Added     []string `json:"added"`
 	Removed   []string `json:"removed"`
 	Preserved []string `json:"preserved_modified"`
-	Snapshot  string   `json:"snapshot,omitempty"`
+	// Overwritten are locally modified files the human confirmed replacing.
+	Overwritten []string `json:"replaced_modified,omitempty"`
+	Snapshot    string   `json:"snapshot,omitempty"`
 }
 
 // Update replaces the Bootstrap package content of a project with another
 // release, transactionally. Project state - ADEs, Primary, plan, language,
 // sources, governed artifacts - is not package content and is not touched;
-// a package file changed since install is preserved, never overwritten.
+// a package file changed since install is preserved: its difference is
+// shown, and it is replaced only when the human confirms it in a terminal
+// (--yes does not).
 func (a *App) Update(ctx context.Context, o UpdateOptions) (UpdateResult, error) {
 	res := UpdateResult{Schema: core.OutputSchema}
 	det := a.detect(ctx)
@@ -288,7 +294,9 @@ func (a *App) Update(ctx context.Context, o UpdateOptions) (UpdateResult, error)
 	if err != nil {
 		return res, err
 	}
-	pkg, err := a.resolve(ctx, ports.ResolveRequest{Path: o.Resolve.Path, Version: o.Resolve.Version, Offline: o.Resolve.Offline, Refresh: true})
+	req := o.Resolve.request()
+	req.Refresh = true
+	pkg, err := a.resolve(ctx, req)
 	if err != nil {
 		return res, err
 	}
@@ -296,8 +304,9 @@ func (a *App) Update(ctx context.Context, o UpdateOptions) (UpdateResult, error)
 	a.Report.Info("Target:\n  %s\n\nChecking compatibility...\nPASS\n", res.To)
 	cur, _ := core.ParseSemver(res.From)
 	tgt, _ := core.ParseSemver(res.To)
-	sameContent := st.Bootstrap != nil && st.Bootstrap.Checksum == pkg.Checksum
-	if core.CompareSemver(tgt, cur) == 0 && (sameContent || st.Bootstrap == nil) {
+	same := core.CompareSemver(tgt, cur) == 0
+	if same && len(st.CoreLedger) == 0 {
+		// Same release and no install ledger: nothing can be compared.
 		res.Outcome = "already-current"
 		return res, nil
 	}
@@ -307,13 +316,17 @@ func (a *App) Update(ctx context.Context, o UpdateOptions) (UpdateResult, error)
 	}
 	// Migration gate: this CLI can only carry a project across releases
 	// that keep the same schema and scaffold layout.
-	a.Report.Info("Checking migration...")
+	if !same {
+		a.Report.Info("Checking migration...")
+	}
 	if pkg.Release.Bootstrap.SchemaVersion != p.Release.Bootstrap.SchemaVersion || pkg.Release.Scaffold.Version != p.Release.Scaffold.Version {
 		return res, &core.Error{Code: core.ExitIncompatible, Unmodified: true,
 			What: "Bootstrap " + res.To + " changes the schema or the scaffold layout.",
 			Why:  "That needs a migration contract this CLI does not have.", Next: "Upgrade the GTT CLI."}
 	}
-	a.Report.Info("PASS\n")
+	if !same {
+		a.Report.Info("PASS\n")
+	}
 	ledger := st.CoreLedger
 	if len(ledger) == 0 {
 		if ledger, err = a.baseLedger(ctx, o.Base, res.From); err != nil {
@@ -356,8 +369,16 @@ func (a *App) Update(ctx context.Context, o UpdateOptions) (UpdateResult, error)
 			res.Removed = append(res.Removed, rel)
 		}
 	}
+	if err := a.offerReplace(p.Root, pkg, layout, st, &res); err != nil {
+		return res, err
+	}
 	for _, list := range [][]string{res.Added, res.Replaced, res.Preserved, res.Removed} {
 		sort.Strings(list)
+	}
+	if same && len(res.Added)+len(res.Replaced)+len(res.Removed) == 0 {
+		// The release is already here and complete; what differs was kept.
+		res.Outcome = "already-current"
+		return res, nil
 	}
 	// ADE overlays: ask the Bootstrap what an update would do before any change.
 	var ade adeState
@@ -442,6 +463,7 @@ func (a *App) Update(ctx context.Context, o UpdateOptions) (UpdateResult, error)
 	for rel, sum := range target {
 		st.CoreLedger[rel] = sum
 	}
+	noteRewritten(&st, p.Root, target, append(append([]string{}, res.Added...), res.Replaced...))
 	st.History = append(st.History, lifecycle.Event{At: lifecycle.Timestamp(), Event: "update", Detail: res.From + " -> " + res.To})
 	if err := p.Store.Save(st); err != nil {
 		return fail(err)
@@ -452,6 +474,45 @@ func (a *App) Update(ctx context.Context, o UpdateOptions) (UpdateResult, error)
 	a.log(p.Root, "update", "success", map[string]any{"from": res.From, "to": res.To})
 	res.Outcome = "updated"
 	return res, nil
+}
+
+// offerReplace shows how each locally modified package file differs from the
+// target release and asks whether to replace them. The answer is the
+// human's alone: without a terminal, and with --yes, they are kept.
+func (a *App) offerReplace(root string, pkg ports.Package, layout ports.CoreLayout, st lifecycle.State, res *UpdateResult) error {
+	skip := rewritten(layout, st)
+	var custom, kept []string
+	for _, rel := range res.Preserved {
+		if skip(rel) {
+			kept = append(kept, rel)
+		} else {
+			custom = append(custom, rel)
+		}
+	}
+	if len(custom) == 0 {
+		return nil
+	}
+	sort.Strings(custom)
+	a.Report.Info("Bootstrap files modified in this project (%d):\n", len(custom))
+	for _, rel := range custom {
+		a.Report.Info("%s", fsx.DiffFiles(filepath.Join(root, filepath.FromSlash(rel)), filepath.Join(pkg.Root, filepath.FromSlash(rel)),
+			rel+" (this project)", rel+" (GTT Bootstrap "+res.To+")", 40))
+	}
+	replace := false
+	if a.Prompt.Interactive() {
+		// No answer (end of input) is not a confirmation: the files are kept.
+		var err error
+		if replace, err = a.Prompt.Confirm(fmt.Sprintf("Replace these %d file(s) with the content of GTT Bootstrap %s? Your changes to them will be lost.",
+			len(custom), res.To), false); err != nil && !errors.Is(err, core.ErrCancelled) {
+			return err
+		}
+	}
+	if !replace {
+		a.Report.Info("Kept as they are: a locally modified file is never replaced without your confirmation.\n")
+		return nil
+	}
+	res.Replaced, res.Overwritten, res.Preserved = append(res.Replaced, custom...), custom, kept
+	return nil
 }
 
 // baseLedger rebuilds an install ledger from the catalog of the installed

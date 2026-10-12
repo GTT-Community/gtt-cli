@@ -3,6 +3,7 @@ package app
 import (
 	"context"
 
+	"github.com/GTT-Community/gtt-cli/internal/core"
 	"github.com/GTT-Community/gtt-cli/internal/lifecycle"
 	"github.com/GTT-Community/gtt-cli/internal/ports"
 )
@@ -12,6 +13,17 @@ type ResolveOptions struct {
 	Path    string
 	Version string
 	Offline bool
+}
+
+// request turns the flags into a resolution request. With no explicit
+// package and no explicit version there is exactly one answer: the release
+// this CLI pins. A branch head is never one.
+func (o ResolveOptions) request() ports.ResolveRequest {
+	req := ports.ResolveRequest{Path: o.Path, Version: o.Version, Offline: o.Offline}
+	if req.Path == "" && req.Version == "" {
+		req.Version = core.BootstrapPin
+	}
+	return req
 }
 
 // resolve finds, verifies and negotiates a Bootstrap catalog. A catalog that

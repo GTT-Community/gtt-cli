@@ -59,7 +59,7 @@ func TestCleanNeedsConfirmationAndSnapshotRestores(t *testing.T) {
 	}
 
 	r := gtt(t, root, "clean", "--yes").must(t, 0)
-	for _, gone := range []string{".gtt", "gtt-domain", "AGENTS.md", "readme-gtt.md", ".claude/CLAUDE.md", ".copilot"} {
+	for _, gone := range []string{".gtt", "gtt-domain", "AGENTS.md", "readme-gtt.md", ".claude/CLAUDE.md", overlayEntry(t, "copilot")} {
 		if exists(root, gone) {
 			t.Errorf("%s must be removed", gone)
 		}
@@ -133,12 +133,13 @@ func TestUpdateIsTransactionalAndPreservesProjectState(t *testing.T) {
 	// A local change to a package file must survive an update.
 	write(t, root, ".gtt/docs/docs.md", read(t, root, ".gtt/docs/docs.md")+"\nlocal note\n")
 
-	target := newer(t, "1.3.0")
+	from, to := catalogVersion(t), next(t, catalogVersion(t), 1)
+	target := newer(t, to)
 	doc := gtt(t, root, "update", "--bootstrap", target, "--json").must(t, 0).json(t)
-	if doc["outcome"] != "updated" || doc["from"] != "1.2.0" || doc["to"] != "1.3.0" {
+	if doc["outcome"] != "updated" || doc["from"] != from || doc["to"] != to {
 		t.Fatalf("got %v", doc)
 	}
-	if !strings.Contains(read(t, root, ".gtt/docs/usage.md"), "added in 1.3.0") {
+	if !strings.Contains(read(t, root, ".gtt/docs/usage.md"), "added in "+to) {
 		t.Error("changed package content must be replaced")
 	}
 	if !strings.Contains(read(t, root, ".gtt/docs/docs.md"), "local note") {
@@ -148,7 +149,7 @@ func TestUpdateIsTransactionalAndPreservesProjectState(t *testing.T) {
 		t.Errorf("preserved files must be reported: %v", doc["preserved_modified"])
 	}
 	v := gtt(t, root, "version", "--json").must(t, 0).json(t)["bootstrap"].(map[string]any)
-	if v["version"] != "1.3.0" {
+	if v["version"] != to {
 		t.Errorf("installed version: %v", v)
 	}
 	st := gtt(t, root, "status", "--fast", "--json").must(t, 0).json(t)["status"].(map[string]any)
@@ -164,7 +165,7 @@ func TestUpdateIsTransactionalAndPreservesProjectState(t *testing.T) {
 	if exists(root, ".gtt-update-backup") {
 		t.Error("the backup must be removed after a committed update")
 	}
-	if a := gtt(t, root, "audit").must(t, 0).out; !strings.Contains(a, "update 1.2.0 -> 1.3.0") {
+	if a := gtt(t, root, "audit").must(t, 0).out; !strings.Contains(a, "update "+from+" -> "+to) {
 		t.Errorf("the update must be traceable:\n%s", a)
 	}
 	// Downgrade is refused.
@@ -184,7 +185,8 @@ func TestUpdateRefusalsAndRollbackLeaveTheProjectUnchanged(t *testing.T) {
 		}
 	}
 
-	incompatible := newer(t, "1.3.0")
+	to := next(t, catalogVersion(t), 1)
+	incompatible := newer(t, to)
 	edit(t, filepath.Join(incompatible, ".gtt/contract/release.json"), func(d map[string]any) {
 		d["compatibility"].(map[string]any)["cli"].(map[string]any)["min_version"] = "1.1.0"
 	})
@@ -194,7 +196,7 @@ func TestUpdateRefusalsAndRollbackLeaveTheProjectUnchanged(t *testing.T) {
 	}
 	same("incompatible CLI")
 
-	profile := newer(t, "1.3.0")
+	profile := newer(t, to)
 	edit(t, filepath.Join(profile, ".gtt/contract/capabilities.json"), func(d map[string]any) {
 		for _, c := range d["capabilities"].([]any) {
 			if m := c.(map[string]any); m["id"] == "methodology.profile" {
@@ -205,13 +207,13 @@ func TestUpdateRefusalsAndRollbackLeaveTheProjectUnchanged(t *testing.T) {
 	gtt(t, root, "update", "--bootstrap", profile).must(t, 2)
 	same("incompatible profile contract")
 
-	broken := newer(t, "1.3.0")
+	broken := newer(t, to)
 	os.Remove(filepath.Join(broken, ".gtt/scaffold/manifest.yaml"))
 	gtt(t, root, "update", "--bootstrap", broken).must(t, 6)
 	same("failed integrity")
 
 	// A target whose validation fails after being applied is rolled back.
-	failing := newer(t, "1.3.0")
+	failing := newer(t, to)
 	os.WriteFile(filepath.Join(failing, ".gtt/scripts/gtt-check-backlog.sh"), []byte("#!/usr/bin/env bash\necho 'FAIL  injected' >&2\nexit 1\n"), 0o755)
 	r = gtt(t, root, "update", "--bootstrap", failing).must(t, 1)
 	if !strings.Contains(r.err, "rolled back") {
@@ -220,7 +222,7 @@ func TestUpdateRefusalsAndRollbackLeaveTheProjectUnchanged(t *testing.T) {
 	if exists(root, ".gtt-update-backup") {
 		t.Error("no backup may be left behind after a rollback")
 	}
-	if v := gtt(t, root, "version", "--json").must(t, 0).json(t)["bootstrap"].(map[string]any); v["version"] != "1.2.0" {
+	if v := gtt(t, root, "version", "--json").must(t, 0).json(t)["bootstrap"].(map[string]any); v["version"] != catalogVersion(t) {
 		t.Errorf("still on the previous release: %v", v)
 	}
 	if read(t, root, ".gtt/scripts/gtt-check-backlog.sh") != read(t, pristine, ".gtt/scripts/gtt-check-backlog.sh") {

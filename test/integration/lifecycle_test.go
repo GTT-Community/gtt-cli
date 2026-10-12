@@ -75,13 +75,20 @@ func TestReadOnlyCommandsAreIdempotentAndJSON(t *testing.T) {
 	os.WriteFile(filepath.Join(root, ".gtt/cli/operations.log"), nil, 0o644)
 	_ = before
 	root2 := installed(t, map[string]string{"docs/spec.md": "# spec\n"}, "--ade", "claude", "--language", "en", "--method", "medium", "--sources", "docs/spec.md")
-	os.Remove(filepath.Join(root2, ".gtt/cli/operations.log"))
+	// Besides the CLI's operation log, the Bootstrap keeps the result of its
+	// last validation in its own local state (.gtt/local/, declared `state`
+	// in the scaffold manifest, never committed): neither is project content.
+	volatile := func() {
+		os.Remove(filepath.Join(root2, ".gtt/cli/operations.log"))
+		os.RemoveAll(filepath.Join(root2, ".gtt/local"))
+	}
+	volatile()
 	h1 := treeHash(t, root2)
 	gtt(t, root2, "status").must(t, 0)
 	gtt(t, root2, "inspect").must(t, 0)
 	gtt(t, root2, "doctor").must(t, 0)
 	gtt(t, root2, "audit", "--md").must(t, 0)
-	os.Remove(filepath.Join(root2, ".gtt/cli/operations.log"))
+	volatile()
 	if treeHash(t, root2) != h1 {
 		t.Error("status, inspect, doctor and audit must not modify the project")
 	}
