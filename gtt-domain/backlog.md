@@ -144,6 +144,22 @@ a Story never silently overrides architecture.
   - Installation is transactional.
   - A failed installation leaves the project unmodified.
 
+##### STORY-048 — Unified CLI and Bootstrap installation
+
+- **Status:** In Progress
+- **Priority:** High
+- **Source:** TASK-gtt-cli-bootstrap-unified-install.md; approved 2026-10-12 (gtt-domain/proposals/PROPOSAL-unified-cli-bootstrap-install.md)
+- **Acceptance Criteria:**
+  - Each CLI release pins one exact Bootstrap release; `gtt version` reports both.
+  - `gtt init` always ends with the required release installed and verified, or fails with a distinct message.
+  - A release is downloaded from its tag and checked against the commit the tag names; never a branch head.
+  - A matching installed release is reused: nothing is downloaded or written, however often init runs.
+  - Another installed release is reported (installed vs required) and changed only on a human confirmation in a terminal; `--yes` does not give it; a project is never downgraded.
+  - A locally modified Bootstrap file is shown as a diff and replaced only on its own confirmation.
+  - A failed or interrupted fetch leaves nothing in the cache or the project.
+  - Governed context, ADRs, SOURCE-BRIEF.*, change-request.md and the freeze marker stay byte-identical.
+  - No install channel (install.sh, install.ps1, uv, npm, go) places Bootstrap files.
+
 ### EPIC-003 — Project initialization
 
 **Status:** Completed
@@ -591,7 +607,8 @@ Work tracked here that is not tied to a specific Story.
 
 What is actively being worked on right now.
 
-- STORY-047 — Windows support: waiting for the Bootstrap fix (reports/BUG-bootstrap-windows-wsl-bash.md)
+- STORY-048 — Unified CLI and Bootstrap installation: implemented and tested; waiting for the Bootstrap release tag `v1.5.1` to be published, then the CLI release
+- STORY-047 — Windows support: the Bootstrap fix is prepared as Bootstrap 1.5.1 and passes under emulation; waiting for its publication and a green `windows-latest` run (reports/BUG-bootstrap-windows-wsl-bash.md)
 
 ## Next Work
 

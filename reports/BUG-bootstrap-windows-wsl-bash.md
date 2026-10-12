@@ -12,6 +12,10 @@
 
 ## Estado al 2026-10-12: sigue vigente en Bootstrap 1.5.0
 
+**Actualización, mismo día:** la corrección de abajo quedó aplicada en `gtt-bootstrap` como release 1.5.1 (pendiente
+de commit, tag `v1.5.1` y push por parte de quien lo mantiene). GTT CLI fija 1.5.1. Contra ese árbol, las dos pruebas
+de emulación pasan sin SKIP.
+
 Revisado contra `gtt-bootstrap` `main` (`0e1b86d`, release 1.5.0, el que fija GTT CLI). El defecto no está corregido
 y tiene más puntos de llamada que en 1.2.0. Ningún script lee `GTT_BASH`.
 

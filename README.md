@@ -46,9 +46,9 @@ GTT Method -> GTT Bootstrap -> versioned contracts -> GTT CLI -> ADE -> Human
 - On Windows: [Git for Windows](https://git-scm.com/download/win), which provides bash, and
   [Python 3](https://www.python.org/downloads/windows/). The CLI finds Git Bash on its own and never uses the WSL
   `bash.exe`; set `GTT_BASH` to point it at another bash.
-  Note: GTT Bootstrap 1.5.0 - the release this CLI ships with - still starts its own scripts with `bash` by name, which
-  on Windows is the WSL `bash.exe`, so `gtt init` and other operations fail there until a Bootstrap release fixes it;
-  the CLI already passes the right bash (`GTT_BASH`) to it.
+  Note: GTT Bootstrap up to 1.5.0 starts its own scripts with `bash` by name, which on Windows is the WSL `bash.exe`,
+  so `gtt init` and other operations fail there. Bootstrap 1.5.1 - the release this CLI ships with - runs them with
+  the bash the CLI hands it (`GTT_BASH`).
 
 ## Installation
 

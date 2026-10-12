@@ -552,7 +552,7 @@
       "title": "Project Backlog",
       "authority": "development-line",
       "version": "v2.1",
-      "sha256": "ab451184785bc3194dd0887d78ac1d439385cc922c34c11439290d8d79e1a742",
+      "sha256": "dc5483ee6aeecfba82e91ca7d10bce451550ed072b2aa33271205b264c843ceb",
       "aliases": [],
       "sections": [
         {
@@ -561,7 +561,7 @@
           "anchor": "project-backlog",
           "path": "Project Backlog",
           "line_start": 1,
-          "line_end": 614
+          "line_end": 631
         },
         {
           "heading": "Development Line",
@@ -585,7 +585,7 @@
           "anchor": "epics",
           "path": "Project Backlog > Epics",
           "line_start": 39,
-          "line_end": 583
+          "line_end": 599
         },
         {
           "heading": "EPIC-001 — Foundation",
@@ -649,7 +649,7 @@
           "anchor": "epic-002--bootstrap-runtime",
           "path": "Project Backlog > Epics > EPIC-002 — Bootstrap runtime",
           "line_start": 98,
-          "line_end": 146
+          "line_end": 162
         },
         {
           "heading": "Stories",
@@ -657,7 +657,7 @@
           "anchor": "stories-1",
           "path": "Project Backlog > Epics > EPIC-002 — Bootstrap runtime > Stories",
           "line_start": 105,
-          "line_end": 146
+          "line_end": 162
         },
         {
           "heading": "STORY-006 — Bootstrap resolver and cache",
@@ -692,468 +692,476 @@
           "line_end": 146
         },
         {
+          "heading": "STORY-048 — Unified CLI and Bootstrap installation",
+          "level": 5,
+          "anchor": "story-048--unified-cli-and-bootstrap-installation",
+          "path": "Project Backlog > Epics > EPIC-002 — Bootstrap runtime > Stories > STORY-048 — Unified CLI and Bootstrap installation",
+          "line_start": 147,
+          "line_end": 162
+        },
+        {
           "heading": "EPIC-003 — Project initialization",
           "level": 3,
           "anchor": "epic-003--project-initialization",
           "path": "Project Backlog > Epics > EPIC-003 — Project initialization",
-          "line_start": 147,
-          "line_end": 209
+          "line_start": 163,
+          "line_end": 225
         },
         {
           "heading": "Stories",
           "level": 4,
           "anchor": "stories-2",
           "path": "Project Backlog > Epics > EPIC-003 — Project initialization > Stories",
-          "line_start": 153,
-          "line_end": 209
+          "line_start": 169,
+          "line_end": 225
         },
         {
           "heading": "STORY-010 — Project, existing-GTT and conflict detection",
           "level": 5,
           "anchor": "story-010--project-existing-gtt-and-conflict-detection",
           "path": "Project Backlog > Epics > EPIC-003 — Project initialization > Stories > STORY-010 — Project, existing-GTT and conflict detection",
-          "line_start": 155,
-          "line_end": 163
+          "line_start": 171,
+          "line_end": 179
         },
         {
           "heading": "STORY-011 — Initial source discovery and selection",
           "level": 5,
           "anchor": "story-011--initial-source-discovery-and-selection",
           "path": "Project Backlog > Epics > EPIC-003 — Project initialization > Stories > STORY-011 — Initial source discovery and selection",
-          "line_start": 164,
-          "line_end": 172
+          "line_start": 180,
+          "line_end": 188
         },
         {
           "heading": "STORY-012 — Questionnaire fallback",
           "level": 5,
           "anchor": "story-012--questionnaire-fallback",
           "path": "Project Backlog > Epics > EPIC-003 — Project initialization > Stories > STORY-012 — Questionnaire fallback",
-          "line_start": 173,
-          "line_end": 182
+          "line_start": 189,
+          "line_end": 198
         },
         {
           "heading": "STORY-013 — Language selection",
           "level": 5,
           "anchor": "story-013--language-selection",
           "path": "Project Backlog > Epics > EPIC-003 — Project initialization > Stories > STORY-013 — Language selection",
-          "line_start": 183,
-          "line_end": 190
+          "line_start": 199,
+          "line_end": 206
         },
         {
           "heading": "STORY-014 — Method Plan selection at init",
           "level": 5,
           "anchor": "story-014--method-plan-selection-at-init",
           "path": "Project Backlog > Epics > EPIC-003 — Project initialization > Stories > STORY-014 — Method Plan selection at init",
-          "line_start": 191,
-          "line_end": 200
+          "line_start": 207,
+          "line_end": 216
         },
         {
           "heading": "STORY-015 —            transaction and resume",
           "level": 5,
           "anchor": "story-015-------------transaction-and-resume",
           "path": "Project Backlog > Epics > EPIC-003 — Project initialization > Stories > STORY-015 —            transaction and resume",
-          "line_start": 201,
-          "line_end": 209
+          "line_start": 217,
+          "line_end": 225
         },
         {
           "heading": "EPIC-004 — ADE",
           "level": 3,
           "anchor": "epic-004--ade",
           "path": "Project Backlog > Epics > EPIC-004 — ADE",
-          "line_start": 210,
-          "line_end": 256
+          "line_start": 226,
+          "line_end": 272
         },
         {
           "heading": "Stories",
           "level": 4,
           "anchor": "stories-3",
           "path": "Project Backlog > Epics > EPIC-004 — ADE > Stories",
-          "line_start": 216,
-          "line_end": 256
+          "line_start": 232,
+          "line_end": 272
         },
         {
           "heading": "STORY-016 — ADE candidate detection",
           "level": 5,
           "anchor": "story-016--ade-candidate-detection",
           "path": "Project Backlog > Epics > EPIC-004 — ADE > Stories > STORY-016 — ADE candidate detection",
-          "line_start": 218,
-          "line_end": 226
+          "line_start": 234,
+          "line_end": 242
         },
         {
           "heading": "STORY-017 — Participation and Primary ADE selection",
           "level": 5,
           "anchor": "story-017--participation-and-primary-ade-selection",
           "path": "Project Backlog > Epics > EPIC-004 — ADE > Stories > STORY-017 — Participation and Primary ADE selection",
-          "line_start": 227,
-          "line_end": 236
+          "line_start": 243,
+          "line_end": 252
         },
         {
           "heading": "STORY-018 — ADE installation and validation",
           "level": 5,
           "anchor": "story-018--ade-installation-and-validation",
           "path": "Project Backlog > Epics > EPIC-004 — ADE > Stories > STORY-018 — ADE installation and validation",
-          "line_start": 237,
-          "line_end": 246
+          "line_start": 253,
+          "line_end": 262
         },
         {
           "heading": "STORY-019 — ADE invocation and handoff",
           "level": 5,
           "anchor": "story-019--ade-invocation-and-handoff",
           "path": "Project Backlog > Epics > EPIC-004 — ADE > Stories > STORY-019 — ADE invocation and handoff",
-          "line_start": 247,
-          "line_end": 256
+          "line_start": 263,
+          "line_end": 272
         },
         {
           "heading": "EPIC-005 — Lifecycle",
           "level": 3,
           "anchor": "epic-005--lifecycle",
           "path": "Project Backlog > Epics > EPIC-005 — Lifecycle",
-          "line_start": 257,
-          "line_end": 307
+          "line_start": 273,
+          "line_end": 323
         },
         {
           "heading": "Stories",
           "level": 4,
           "anchor": "stories-4",
           "path": "Project Backlog > Epics > EPIC-005 — Lifecycle > Stories",
-          "line_start": 263,
-          "line_end": 307
+          "line_start": 279,
+          "line_end": 323
         },
         {
           "heading": "STORY-020 —              and",
           "level": 5,
           "anchor": "story-020---------------and",
           "path": "Project Backlog > Epics > EPIC-005 — Lifecycle > Stories > STORY-020 —              and",
-          "line_start": 265,
-          "line_end": 273
+          "line_start": 281,
+          "line_end": 289
         },
         {
           "heading": "STORY-021 —                and CI mode",
           "level": 5,
           "anchor": "story-021-----------------and-ci-mode",
           "path": "Project Backlog > Epics > EPIC-005 — Lifecycle > Stories > STORY-021 —                and CI mode",
-          "line_start": 274,
-          "line_end": 282
+          "line_start": 290,
+          "line_end": 298
         },
         {
           "heading": "STORY-022 —",
           "level": 5,
           "anchor": "story-022-",
           "path": "Project Backlog > Epics > EPIC-005 — Lifecycle > Stories > STORY-022 —",
-          "line_start": 283,
-          "line_end": 290
+          "line_start": 299,
+          "line_end": 306
         },
         {
           "heading": "STORY-023 —",
           "level": 5,
           "anchor": "story-023-",
           "path": "Project Backlog > Epics > EPIC-005 — Lifecycle > Stories > STORY-023 —",
-          "line_start": 291,
-          "line_end": 298
+          "line_start": 307,
+          "line_end": 314
         },
         {
           "heading": "STORY-024 —              and",
           "level": 5,
           "anchor": "story-024---------------and",
           "path": "Project Backlog > Epics > EPIC-005 — Lifecycle > Stories > STORY-024 —              and",
-          "line_start": 299,
-          "line_end": 307
+          "line_start": 315,
+          "line_end": 323
         },
         {
           "heading": "EPIC-006 — Distribution",
           "level": 3,
           "anchor": "epic-006--distribution",
           "path": "Project Backlog > Epics > EPIC-006 — Distribution",
-          "line_start": 308,
-          "line_end": 351
+          "line_start": 324,
+          "line_end": 367
         },
         {
           "heading": "Stories",
           "level": 4,
           "anchor": "stories-5",
           "path": "Project Backlog > Epics > EPIC-006 — Distribution > Stories",
-          "line_start": 314,
-          "line_end": 351
+          "line_start": 330,
+          "line_end": 367
         },
         {
           "heading": "STORY-025 —",
           "level": 5,
           "anchor": "story-025-",
           "path": "Project Backlog > Epics > EPIC-006 — Distribution > Stories > STORY-025 —",
-          "line_start": 316,
-          "line_end": 324
+          "line_start": 332,
+          "line_end": 340
         },
         {
           "heading": "STORY-026 — Recovery snapshot and restore",
           "level": 5,
           "anchor": "story-026--recovery-snapshot-and-restore",
           "path": "Project Backlog > Epics > EPIC-006 — Distribution > Stories > STORY-026 — Recovery snapshot and restore",
-          "line_start": 325,
-          "line_end": 333
+          "line_start": 341,
+          "line_end": 349
         },
         {
           "heading": "STORY-027 —",
           "level": 5,
           "anchor": "story-027-",
           "path": "Project Backlog > Epics > EPIC-006 — Distribution > Stories > STORY-027 —",
-          "line_start": 334,
-          "line_end": 342
+          "line_start": 350,
+          "line_end": 358
         },
         {
           "heading": "STORY-028 —",
           "level": 5,
           "anchor": "story-028-",
           "path": "Project Backlog > Epics > EPIC-006 — Distribution > Stories > STORY-028 —",
-          "line_start": 343,
-          "line_end": 351
+          "line_start": 359,
+          "line_end": 367
         },
         {
           "heading": "EPIC-007 — Hardening",
           "level": 3,
           "anchor": "epic-007--hardening",
           "path": "Project Backlog > Epics > EPIC-007 — Hardening",
-          "line_start": 352,
-          "line_end": 449
+          "line_start": 368,
+          "line_end": 465
         },
         {
           "heading": "Stories",
           "level": 4,
           "anchor": "stories-6",
           "path": "Project Backlog > Epics > EPIC-007 — Hardening > Stories",
-          "line_start": 359,
-          "line_end": 449
+          "line_start": 375,
+          "line_end": 465
         },
         {
           "heading": "STORY-029 — Path, symlink and archive safety",
           "level": 5,
           "anchor": "story-029--path-symlink-and-archive-safety",
           "path": "Project Backlog > Epics > EPIC-007 — Hardening > Stories > STORY-029 — Path, symlink and archive safety",
-          "line_start": 361,
-          "line_end": 370
+          "line_start": 377,
+          "line_end": 386
         },
         {
           "heading": "STORY-030 — Idempotency and transactionality",
           "level": 5,
           "anchor": "story-030--idempotency-and-transactionality",
           "path": "Project Backlog > Epics > EPIC-007 — Hardening > Stories > STORY-030 — Idempotency and transactionality",
-          "line_start": 371,
-          "line_end": 379
+          "line_start": 387,
+          "line_end": 395
         },
         {
           "heading": "STORY-031 — Layered tests: unit, integration, end-to-end",
           "level": 5,
           "anchor": "story-031--layered-tests-unit-integration-end-to-end",
           "path": "Project Backlog > Epics > EPIC-007 — Hardening > Stories > STORY-031 — Layered tests: unit, integration, end-to-end",
-          "line_start": 380,
-          "line_end": 391
+          "line_start": 396,
+          "line_end": 407
         },
         {
           "heading": "STORY-032 — Architecture boundary: no methodology in Go",
           "level": 5,
           "anchor": "story-032--architecture-boundary-no-methodology-in-go",
           "path": "Project Backlog > Epics > EPIC-007 — Hardening > Stories > STORY-032 — Architecture boundary: no methodology in Go",
-          "line_start": 392,
-          "line_end": 400
+          "line_start": 408,
+          "line_end": 416
         },
         {
           "heading": "STORY-033 — CI pipeline",
           "level": 5,
           "anchor": "story-033--ci-pipeline",
           "path": "Project Backlog > Epics > EPIC-007 — Hardening > Stories > STORY-033 — CI pipeline",
-          "line_start": 401,
-          "line_end": 409
+          "line_start": 417,
+          "line_end": 425
         },
         {
           "heading": "STORY-034 — Release packaging and documentation",
           "level": 5,
           "anchor": "story-034--release-packaging-and-documentation",
           "path": "Project Backlog > Epics > EPIC-007 — Hardening > Stories > STORY-034 — Release packaging and documentation",
-          "line_start": 410,
-          "line_end": 419
+          "line_start": 426,
+          "line_end": 435
         },
         {
           "heading": "STORY-046 — Release binaries and one-command publishing",
           "level": 5,
           "anchor": "story-046--release-binaries-and-one-command-publishing",
           "path": "Project Backlog > Epics > EPIC-007 — Hardening > Stories > STORY-046 — Release binaries and one-command publishing",
-          "line_start": 420,
-          "line_end": 434
+          "line_start": 436,
+          "line_end": 450
         },
         {
           "heading": "STORY-047 — Windows support",
           "level": 5,
           "anchor": "story-047--windows-support",
           "path": "Project Backlog > Epics > EPIC-007 — Hardening > Stories > STORY-047 — Windows support",
-          "line_start": 435,
-          "line_end": 449
+          "line_start": 451,
+          "line_end": 465
         },
         {
           "heading": "EPIC-008 — Agent/ADE context discovery and synchronisation",
           "level": 3,
           "anchor": "epic-008--agentade-context-discovery-and-synchronisation",
           "path": "Project Backlog > Epics > EPIC-008 — Agent/ADE context discovery and synchronisation",
-          "line_start": 450,
-          "line_end": 499
+          "line_start": 466,
+          "line_end": 515
         },
         {
           "heading": "Stories",
           "level": 4,
           "anchor": "stories-7",
           "path": "Project Backlog > Epics > EPIC-008 — Agent/ADE context discovery and synchronisation > Stories",
-          "line_start": 456,
-          "line_end": 499
+          "line_start": 472,
+          "line_end": 515
         },
         {
           "heading": "STORY-035 — Agent adapters, registry and context manifest",
           "level": 5,
           "anchor": "story-035--agent-adapters-registry-and-context-manifest",
           "path": "Project Backlog > Epics > EPIC-008 — Agent/ADE context discovery and synchronisation > Stories > STORY-035 — Agent adapters, registry and context manifest",
-          "line_start": 458,
-          "line_end": 468
+          "line_start": 474,
+          "line_end": 484
         },
         {
           "heading": "STORY-036 —              and",
           "level": 5,
           "anchor": "story-036---------------and",
           "path": "Project Backlog > Epics > EPIC-008 — Agent/ADE context discovery and synchronisation > Stories > STORY-036 —              and",
-          "line_start": 469,
-          "line_end": 478
+          "line_start": 485,
+          "line_end": 494
         },
         {
           "heading": "STORY-037 —",
           "level": 5,
           "anchor": "story-037-",
           "path": "Project Backlog > Epics > EPIC-008 — Agent/ADE context discovery and synchronisation > Stories > STORY-037 —",
-          "line_start": 479,
-          "line_end": 489
+          "line_start": 495,
+          "line_end": 505
         },
         {
           "heading": "STORY-038 — Integration with             , traceability and CI",
           "level": 5,
           "anchor": "story-038--integration-with--------------traceability-and-ci",
           "path": "Project Backlog > Epics > EPIC-008 — Agent/ADE context discovery and synchronisation > Stories > STORY-038 — Integration with             , traceability and CI",
-          "line_start": 490,
-          "line_end": 499
+          "line_start": 506,
+          "line_end": 515
         },
         {
           "heading": "EPIC-009 — Method Plans and automation policy",
           "level": 3,
           "anchor": "epic-009--method-plans-and-automation-policy",
           "path": "Project Backlog > Epics > EPIC-009 — Method Plans and automation policy",
-          "line_start": 500,
-          "line_end": 545
+          "line_start": 516,
+          "line_end": 561
         },
         {
           "heading": "Stories",
           "level": 4,
           "anchor": "stories-8",
           "path": "Project Backlog > Epics > EPIC-009 — Method Plans and automation policy > Stories",
-          "line_start": 507,
-          "line_end": 545
+          "line_start": 523,
+          "line_end": 561
         },
         {
           "heading": "STORY-039 —                   and",
           "level": 5,
           "anchor": "story-039--------------------and",
           "path": "Project Backlog > Epics > EPIC-009 — Method Plans and automation policy > Stories > STORY-039 —                   and",
-          "line_start": 509,
-          "line_end": 518
+          "line_start": 525,
+          "line_end": 534
         },
         {
           "heading": "STORY-040 —",
           "level": 5,
           "anchor": "story-040-",
           "path": "Project Backlog > Epics > EPIC-009 — Method Plans and automation policy > Stories > STORY-040 —",
-          "line_start": 519,
-          "line_end": 526
+          "line_start": 535,
+          "line_end": 542
         },
         {
           "heading": "STORY-041 — Artifact identity allocator",
           "level": 5,
           "anchor": "story-041--artifact-identity-allocator",
           "path": "Project Backlog > Epics > EPIC-009 — Method Plans and automation policy > Stories > STORY-041 — Artifact identity allocator",
-          "line_start": 527,
-          "line_end": 536
+          "line_start": 543,
+          "line_end": 552
         },
         {
           "heading": "STORY-042 — Team plan operating policy",
           "level": 5,
           "anchor": "story-042--team-plan-operating-policy",
           "path": "Project Backlog > Epics > EPIC-009 — Method Plans and automation policy > Stories > STORY-042 — Team plan operating policy",
-          "line_start": 537,
-          "line_end": 545
+          "line_start": 553,
+          "line_end": 561
         },
         {
           "heading": "EPIC-010 — Initial MD tracking",
           "level": 3,
           "anchor": "epic-010--initial-md-tracking",
           "path": "Project Backlog > Epics > EPIC-010 — Initial MD tracking",
-          "line_start": 546,
-          "line_end": 583
+          "line_start": 562,
+          "line_end": 599
         },
         {
           "heading": "Stories",
           "level": 4,
           "anchor": "stories-9",
           "path": "Project Backlog > Epics > EPIC-010 — Initial MD tracking > Stories",
-          "line_start": 553,
-          "line_end": 583
+          "line_start": 569,
+          "line_end": 599
         },
         {
           "heading": "STORY-043 — Tracking states READ, APPLIED, VALIDATED",
           "level": 5,
           "anchor": "story-043--tracking-states-read-applied-validated",
           "path": "Project Backlog > Epics > EPIC-010 — Initial MD tracking > Stories > STORY-043 — Tracking states READ, APPLIED, VALIDATED",
-          "line_start": 555,
-          "line_end": 563
+          "line_start": 571,
+          "line_end": 579
         },
         {
           "heading": "STORY-044 — Reprocessing avoidance and change detection",
           "level": 5,
           "anchor": "story-044--reprocessing-avoidance-and-change-detection",
           "path": "Project Backlog > Epics > EPIC-010 — Initial MD tracking > Stories > STORY-044 — Reprocessing avoidance and change detection",
-          "line_start": 564,
-          "line_end": 572
+          "line_start": 580,
+          "line_end": 588
         },
         {
           "heading": "STORY-045 — Bootstrap-side tracking structure",
           "level": 5,
           "anchor": "story-045--bootstrap-side-tracking-structure",
           "path": "Project Backlog > Epics > EPIC-010 — Initial MD tracking > Stories > STORY-045 — Bootstrap-side tracking structure",
-          "line_start": 573,
-          "line_end": 583
+          "line_start": 589,
+          "line_end": 599
         },
         {
           "heading": "General Development Work",
           "level": 2,
           "anchor": "general-development-work",
           "path": "Project Backlog > General Development Work",
-          "line_start": 584,
-          "line_end": 589
+          "line_start": 600,
+          "line_end": 605
         },
         {
           "heading": "Current Focus",
           "level": 2,
           "anchor": "current-focus",
           "path": "Project Backlog > Current Focus",
-          "line_start": 590,
-          "line_end": 595
+          "line_start": 606,
+          "line_end": 612
         },
         {
           "heading": "Next Work",
           "level": 2,
           "anchor": "next-work",
           "path": "Project Backlog > Next Work",
-          "line_start": 596,
-          "line_end": 601
+          "line_start": 613,
+          "line_end": 618
         },
         {
           "heading": "Blocked",
           "level": 2,
           "anchor": "blocked",
           "path": "Project Backlog > Blocked",
-          "line_start": 602,
-          "line_end": 614
+          "line_start": 619,
+          "line_end": 631
         }
       ],
       "references": [],
@@ -4298,6 +4306,89 @@
       }
     },
     {
+      "id": "PROP-ADR-DRAFT-PINNED-BOOTSTRAP-RELEASE",
+      "type": "proposal",
+      "path": "gtt-domain/proposals/ADR-DRAFT-pinned-bootstrap-release.md",
+      "title": "ADR-004 — One pinned Bootstrap release per CLI release",
+      "authority": "draft",
+      "version": "v2.1",
+      "sha256": "cf1e458e1a223c6961f8821407dcb142c67fdcce7fa42510d8d95fe2704e2df4",
+      "aliases": [],
+      "sections": [
+        {
+          "heading": "ADR-004 — One pinned Bootstrap release per CLI release",
+          "level": 1,
+          "anchor": "adr-004--one-pinned-bootstrap-release-per-cli-release",
+          "path": "ADR-004 — One pinned Bootstrap release per CLI release",
+          "line_start": 1,
+          "line_end": 82
+        },
+        {
+          "heading": "Context",
+          "level": 2,
+          "anchor": "context",
+          "path": "ADR-004 — One pinned Bootstrap release per CLI release > Context",
+          "line_start": 10,
+          "line_end": 23
+        },
+        {
+          "heading": "Decision",
+          "level": 2,
+          "anchor": "decision",
+          "path": "ADR-004 — One pinned Bootstrap release per CLI release > Decision",
+          "line_start": 24,
+          "line_end": 40
+        },
+        {
+          "heading": "Alternatives considered",
+          "level": 2,
+          "anchor": "alternatives-considered",
+          "path": "ADR-004 — One pinned Bootstrap release per CLI release > Alternatives considered",
+          "line_start": 41,
+          "line_end": 48
+        },
+        {
+          "heading": "Consequences",
+          "level": 2,
+          "anchor": "consequences",
+          "path": "ADR-004 — One pinned Bootstrap release per CLI release > Consequences",
+          "line_start": 49,
+          "line_end": 58
+        },
+        {
+          "heading": "Risks",
+          "level": 2,
+          "anchor": "risks",
+          "path": "ADR-004 — One pinned Bootstrap release per CLI release > Risks",
+          "line_start": 59,
+          "line_end": 65
+        },
+        {
+          "heading": "Stack map delta",
+          "level": 2,
+          "anchor": "stack-map-delta",
+          "path": "ADR-004 — One pinned Bootstrap release per CLI release > Stack map delta",
+          "line_start": 66,
+          "line_end": 75
+        },
+        {
+          "heading": "Affected context",
+          "level": 2,
+          "anchor": "affected-context",
+          "path": "ADR-004 — One pinned Bootstrap release per CLI release > Affected context",
+          "line_start": 76,
+          "line_end": 82
+        }
+      ],
+      "references": [],
+      "referenced_by": [],
+      "relationships": [],
+      "provenance": {
+        "history": [],
+        "referenced_by_proposals": []
+      }
+    },
+    {
       "id": "PROP-ADR-DRAFT-RELEASE-PACKAGING-PLATFORMS",
       "type": "proposal",
       "path": "gtt-domain/adr/ADR-003-release-packaging-platforms.md",
@@ -4383,13 +4474,147 @@
       }
     },
     {
+      "id": "PROP-CONTEXT-SOURCES-ADR-004",
+      "type": "proposal",
+      "path": "gtt-domain/proposals/context-sources-ADR-004.md",
+      "title": "Source Manifest",
+      "authority": "draft",
+      "version": "v2.1",
+      "sha256": "d4ec2263b74c7171ce8fae518a4653e0312a0cdafadfe8883151b8582427442d",
+      "aliases": [],
+      "sections": [
+        {
+          "heading": "Source Manifest",
+          "level": 1,
+          "anchor": "source-manifest",
+          "path": "Source Manifest",
+          "line_start": 1,
+          "line_end": 34
+        },
+        {
+          "heading": "Resolved by precedence",
+          "level": 2,
+          "anchor": "resolved-by-precedence",
+          "path": "Source Manifest > Resolved by precedence",
+          "line_start": 10,
+          "line_end": 19
+        },
+        {
+          "heading": "Sources",
+          "level": 2,
+          "anchor": "sources",
+          "path": "Source Manifest > Sources",
+          "line_start": 20,
+          "line_end": 34
+        }
+      ],
+      "references": [],
+      "referenced_by": [],
+      "relationships": [],
+      "provenance": {
+        "history": [],
+        "referenced_by_proposals": []
+      }
+    },
+    {
+      "id": "PROP-CONTEXT-STACK-ADR-004",
+      "type": "proposal",
+      "path": "gtt-domain/proposals/context-stack-ADR-004.md",
+      "title": "Stack & Architecture Map",
+      "authority": "draft",
+      "version": "v2.1",
+      "sha256": "fb6cb231ccd662321d2c433a3946f3b8f7a241fa9f0be9568236138c88980c75",
+      "aliases": [],
+      "sections": [
+        {
+          "heading": "Stack & Architecture Map",
+          "level": 1,
+          "anchor": "stack--architecture-map",
+          "path": "Stack & Architecture Map",
+          "line_start": 1,
+          "line_end": 155
+        },
+        {
+          "heading": "1. Stack at a glance",
+          "level": 2,
+          "anchor": "1-stack-at-a-glance",
+          "path": "Stack & Architecture Map > 1. Stack at a glance",
+          "line_start": 14,
+          "line_end": 36
+        },
+        {
+          "heading": "2. Component map",
+          "level": 2,
+          "anchor": "2-component-map",
+          "path": "Stack & Architecture Map > 2. Component map",
+          "line_start": 37,
+          "line_end": 73
+        },
+        {
+          "heading": "3. Deployment topology",
+          "level": 2,
+          "anchor": "3-deployment-topology",
+          "path": "Stack & Architecture Map > 3. Deployment topology",
+          "line_start": 74,
+          "line_end": 91
+        },
+        {
+          "heading": "4. Observability",
+          "level": 2,
+          "anchor": "4-observability",
+          "path": "Stack & Architecture Map > 4. Observability",
+          "line_start": 92,
+          "line_end": 108
+        },
+        {
+          "heading": "5. Dependency rules",
+          "level": 2,
+          "anchor": "5-dependency-rules",
+          "path": "Stack & Architecture Map > 5. Dependency rules",
+          "line_start": 109,
+          "line_end": 121
+        },
+        {
+          "heading": "6. Map change log",
+          "level": 2,
+          "anchor": "6-map-change-log",
+          "path": "Stack & Architecture Map > 6. Map change log",
+          "line_start": 122,
+          "line_end": 132
+        },
+        {
+          "heading": "7. Drift signals",
+          "level": 2,
+          "anchor": "7-drift-signals",
+          "path": "Stack & Architecture Map > 7. Drift signals",
+          "line_start": 133,
+          "line_end": 142
+        },
+        {
+          "heading": "8. Gap register",
+          "level": 2,
+          "anchor": "8-gap-register",
+          "path": "Stack & Architecture Map > 8. Gap register",
+          "line_start": 143,
+          "line_end": 155
+        }
+      ],
+      "references": [],
+      "referenced_by": [],
+      "relationships": [],
+      "provenance": {
+        "history": [],
+        "referenced_by_proposals": []
+      }
+    },
+    {
       "id": "PROP-PROPOSAL-UNIFIED-CLI-BOOTSTRAP-INSTALL",
       "type": "proposal",
       "path": "gtt-domain/proposals/PROPOSAL-unified-cli-bootstrap-install.md",
       "title": "PROPOSAL — Unified CLI / Bootstrap installation",
       "authority": "draft",
       "version": "v2.1",
-      "sha256": "079a7958ade31043678af0c11760698fded1b7826caba9d011b803d91929de5a",
+      "sha256": "b10e5ec8cd1b60bcd95db59cd98b227062b0c5dd874cd1d765ee4efa467cc04e",
       "aliases": [],
       "sections": [
         {
@@ -5661,7 +5886,8 @@
       "GTT-GTT-INITIAL-DESIGN-QUESTIONNAIRE#1-operating-contract-for-the-ade"
     ],
     "1. stack at a glance": [
-      "CTX-STACK#1-stack-at-a-glance"
+      "CTX-STACK#1-stack-at-a-glance",
+      "PROP-CONTEXT-STACK-ADR-004#1-stack-at-a-glance"
     ],
     "1. start from governed context": [
       "GTT-USAGE#1-start-from-governed-context"
@@ -5787,7 +6013,8 @@
       "GTT-GTT-INITIAL-DESIGN-QUESTIONNAIRE#19-unknowns"
     ],
     "2. component map": [
-      "CTX-STACK#2-component-map"
+      "CTX-STACK#2-component-map",
+      "PROP-CONTEXT-STACK-ADR-004#2-component-map"
     ],
     "2. context change": [
       "SKILL-GTT-PROPOSE-CHANGE#2-context-change"
@@ -5874,7 +6101,8 @@
       "SKILL-GTT-PROPOSE-CHANGE#3-context-conflict"
     ],
     "3. deployment topology": [
-      "CTX-STACK#3-deployment-topology"
+      "CTX-STACK#3-deployment-topology",
+      "PROP-CONTEXT-STACK-ADR-004#3-deployment-topology"
     ],
     "3. detect an architectural change": [
       "GTT-USAGE#3-detect-an-architectural-change"
@@ -5913,7 +6141,8 @@
       "GTT-INSTALLATION#4-merge"
     ],
     "4. observability": [
-      "CTX-STACK#4-observability"
+      "CTX-STACK#4-observability",
+      "PROP-CONTEXT-STACK-ADR-004#4-observability"
     ],
     "4. project identity": [
       "GTT-GTT-INITIAL-DESIGN-QUESTIONNAIRE#4-project-identity"
@@ -5946,7 +6175,8 @@
       "SKILL-GTT-BOOTSTRAP#5-confirm-before-drafting"
     ],
     "5. dependency rules": [
-      "CTX-STACK#5-dependency-rules"
+      "CTX-STACK#5-dependency-rules",
+      "PROP-CONTEXT-STACK-ADR-004#5-dependency-rules"
     ],
     "5. poblar el contexto": [
       "GTT-INSTALLATION-ES#5-poblar-el-contexto"
@@ -5970,7 +6200,8 @@
       "GTT-GTT-INITIAL-DESIGN-QUESTIONNAIRE#53-scope-boundaries"
     ],
     "6. map change log": [
-      "CTX-STACK#6-map-change-log"
+      "CTX-STACK#6-map-change-log",
+      "PROP-CONTEXT-STACK-ADR-004#6-map-change-log"
     ],
     "6. record the decision": [
       "GTT-USAGE#6-record-the-decision"
@@ -6000,7 +6231,8 @@
       "GTT-GTT-INITIAL-DESIGN-QUESTIONNAIRE#63-internal-consumers"
     ],
     "7. drift signals": [
-      "CTX-STACK#7-drift-signals"
+      "CTX-STACK#7-drift-signals",
+      "PROP-CONTEXT-STACK-ADR-004#7-drift-signals"
     ],
     "7. freeze": [
       "GTT-INSTALLATION#7-freeze",
@@ -6019,7 +6251,8 @@
       "GTT-GTT-INITIAL-DESIGN-QUESTIONNAIRE#8-functional-requirements"
     ],
     "8. gap register": [
-      "CTX-STACK#8-gap-register"
+      "CTX-STACK#8-gap-register",
+      "PROP-CONTEXT-STACK-ADR-004#8-gap-register"
     ],
     "8. verificar el guardrail": [
       "GTT-INSTALLATION-ES#8-verificar-el-guardrail"
@@ -6075,6 +6308,9 @@
     "adr-001 — context is the source of truth": [
       "ADR-001#adr-001--context-is-the-source-of-truth"
     ],
+    "adr-004 — one pinned bootstrap release per cli release": [
+      "PROP-ADR-DRAFT-PINNED-BOOTSTRAP-RELEASE#adr-004--one-pinned-bootstrap-release-per-cli-release"
+    ],
     "adr-nnn — <title>": [
       "ADR-TEMPLATE#adr-nnn--title"
     ],
@@ -6082,6 +6318,7 @@
       "ADR-001#affected-context",
       "ADR-002#affected-context",
       "ADR-TEMPLATE#affected-context",
+      "PROP-ADR-DRAFT-PINNED-BOOTSTRAP-RELEASE#affected-context",
       "PROP-ADR-DRAFT-RELEASE-PACKAGING-PLATFORMS#affected-context"
     ],
     "after adding or removing a marker": [
@@ -6116,6 +6353,7 @@
       "ADR-001#alternatives-considered",
       "ADR-002#alternatives-considered",
       "ADR-TEMPLATE#alternatives-considered",
+      "PROP-ADR-DRAFT-PINNED-BOOTSTRAP-RELEASE#alternatives-considered",
       "PROP-ADR-DRAFT-RELEASE-PACKAGING-PLATFORMS#alternatives-considered"
     ],
     "architectural style": [
@@ -6267,6 +6505,7 @@
       "ADR-001#consequences",
       "ADR-002#consequences",
       "ADR-TEMPLATE#consequences",
+      "PROP-ADR-DRAFT-PINNED-BOOTSTRAP-RELEASE#consequences",
       "PROP-ADR-DRAFT-RELEASE-PACKAGING-PLATFORMS#consequences"
     ],
     "constraints": [
@@ -6277,6 +6516,7 @@
       "ADR-001#context",
       "ADR-002#context",
       "ADR-TEMPLATE#context",
+      "PROP-ADR-DRAFT-PINNED-BOOTSTRAP-RELEASE#context",
       "PROP-ADR-DRAFT-RELEASE-PACKAGING-PLATFORMS#context"
     ],
     "context freshness": [
@@ -6306,6 +6546,7 @@
       "ADR-001#decision",
       "ADR-002#decision",
       "ADR-TEMPLATE#decision",
+      "PROP-ADR-DRAFT-PINNED-BOOTSTRAP-RELEASE#decision",
       "PROP-ADR-DRAFT-RELEASE-PACKAGING-PLATFORMS#decision"
     ],
     "decisions": [
@@ -6889,7 +7130,8 @@
       "GTT-INSTALLATION-ES#requisitos-previos"
     ],
     "resolved by precedence": [
-      "CTX-SOURCES#resolved-by-precedence"
+      "CTX-SOURCES#resolved-by-precedence",
+      "PROP-CONTEXT-SOURCES-ADR-004#resolved-by-precedence"
     ],
     "retrieval": [
       "SKILL-GTT-RETRIEVE#retrieval"
@@ -6901,6 +7143,7 @@
       "ADR-001#risks",
       "ADR-002#risks",
       "ADR-TEMPLATE#risks",
+      "PROP-ADR-DRAFT-PINNED-BOOTSTRAP-RELEASE#risks",
       "PROP-ADR-DRAFT-RELEASE-PACKAGING-PLATFORMS#risks"
     ],
     "rules": [
@@ -6959,20 +7202,24 @@
     ],
     "source manifest": [
       "CTX-SOURCES#source-manifest",
-      "GTT-GTT-SOURCES-MANIFEST#source-manifest"
+      "GTT-GTT-SOURCES-MANIFEST#source-manifest",
+      "PROP-CONTEXT-SOURCES-ADR-004#source-manifest"
     ],
     "source preservation": [
       "AGENTS#source-preservation"
     ],
     "sources": [
       "CTX-SOURCES#sources",
-      "GTT-GTT-SOURCES-MANIFEST#sources"
+      "GTT-GTT-SOURCES-MANIFEST#sources",
+      "PROP-CONTEXT-SOURCES-ADR-004#sources"
     ],
     "stack & architecture map": [
-      "CTX-STACK#stack--architecture-map"
+      "CTX-STACK#stack--architecture-map",
+      "PROP-CONTEXT-STACK-ADR-004#stack--architecture-map"
     ],
     "stack map delta": [
       "ADR-002#stack-map-delta",
+      "PROP-ADR-DRAFT-PINNED-BOOTSTRAP-RELEASE#stack-map-delta",
       "PROP-ADR-DRAFT-RELEASE-PACKAGING-PLATFORMS#stack-map-delta"
     ],
     "stage the affected context files": [
@@ -7148,6 +7395,9 @@
     ],
     "story-047 — windows support": [
       "BACKLOG#story-047--windows-support"
+    ],
+    "story-048 — unified cli and bootstrap installation": [
+      "BACKLOG#story-048--unified-cli-and-bootstrap-installation"
     ],
     "structure": [
       "README-GTT#structure"

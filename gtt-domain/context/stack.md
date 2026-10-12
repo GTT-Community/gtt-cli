@@ -6,8 +6,8 @@
 > the architecture. Every approved architectural change updates this file in the
 > same commit as the ADR that approves it.
 
-- **Last verified:** `2026-10-03`
-- **Governing ADRs:** ADR-001, ADR-002, ADR-003
+- **Last verified:** `2026-10-12`
+- **Governing ADRs:** ADR-001, ADR-002, ADR-003, ADR-004
 
 ---
 
@@ -21,6 +21,7 @@
 | Compute model | Local CLI process | - | ADR-001 |
 | Datastore (primary) | None - JSON files under `.gtt/cli/` | - | ADR-001 |
 | Datastore (cache) | User-level Bootstrap cache on the filesystem | - | ADR-001 |
+| Bootstrap release | One GTT Bootstrap release pinned per CLI release, fetched from its release tag [FUENTE: unified-install] | 1.5.1 | ADR-004 |
 | Messaging / events | None | - | ADR-001 |
 | Identity & authz | None | - | ADR-001 |
 | Secrets | None stored | - | ADR-001 |
@@ -65,7 +66,7 @@ flowchart LR
     Adapters -->|process exec, read only| Git
     Adapters -->|file I/O| FS
     Adapters -->|file I/O| Cache
-    Adapters -->|git clone over HTTPS| Dist
+    Adapters -->|git clone of the pinned release tag over HTTPS| Dist
 ```
 
 ---
@@ -125,6 +126,7 @@ flowchart TB
 | 2026-10-01 | ADR-001 | Initial map from the bootstrap |
 | 2026-10-03 | ADR-002 | CI/CD on GitHub Actions; release signing row; GAP-001, GAP-002, GAP-004 resolved; GAP-003 scope updated |
 | 2026-10-03 | ADR-003 | Supported platforms on the Runtime row; Release packaging row (GoReleaser, GitHub Releases) |
+| 2026-10-12 | ADR-004 | Bootstrap release row (one pinned release per CLI release, 1.5.1); the distribution edge fetches a release tag |
 
 ---
 

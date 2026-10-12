@@ -346,6 +346,14 @@
       "aliases": []
     },
     {
+      "id": "PROP-ADR-DRAFT-PINNED-BOOTSTRAP-RELEASE",
+      "type": "proposal",
+      "path": "gtt-domain/proposals/ADR-DRAFT-pinned-bootstrap-release.md",
+      "status": "active",
+      "history": [],
+      "aliases": []
+    },
+    {
       "id": "PROP-ADR-DRAFT-RELEASE-PACKAGING-PLATFORMS",
       "type": "proposal",
       "path": "gtt-domain/adr/ADR-003-release-packaging-platforms.md",
@@ -364,6 +372,14 @@
       "aliases": []
     },
     {
+      "id": "PROP-CONTEXT-SOURCES-ADR-004",
+      "type": "proposal",
+      "path": "gtt-domain/proposals/context-sources-ADR-004.md",
+      "status": "active",
+      "history": [],
+      "aliases": []
+    },
+    {
       "id": "PROP-CONTEXT-STACK",
       "type": "proposal",
       "path": "gtt-domain/proposals/context-stack.md",
@@ -376,6 +392,14 @@
       "type": "proposal",
       "path": "gtt-domain/proposals/context-stack-ADR-003.md",
       "status": "retired",
+      "history": [],
+      "aliases": []
+    },
+    {
+      "id": "PROP-CONTEXT-STACK-ADR-004",
+      "type": "proposal",
+      "path": "gtt-domain/proposals/context-stack-ADR-004.md",
+      "status": "active",
       "history": [],
       "aliases": []
     },

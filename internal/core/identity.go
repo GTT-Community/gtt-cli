@@ -15,7 +15,7 @@ var Version = baseVersion
 
 // baseVersion is the version of a plain source build. It must stay a
 // constant: -ldflags -X only replaces constant-initialized strings.
-const baseVersion = "1.0.1"
+const baseVersion = "1.1.0"
 
 func init() {
 	if Version == baseVersion {

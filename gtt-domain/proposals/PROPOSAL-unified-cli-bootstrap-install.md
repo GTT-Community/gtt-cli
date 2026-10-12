@@ -49,7 +49,7 @@ Impact: `internal/core` (the pin), `internal/bootstrap` (resolver, manifest, ins
   no release-pipeline change. `gtt update` with no flag now targets the pinned release instead of the branch.
 Risk:
   - The pinned release must exist as a tag in GTT-Community/gtt-bootstrap. Today that repository publishes no
-    tag at all; until `v1.5.0` is pushed there, a plain `gtt init` fails with "is not published" (exit 7) and
+    tag at all; until `v1.5.1` is pushed there, a plain `gtt init` fails with "is not published" (exit 7) and
     only `--bootstrap PATH` works. Detected by the first `gtt init` after release; avoided by tagging first.
   - The pin is a constant: every Bootstrap release needs a CLI release to reach users.
 Alternatives considered:
@@ -72,7 +72,7 @@ Nothing under `gtt-domain/context/` or `gtt-domain/adr/` was changed for this wo
 
 | Decision | Default taken | Where to change it |
 |---|---|---|
-| Pinned release | `1.5.0` (what gtt-bootstrap `main` declares today) | `internal/core/identity.go`, `BootstrapPin` |
+| Pinned release | `1.5.1` (confirmed by the Solution Designer on 2026-10-12: 1.5.0 plus the Windows bash correction) | `internal/core/identity.go`, `BootstrapPin` |
 | Fetch or package | Fetch the tag at `init`; verified cache afterwards | `internal/bootstrap/resolver.go` |
 | `--bootstrap PATH` / `--bootstrap-version` naming another release | Allowed as an explicit human choice, and reported as such | `internal/app/resolve.go`, `ensure.go` |
 | Project on a newer release than required | Refused (exit 2), never downgraded | `internal/app/ensure.go` |
