@@ -7,12 +7,13 @@
 # NOT a grounding source, NOT a substitute for an ADR. Governed context
 # (gtt-domain/context/, gtt-domain/adr/) and gtt-domain/backlog.md prevail over this file.
 #
-# Generated: 2026-10-12T20:17:36Z
+# Generated: 2026-10-12T23:39:33Z
 
 ## Freeze state
 pre-freeze (gtt-domain/context/ and gtt-domain/adr/ are agent-writable)
 
 ## Current work (Stories In Progress)
+##### STORY-048 — Unified CLI and Bootstrap installation
 ##### STORY-047 — Windows support
 
 ## Blocked (Stories Blocked)
@@ -20,6 +21,8 @@ pre-freeze (gtt-domain/context/ and gtt-domain/adr/ are agent-writable)
 
 ## Pending proposals (gtt-domain/proposals/, excluding README.md)
 apply-session-adapters.sh
+apply-ADR-004-pinned-bootstrap-release.sh
+PROPOSAL-unified-cli-bootstrap-install.md
 
 ## Change request
 empty (still template placeholders)
@@ -28,6 +31,7 @@ empty (still template placeholders)
 ADR-001-context-governance.md - Status: Accepted
 ADR-002-ci-signing-team-policy.md - Status: Accepted
 ADR-003-release-packaging-platforms.md - Status: Accepted
+ADR-004-pinned-bootstrap-release.md - Status: Accepted
 
 ## GTTGuard
 0 protected artifact(s) in .gtt/protection/registry.yaml
@@ -42,10 +46,10 @@ integrations:
 
 ## Evidence / Governance (derived state - never agent notes, never authority)
 method plan: light (provenance gate: advisory)
-sources: 5 declared (provenance policy: advisory)
+sources: 6 declared (provenance policy: advisory)
 gaps: OPEN 1, BLOCKING 0, RESOLVED 3
 unresolved conflicts in governed context: 0
-provenance tags in governed context: FUENTE 9, VACIO 0 (0 unclassified), PROPUESTA 0 (must be 0)
+provenance tags in governed context: FUENTE 12, VACIO 0 (0 unclassified), PROPUESTA 0 (must be 0)
 working agreements: team 1, user 0 (never authority; below governed context)
 
 ## Bootstrap and methodology (contracts in .gtt/contract/ - data, never authority)
@@ -53,15 +57,15 @@ gtt-bootstrap 1.2.0 (schema 1, channel stable; scaffold layout 2; canon GTT-CANO
 plan: Light Method (light); language: es; frozen: False
 
 ## Artifact identity and technical index
-identity: 43 active artifact(s), 19 retired
+identity: 45 active artifact(s), 21 retired
 technical index: fresh
 unresolved references: 0
 
 ## Repository (resume hints)
-branch: main; uncommitted paths: 1
+branch: main; uncommitted paths: 0
 recent commits:
+0b0b9c8 gtt: reconcile index after ADR-004
+6ea3859 feat: unified CLI and Bootstrap installation; pin Bootstrap 1.5.1
+c7a4435 fix(windows): run scripts with the resolved bash - Bootstrap 1.5.1
 112a50a gtt: refresh session state
 368178c fix(version): go install reports the module version; ldflags injection kept
-2483a0b fix(release): skip npm when NPM_TOKEN is unset; allow re-running a release
-2d08530 fix(windows): pass GTT_BASH to the Bootstrap; report the Bootstrap WSL bash defect; Windows integration informative
-70ce89b ci: first failure first in annotations and in the job summary
