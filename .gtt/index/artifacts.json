@@ -348,9 +348,11 @@
     {
       "id": "PROP-ADR-DRAFT-PINNED-BOOTSTRAP-RELEASE",
       "type": "proposal",
-      "path": "gtt-domain/proposals/ADR-DRAFT-pinned-bootstrap-release.md",
+      "path": "gtt-domain/adr/ADR-004-pinned-bootstrap-release.md",
       "status": "active",
-      "history": [],
+      "history": [
+        "gtt-domain/proposals/ADR-DRAFT-pinned-bootstrap-release.md"
+      ],
       "aliases": []
     },
     {
@@ -375,7 +377,7 @@
       "id": "PROP-CONTEXT-SOURCES-ADR-004",
       "type": "proposal",
       "path": "gtt-domain/proposals/context-sources-ADR-004.md",
-      "status": "active",
+      "status": "retired",
       "history": [],
       "aliases": []
     },
@@ -399,7 +401,7 @@
       "id": "PROP-CONTEXT-STACK-ADR-004",
       "type": "proposal",
       "path": "gtt-domain/proposals/context-stack-ADR-004.md",
-      "status": "active",
+      "status": "retired",
       "history": [],
       "aliases": []
     },
