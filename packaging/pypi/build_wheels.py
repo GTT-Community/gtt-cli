@@ -2,7 +2,7 @@
 """Build the PyPI wheels of gtt-cli from the GoReleaser binaries.
 
 One wheel per platform, each carrying the native `gtt` binary as a script, so
-`uv tool install gtt-cli`, `uvx gtt-cli` and `pipx install gtt-cli` put `gtt`
+`uv tool install gtt-cli`, `uvx --from gtt-cli gtt` and `pipx install gtt-cli` put `gtt`
 on the PATH with no Python code in between (the same layout ruff and uv use).
 
 Usage: build_wheels.py --dist dist --version 1.2.3 --out wheels

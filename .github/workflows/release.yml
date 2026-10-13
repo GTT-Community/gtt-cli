@@ -1,74 +1,122 @@
 name: Release
 
-# A v* tag on the public repository builds the `gtt` binary for every
-# platform and publishes it, with checksums, to GitHub Releases.
 on:
   push:
-    tags: ["v*"]
-  # Re-run the publication of an existing tag (for example after adding a token).
+    tags:
+      - "v*"
   workflow_dispatch:
 
+# Default permissions are read-only.
 permissions:
-  contents: write
+  contents: read
 
 jobs:
   release:
-    # Releases are published only from the public repository.
+    name: Build and release
     if: github.repository == 'GTT-Community/gtt-cli'
     runs-on: ubuntu-latest
+    permissions:
+      contents: write
+
     steps:
-      - uses: actions/checkout@v5
+      - name: Checkout repository
+        uses: actions/checkout@v5
         with:
           fetch-depth: 0
-      - uses: actions/setup-go@v6
+
+      - name: Set up Go
+        uses: actions/setup-go@v6
         with:
           go-version-file: go.mod
+
       - name: Unit and architecture tests
         run: go test ./internal/... ./test/arch/
-      - uses: goreleaser/goreleaser-action@v6
+
+      - name: Build and publish GitHub Release
+        uses: goreleaser/goreleaser-action@v6
         with:
           distribution: goreleaser
           version: "~> v2"
           args: release --clean
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      # PyPI wheels carrying the same binaries: uv tool install gtt-cli, uvx gtt-cli.
-      # Needs the repository secret PYPI_TOKEN; skipped without it.
-      - uses: astral-sh/setup-uv@v6
-      - name: Publish gtt-cli to PyPI
-        env:
-          UV_PUBLISH_TOKEN: ${{ secrets.PYPI_TOKEN }}
-        run: |
-          python3 packaging/pypi/build_wheels.py --dist dist --version "${GITHUB_REF_NAME#v}" --out wheels
-          if [ -z "$UV_PUBLISH_TOKEN" ]; then
-            echo "::warning::PYPI_TOKEN is not set: the PyPI package was not published."
-            exit 0
-          fi
-          uv publish wheels/*.whl
 
-  npm:
-    # Publishes the npm wrapper (`npm install -g gtt-cli`) once the binaries
-    # are released. Needs the repository secret NPM_TOKEN; skipped without it.
+      - name: Build PyPI wheels
+        run: |
+          python3 packaging/pypi/build_wheels.py \
+            --dist dist \
+            --version "${GITHUB_REF_NAME#v}" \
+            --out wheels
+
+      - name: Upload PyPI wheels
+        uses: actions/upload-artifact@v4
+        with:
+          name: wheels
+          path: wheels/*.whl
+          if-no-files-found: error
+
+  pypi:
+    name: Publish to PyPI
     needs: release
     if: github.repository == 'GTT-Community/gtt-cli'
     runs-on: ubuntu-latest
-    env:
-      # setup-node puts a placeholder in NODE_AUTH_TOKEN when none is given, so
-      # the secret is checked under its own name and exported only when set.
-      NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
+    environment: pypi
+    permissions:
+      id-token: write
+
     steps:
-      - uses: actions/checkout@v5
-      - uses: actions/setup-node@v5
+      - name: Download PyPI wheels
+        uses: actions/download-artifact@v4
         with:
-          node-version: "22"
+          name: wheels
+          path: wheels
+
+      - name: Publish package
+        uses: pypa/gh-action-pypi-publish@release/v1
+        with:
+          packages-dir: wheels/
+
+  npm:
+    name: Publish to npm
+    needs: release
+    if: github.repository == 'GTT-Community/gtt-cli'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+
+    env:
+      NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v5
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v5
+        with:
+          node-version: "24"
           registry-url: "https://registry.npmjs.org"
-      - name: Publish gtt-cli to npm
+
+      - name: Publish package
         working-directory: npm
+        shell: bash
         run: |
-          if [ -z "$NPM_TOKEN" ]; then
-            echo "::warning::NPM_TOKEN is not set: the npm package was not published."
+          set -euo pipefail
+
+          version="${GITHUB_REF_NAME#v}"
+
+          if npm view "gtt-cli@${version}" version \
+            --registry=https://registry.npmjs.org >/dev/null 2>&1; then
+            echo "gtt-cli@${version} is already published."
             exit 0
           fi
-          export NODE_AUTH_TOKEN="$NPM_TOKEN"
-          npm pkg set version="${GITHUB_REF_NAME#v}"
+
+          if [ -z "${NPM_TOKEN:-}" ]; then
+            echo "::error::NPM_TOKEN is not configured."
+            exit 1
+          fi
+
+          export NODE_AUTH_TOKEN="${NPM_TOKEN}"
+
+          npm pkg set version="${version}"
           npm publish --access public

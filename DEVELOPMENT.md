@@ -37,10 +37,12 @@ then commits, tags and pushes the public repository. The tag starts `.github/wor
 
 1. GoReleaser builds `gtt` for Linux, macOS and Windows (amd64, arm64) and publishes the archives and
    `checksums.txt` to GitHub Releases.
-2. `packaging/pypi/build_wheels.py` turns the same binaries into PyPI wheels, published with `uv publish`
-   (repository secret `PYPI_TOKEN`; skipped with a warning when it is missing).
-3. The `npm/` wrapper is published as `gtt-cli` (repository secret `NPM_TOKEN`; skipped with a warning when it is
-   missing).
+2. `packaging/pypi/build_wheels.py` turns the same binaries into PyPI wheels, published with `uv publish`.
+3. The `npm/` wrapper is published as `gtt-cli`.
+
+PyPI and npm are separate jobs. A channel that cannot be published fails its job, so a release is green only when
+every channel carries it. Retry a failed channel with "Re-run failed jobs" on the run page: both skip a version that
+is already published.
 
 The version is set by the tag; nothing else needs editing. (`baseVersion` in `internal/core/identity.go` only
 labels plain source builds; bump it now and then.)
@@ -57,14 +59,17 @@ labels plain source builds; bump it now and then.)
 
 All of them install the same binary from the latest release, verified against `checksums.txt`.
 
-## Secrets of the public repository
+## Publishing credentials of the public repository
 
-Set in GitHub: `GTT-Community/gtt-cli` → Settings → Secrets and variables → Actions.
+Each channel authenticates as a Trusted Publisher (OIDC: the registry trusts the workflow `release.yml` of
+`GTT-Community/gtt-cli`, no secret to keep or renew), or with a repository secret when one is set. The secret wins.
 
-| Secret | Used for | Where to get it |
+| Channel | Trusted Publisher | Secret instead |
 |---|---|---|
-| `PYPI_TOKEN` | `uv tool install gtt-cli` | pypi.org → Account settings → API tokens |
-| `NPM_TOKEN` | `npm install -g gtt-cli` | npmjs.com → Access Tokens → Automation |
+| PyPI | pypi.org → Your account → Publishing → add a GitHub publisher for project `gtt-cli` (a pending publisher before the first release) | `PYPI_TOKEN`: pypi.org → Account settings → API tokens |
+| npm | npmjs.com → package `gtt-cli` → Settings → Trusted Publisher → GitHub Actions. The package must exist, so the first release needs `NPM_TOKEN` | `NPM_TOKEN`: npmjs.com → Access Tokens → granular token with read and write on packages |
+
+Secrets are set in GitHub: `GTT-Community/gtt-cli` → Settings → Secrets and variables → Actions.
 
 ## CI
 

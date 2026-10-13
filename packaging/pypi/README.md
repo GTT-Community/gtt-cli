@@ -3,7 +3,7 @@
 The GTT CLI: the operational doorway into [GTT Bootstrap](https://github.com/GTT-Community/gtt-bootstrap).
 
 ```bash
-uv tool install gtt-cli     # or: uvx gtt-cli version, pipx install gtt-cli
+uv tool install gtt-cli     # or: uvx --from gtt-cli gtt version, pipx install gtt-cli
 gtt version
 ```
 
