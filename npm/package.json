@@ -1,5 +1,5 @@
 {
-  "name": "gtt-cli",
+  "name": "@gtt-community/gtt-cli",
   "version": "0.0.0",
   "description": "GTT CLI - the operational doorway into GTT Bootstrap (installs the native gtt binary)",
   "license": "Apache-2.0",

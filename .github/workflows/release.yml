@@ -105,7 +105,7 @@ jobs:
 
           version="${GITHUB_REF_NAME#v}"
 
-          if npm view "gtt-cli@${version}" version \
+          if npm view "@gtt-community/gtt-cli@${version}" version \
             --registry=https://registry.npmjs.org >/dev/null 2>&1; then
             echo "gtt-cli@${version} is already published."
             exit 0
