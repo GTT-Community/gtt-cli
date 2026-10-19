@@ -48,3 +48,14 @@ func TestErrorAnswersWhatWhyNext(t *testing.T) {
 		}
 	}
 }
+
+// TestSuiteVersion holds ADR-005: the CLI, its source-build version and the
+// Bootstrap it pins carry one suite number.
+func TestSuiteVersion(t *testing.T) {
+	if baseVersion != BootstrapPin {
+		t.Fatalf("suite version mismatch: baseVersion %s, BootstrapPin %s (ADR-005: they are one number)", baseVersion, BootstrapPin)
+	}
+	if _, ok := ParseSemver(baseVersion); !ok {
+		t.Fatalf("baseVersion %q is not MAJOR.MINOR.PATCH", baseVersion)
+	}
+}

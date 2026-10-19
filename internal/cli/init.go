@@ -101,7 +101,9 @@ func renderInit(p output.Printer, r app.InitResult) {
 	case "none":
 		p.Line("\nNo design source was selected and no questionnaire was created:\nthe project has no initial design yet.")
 	}
-	if h := r.Handoff; h != nil && h.PrimaryName != "" {
+	if h := r.Handoff; h != nil && h.NextAction != "" {
+		p.Line("\nNext:\n%s", h.NextAction)
+	} else if h != nil && h.PrimaryName != "" {
 		p.Line("\nNext:\nLaunch %s to continue the Bootstrap-guided initialization.", h.PrimaryName)
 	}
 }

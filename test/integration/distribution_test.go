@@ -1,11 +1,14 @@
 package integration
 
 import (
+	"fmt"
 	"os"
 	"os/exec"
 	"path/filepath"
 	"strings"
 	"testing"
+
+	"github.com/GTT-Community/gtt-cli/internal/core"
 )
 
 func TestCleanExportLeavesDevelopmentIntact(t *testing.T) {
@@ -187,11 +190,14 @@ func TestUpdateRefusalsAndRollbackLeaveTheProjectUnchanged(t *testing.T) {
 
 	to := next(t, catalogVersion(t), 1)
 	incompatible := newer(t, to)
+	// A Bootstrap that needs a CLI newer than the one under test, whatever its version.
+	cli, _ := core.ParseSemver(core.Version)
+	required := fmt.Sprintf("%d.%d.0", cli[0], cli[1]+1)
 	edit(t, filepath.Join(incompatible, ".gtt/contract/release.json"), func(d map[string]any) {
-		d["compatibility"].(map[string]any)["cli"].(map[string]any)["min_version"] = "1.1.0"
+		d["compatibility"].(map[string]any)["cli"].(map[string]any)["min_version"] = required
 	})
 	r := gtt(t, root, "update", "--bootstrap", incompatible).must(t, 2)
-	if !strings.Contains(r.err, "1.1.0") {
+	if !strings.Contains(r.err, required) {
 		t.Errorf("got:\n%s", r.err)
 	}
 	same("incompatible CLI")

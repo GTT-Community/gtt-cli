@@ -8,14 +8,14 @@ import (
 )
 
 // Version is the CLI release. Each release pins one Bootstrap release
-// (BootstrapPin); the two numbers need not be equal, and compatibility is
-// still negotiated, never assumed. Release builds set it with -ldflags; `go install module@vX.Y.Z` takes it from the module
+// (BootstrapPin) with the same number: GTT is released as a suite (ADR-005),
+// and compatibility is still negotiated, never assumed. Release builds set it with -ldflags; `go install module@vX.Y.Z` takes it from the module
 // version; a plain source build keeps this base value.
 var Version = baseVersion
 
 // baseVersion is the version of a plain source build. It must stay a
 // constant: -ldflags -X only replaces constant-initialized strings.
-const baseVersion = "1.1.0"
+const baseVersion = "1.6.0"
 
 func init() {
 	if Version == baseVersion {
@@ -51,7 +51,7 @@ const BootstrapID = "gtt-bootstrap"
 // with. Pinning the CLI therefore pins the Bootstrap. It is resolved from its
 // release tag (BootstrapTag), never from a branch head; another release is
 // used only when the human names it explicitly.
-const BootstrapPin = "1.5.1"
+const BootstrapPin = "1.6.0"
 
 // BootstrapTag is the release tag of a Bootstrap version.
 func BootstrapTag(version string) string { return "v" + version }

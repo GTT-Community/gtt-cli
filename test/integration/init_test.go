@@ -1,6 +1,7 @@
 package integration
 
 import (
+	"encoding/json"
 	"os"
 	"path/filepath"
 	"strings"
@@ -122,7 +123,27 @@ func TestNoDocumentOffersTheBootstrapQuestionnaire(t *testing.T) {
 	if read(t, root, out) != tpl {
 		t.Error("the working copy must be the Bootstrap's template, byte for byte")
 	}
+	// The next step is the Bootstrap's own text, shown while its questionnaire is open; the CLI writes none.
+	var eli struct {
+		Handoff struct {
+			NextAction string `json:"next_action"`
+		} `json:"handoff"`
+	}
+	if err := json.Unmarshal([]byte(read(t, pristine, ".gtt/contract/elicitation.json")), &eli); err != nil {
+		t.Fatal(err)
+	}
+	if eli.Handoff.NextAction == "" || !strings.Contains(r.out, "Next:\n"+eli.Handoff.NextAction) {
+		t.Errorf("the Next step must be the Bootstrap's handoff.next_action %q:\n%s", eli.Handoff.NextAction, r.out)
+	}
 	gtt(t, root, "validate").must(t, 0)
+}
+
+func TestNoQuestionnaireKeepsTheGenericNextStep(t *testing.T) {
+	root := project(t, nil)
+	r := initProject(t, root, pristine, defaults...)
+	if !strings.Contains(r.out, "Next:\nLaunch ") || strings.Contains(r.out, "Initial Design Questionnaire, or resumes it") {
+		t.Errorf("without an open questionnaire the Next step stays the generic one:\n%s", r.out)
+	}
 }
 
 func TestDecliningTheQuestionnaireDoesNotPretendADesignExists(t *testing.T) {

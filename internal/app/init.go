@@ -45,7 +45,11 @@ type Handoff struct {
 	InstructionEntry string   `json:"instruction_entry"`
 	ReadFirst        []string `json:"read_first"`
 	Questionnaire    string   `json:"questionnaire,omitempty"`
-	Launchable       bool     `json:"launchable"`
+	// NextAction is the Bootstrap's own words for what the human does next
+	// (elicitation handoff.next_action), set only while the Bootstrap reports
+	// the questionnaire open. Empty with a Bootstrap that declares none.
+	NextAction string `json:"next_action,omitempty"`
+	Launchable bool   `json:"launchable"`
 }
 
 // InitResult is the outcome of `gtt init`.
@@ -559,8 +563,9 @@ func (a *App) interrupted(ctx context.Context, root string, j *lifecycle.Journal
 }
 
 type questionnaireContract struct {
-	Template string
-	Output   string
+	Template   string
+	Output     string
+	NextAction string
 }
 
 // initialDesign reads the questionnaire contract from the Bootstrap: which
@@ -576,7 +581,8 @@ func initialDesign(ctx context.Context, b ports.Bootstrap) (questionnaireContrac
 				Questionnaire struct {
 					Output  string `json:"output"`
 					Handoff struct {
-						Template string `json:"template"`
+						Template   string `json:"template"`
+						NextAction string `json:"next_action"`
 					} `json:"handoff"`
 				} `json:"questionnaire"`
 			} `json:"initial_design"`
@@ -589,7 +595,7 @@ func initialDesign(ctx context.Context, b ports.Bootstrap) (questionnaireContrac
 	if q.Handoff.Template == "" {
 		return questionnaireContract{}, &core.Error{Code: core.ExitIncompatible, What: "The Bootstrap declares no Initial Design Questionnaire."}
 	}
-	return questionnaireContract{Template: q.Handoff.Template, Output: q.Output}, nil
+	return questionnaireContract{Template: q.Handoff.Template, Output: q.Output, NextAction: q.Handoff.NextAction}, nil
 }
 
 // handoff builds the delivery for the Primary ADE from the Bootstrap's ADE
@@ -606,6 +612,7 @@ func (a *App) handoff(ctx context.Context, p *Project, primary string) (Handoff,
 			h.Launchable = ade.Executor{ADE: r, Runner: a.Runner}.Available()
 		}
 	}
+	h.NextAction = a.nextAction(ctx, p)
 	layout, err := a.Installer.Layout(ports.Package{Root: p.Root, Release: p.Release})
 	if err == nil {
 		for _, path := range layout.Paths {
@@ -615,6 +622,28 @@ func (a *App) handoff(ctx context.Context, p *Project, primary string) (Handoff,
 		}
 	}
 	return h, nil
+}
+
+// nextAction returns the Bootstrap's next-action text while the Bootstrap
+// itself reports the Initial Design Questionnaire open (pending or
+// in-progress). The CLI judges nothing: no text, or no state, means none.
+func (a *App) nextAction(ctx context.Context, p *Project) string {
+	q, err := initialDesign(ctx, p.B)
+	if err != nil || q.NextAction == "" {
+		return ""
+	}
+	var det struct {
+		Questionnaire struct {
+			State string `json:"state"`
+		} `json:"questionnaire"`
+	}
+	if _, err := a.query(ctx, p.B, "project.detect", nil, &det); err != nil {
+		return ""
+	}
+	if s := det.Questionnaire.State; s == "pending" || s == "in-progress" {
+		return q.NextAction
+	}
+	return ""
 }
 
 // LaunchPrimary starts the Primary ADE in the project. It is only ever

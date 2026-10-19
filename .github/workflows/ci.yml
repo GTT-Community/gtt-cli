@@ -69,12 +69,24 @@ jobs:
       - uses: actions/checkout@v5
         with:
           path: gtt-cli
-      # The integration suite drives the real CLI against a real Bootstrap
-      # catalog. The ref can be pinned to a release tag once one is published.
+      # The integration suite drives the real CLI against the Bootstrap release
+      # this CLI pins (ADR-004), checked out at its tag: if the tag is not
+      # published yet, this job fails - the suite's release order is enforced.
+      - name: Read the Bootstrap pin
+        id: pin
+        shell: bash
+        run: echo "version=$(sed -n 's/^const BootstrapPin = "\(.*\)"$/\1/p' gtt-cli/internal/core/identity.go)" >> "$GITHUB_OUTPUT"
       - uses: actions/checkout@v5
         with:
           repository: GTT-Community/gtt-bootstrap
+          ref: v${{ steps.pin.outputs.version }}
           path: gtt-bootstrap
+      # ADR-005: one suite version - the tag's release descriptor carries the pin.
+      - name: Suite version
+        shell: bash
+        run: |
+          got=$(python3 -c 'import json;print(json.load(open("gtt-bootstrap/.gtt/contract/release.json"))["bootstrap"]["version"])')
+          [ "$got" = "${{ steps.pin.outputs.version }}" ] || { echo "::error title=Suite version::Bootstrap release.json is $got, BootstrapPin is ${{ steps.pin.outputs.version }}"; exit 1; }
       # GTT Bootstrap scripts need Python 3 (on Windows it is not on PATH by default).
       - uses: actions/setup-python@v6
         with:

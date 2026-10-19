@@ -47,7 +47,7 @@ GTT Method -> GTT Bootstrap -> versioned contracts -> GTT CLI -> ADE -> Human
   [Python 3](https://www.python.org/downloads/windows/). The CLI finds Git Bash on its own and never uses the WSL
   `bash.exe`; set `GTT_BASH` to point it at another bash.
   Note: GTT Bootstrap up to 1.5.0 starts its own scripts with `bash` by name, which on Windows is the WSL `bash.exe`,
-  so `gtt init` and other operations fail there. Bootstrap 1.5.1 - the release this CLI ships with - runs them with
+  so `gtt init` and other operations fail there. From Bootstrap 1.5.1 on - this CLI ships with 1.6.0 - they run with
   the bash the CLI hands it (`GTT_BASH`).
 
 ## Installation
@@ -61,14 +61,14 @@ SHA-256 checksum.
 | **curl** (Linux, macOS) | `curl -fsSL https://raw.githubusercontent.com/GTT-Community/gtt-cli/main/install.sh \| sh` |
 | **PowerShell** (Windows) | `irm https://raw.githubusercontent.com/GTT-Community/gtt-cli/main/install.ps1 \| iex` |
 | **uv** (Python) | `uv tool install gtt-cli` |
-| **npm** (Node.js 18+) | `npm install -g gtt-cli` |
+| **npm** (Node.js 18+) | `npm install -g @gtt-community/gtt-cli` |
 
 Then check it with `gtt version`.
 
-- Run it once without installing: `uvx --from gtt-cli gtt version` or `npx gtt-cli version`.
-- Upgrade: run the installer again, `uv tool upgrade gtt-cli`, or `npm update -g gtt-cli`.
-- A specific version: `GTT_VERSION=1.0.1` with the curl or PowerShell installer, `uv tool install gtt-cli==1.0.1`, or
-  `npm install -g gtt-cli@1.0.1`.
+- Run it once without installing: `uvx --from gtt-cli gtt version` or `npx @gtt-community/gtt-cli version`.
+- Upgrade: run the installer again, `uv tool upgrade gtt-cli`, or `npm update -g @gtt-community/gtt-cli`.
+- A specific version: `GTT_VERSION=1.6.0` with the curl or PowerShell installer, `uv tool install gtt-cli==1.6.0`, or
+  `npm install -g @gtt-community/gtt-cli@1.6.0`.
 - Install location for curl and PowerShell: `GTT_INSTALL_DIR` (default `/usr/local/bin` or `~/.local/bin`; on Windows
   `%LOCALAPPDATA%\Programs\gtt`, added to your PATH).
 - `pipx install gtt-cli` works as well, and every archive can be downloaded by hand from

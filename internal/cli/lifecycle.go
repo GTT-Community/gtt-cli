@@ -222,7 +222,9 @@ func resumeCmd(e *env) *cobra.Command {
 				} else {
 					p.Line("%s", string(res.Context))
 				}
-				if h := res.Handoff; h != nil && h.PrimaryName != "" {
+				if h := res.Handoff; h != nil && h.NextAction != "" {
+					p.Line("\nNext:\n%s", h.NextAction)
+				} else if h != nil && h.PrimaryName != "" {
 					p.Line("\nNext:\nContinue in %s (instruction entry: %s).", h.PrimaryName, h.InstructionEntry)
 				}
 			})

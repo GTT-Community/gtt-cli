@@ -1,9 +1,9 @@
-# gtt-cli
+# @gtt-community/gtt-cli
 
 The GTT CLI: the operational doorway into [GTT Bootstrap](https://github.com/GTT-Community/gtt-bootstrap).
 
 ```bash
-npm install -g gtt-cli
+npm install -g @gtt-community/gtt-cli
 gtt version
 ```
 
