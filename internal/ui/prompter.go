@@ -128,3 +128,9 @@ func (p *Prompter) MultiSelect(title string, options []ports.Option) ([]int, err
 		}
 	}
 }
+
+// Ask reads one line of free text. An empty line is an empty answer.
+func (p *Prompter) Ask(question string) (string, error) {
+	fmt.Fprintf(p.out, "%s ", question)
+	return p.line()
+}

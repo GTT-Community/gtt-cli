@@ -74,6 +74,9 @@ func (i Installer) Install(pkg ports.Package, projectRoot string) (map[string]st
 			if rel != "" {
 				from, to, key = filepath.Join(src, filepath.FromSlash(rel)), filepath.Join(to, filepath.FromSlash(rel)), p+"/"+rel
 			}
+			if isState(layout.State, key) {
+				continue // per-project state: never shipped, never copied from a local catalog
+			}
 			if err := fsx.CopyFile(from, to, false); err != nil {
 				return nil, err
 			}
@@ -108,4 +111,14 @@ func (Installer) Remove(projectRoot string, layout ports.CoreLayout) error {
 		}
 	}
 	return nil
+}
+
+// isState reports whether a package path is declared per-project state.
+func isState(state []string, key string) bool {
+	for _, s := range state {
+		if key == strings.TrimSuffix(s, "/") || (strings.HasSuffix(s, "/") && strings.HasPrefix(key, s)) {
+			return true
+		}
+	}
+	return false
 }

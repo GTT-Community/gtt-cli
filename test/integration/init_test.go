@@ -95,10 +95,12 @@ func TestInitNeverInfersAHumanDecision(t *testing.T) {
 func TestInteractiveInitAsksAndRecords(t *testing.T) {
 	root := project(t, map[string]string{"docs/requirements.md": "# r\n", "docs/architecture.md": "# a\n"})
 	// not a project? yes; ADEs 1,3 (claude, copilot); primary 2 (copilot); language 2 (es);
-	// sources 1,2; plan 1 (light); proceed; then exit the handoff menu.
-	answers := "y\n1,3\n2\n2\n1,2\n1\ny\n2\n"
+	// sources 1,2; plan 1 (light); development method 1 (Vertical Slice, listed first as
+	// recommended) and start 1 (Walking Skeleton); proceed; then exit the handoff menu.
+	answers := "y\n1,3\n2\n2\n1,2\n1\n1\n1\ny\n2\n"
 	r := gttIn(t, root, answers, "init", "--bootstrap", pristine).must(t, 0)
-	for _, want := range []string{"detection is not participation", "Select the Primary ADE", "Light Method", "Candidate source documents"} {
+	for _, want := range []string{"detection is not participation", "Select the Primary ADE", "Light Method", "Candidate source documents",
+		"¿Cómo quieres organizar el desarrollo de tu solución?", "Vertical Slice (recomendado)", "Conviene si:", "¿Cómo quieres empezar?"} {
 		if !strings.Contains(r.err, want) {
 			t.Errorf("prompt %q was not shown", want)
 		}
@@ -109,6 +111,9 @@ func TestInteractiveInitAsksAndRecords(t *testing.T) {
 	}
 	if got := gtt(t, root, "sources", "--json").must(t, 0).json(t)["sources"].([]any); len(got) != 2 {
 		t.Errorf("both selected sources must be recorded: %v", got)
+	}
+	if f := inForce(t, root); strings.Join(toStrings(f["style"]), ",") != "vertical-slice" || f["start"] != "walking-skeleton" {
+		t.Errorf("the development method answered in the terminal is recorded: %v", f)
 	}
 }
 

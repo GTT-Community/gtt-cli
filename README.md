@@ -30,6 +30,12 @@ GTT Method -> GTT Bootstrap -> versioned contracts -> GTT CLI -> ADE -> Human
   guides you through.
 - **Method Plans.** Light, Medium, Hard and Team decide how much GTT does without asking. Destructive operations
   and governed decisions always need you.
+- **Development method.** `gtt init` asks how you want to develop (Vertical Slice, DDD, Hexagonal, Layered,
+  Event-First) and how to start (Walking Skeleton or straight to the main functionality), with the texts of the
+  Bootstrap's Method Packs. "Help me choose" decides nothing and nothing is applied by default. `gtt check`
+  verifies that the code respects the method's dependency rules with the language's own tool.
+- **Change during development.** `gtt change` records a change request and has your ADE process it right away;
+  `gtt proposals`, `gtt promote` and `gtt undo` follow it to the end - and one step back when needed.
 - **Agent context kept in sync.** `gtt agents` detects missing or locally changed agent files, syncs them safely,
   and never overwrites your own changes.
 - **Initial documents tracked.** Every design document is recorded as read, applied and validated by content hash,
@@ -47,7 +53,7 @@ GTT Method -> GTT Bootstrap -> versioned contracts -> GTT CLI -> ADE -> Human
   [Python 3](https://www.python.org/downloads/windows/). The CLI finds Git Bash on its own and never uses the WSL
   `bash.exe`; set `GTT_BASH` to point it at another bash.
   Note: GTT Bootstrap up to 1.5.0 starts its own scripts with `bash` by name, which on Windows is the WSL `bash.exe`,
-  so `gtt init` and other operations fail there. From Bootstrap 1.5.1 on - this CLI ships with 1.6.0 - they run with
+  so `gtt init` and other operations fail there. From Bootstrap 1.5.1 on - this CLI ships with 1.7.0 - they run with
   the bash the CLI hands it (`GTT_BASH`).
 
 ## Installation
@@ -67,8 +73,8 @@ Then check it with `gtt version`.
 
 - Run it once without installing: `uvx --from gtt-cli gtt version` or `npx @gtt-community/gtt-cli version`.
 - Upgrade: run the installer again, `uv tool upgrade gtt-cli`, or `npm update -g @gtt-community/gtt-cli`.
-- A specific version: `GTT_VERSION=1.6.0` with the curl or PowerShell installer, `uv tool install gtt-cli==1.6.0`, or
-  `npm install -g @gtt-community/gtt-cli@1.6.0`.
+- A specific version: `GTT_VERSION=1.7.0` with the curl or PowerShell installer, `uv tool install gtt-cli==1.7.0`, or
+  `npm install -g @gtt-community/gtt-cli@1.7.0`.
 - Install location for curl and PowerShell: `GTT_INSTALL_DIR` (default `/usr/local/bin` or `~/.local/bin`; on Windows
   `%LOCALAPPDATA%\Programs\gtt`, added to your PATH).
 - `pipx install gtt-cli` works as well, and every archive can be downloaded by hand from
@@ -114,7 +120,7 @@ The integration tests drive the real CLI against a real Bootstrap catalog: `GTT_
 
 | Command | What it does |
 |---|---|
-| `gtt init` | Resolve, verify and negotiate a Bootstrap; ask for participating ADEs, the Primary ADE, language, initial sources and the Method Plan; install transactionally; validate; hand off to the Primary ADE |
+| `gtt init` | Resolve, verify and negotiate a Bootstrap; ask for participating ADEs, the Primary ADE, language, initial sources, the Method Plan and the development method; install transactionally; validate; hand off to the Primary ADE |
 | `gtt status` | Deterministic project state (`--fast` skips the Bootstrap validation) |
 | `gtt inspect` | Topology and installation state |
 | `gtt validate [--ci]` | The Bootstrap's validation, unaltered |
@@ -127,6 +133,12 @@ The integration tests drive the real CLI against a real Bootstrap catalog: `GTT_
 | `gtt clean` | Remove GTT from the project (asks; offers a recovery snapshot) |
 | `gtt version` | CLI version, the Bootstrap release it ships with, and the Bootstrap installed in the project |
 | `gtt method [show\|set\|check]` | Method Plan: Light, Medium, Hard, Team (`gtt config methodology` is an alias of `set`) |
+| `gtt dev-method [show\|list]` | The development method (Method Governance), read-only: the method in force, its status (ratified / open), the ADR that locks it and its verification level; `list` shows the Method Packs with their short text. It changes only through a change request |
+| `gtt check` | Method Conformance: the code against the ratified method's dependency rules, through the language's own tool (JavaScript/TypeScript: dependency-cruiser, installed in the project). A violation is a conflict, never corrected; without an adapter for the language the method is reported `declared-only` |
+| `gtt change ["what"] [--reason ...]` | Request a governed change in the middle of the work: it is written to `gtt-domain/change-request.md` through the Bootstrap with an id, the agent is told to process it into a proposal (the session's Next action), and the CLI offers to open the Primary ADE. `gtt change show` follows it |
+| `gtt proposals [list\|show\|withdraw]` | The proposals, ADR drafts and staged promotion sets, with their state and the request they answer; `withdraw` archives one (never deletes it) |
+| `gtt promote <set>` | Apply a staged promotion set after reviewing its diff (a human act) |
+| `gtt undo` | One step back: put back what the last promotion replaced, while its files are as it left it. A frozen promotion is re-frozen over the earlier state - never an unfreeze. Further back is a change request |
 | `gtt config primary-ade\|language` | Operational configuration, validated by the Bootstrap |
 | `gtt agents [list\|check\|sync\|manifest]` | ADE/agent context discovery and synchronisation (`check --ci` for pipelines); `manifest` lists the paths each agent's adapter manages and their state |
 | `gtt sources [list\|apply]` | Initial MD tracking: read, applied, validated, by content hash |
@@ -140,11 +152,14 @@ Global flags: `--json`, `--verbose`, `--yes` (an explicit pre-authorisation of c
 
 ### Non-interactive init
 
-Every human decision has a flag; a missing one is refused (exit 3), never inferred.
+Every human decision has a flag; a missing one is refused (exit 3), never inferred. The development method is the
+exception that confirms the rule: without `--dev-method` / `--start` nothing is recorded and it stays OPEN - it is
+never defaulted. `--dev-method help` leaves it for the agent to propose during THINK.
 
 ```bash
 gtt init --bootstrap ../gtt-bootstrap --ade claude,copilot --primary claude \
-         --language es --method light --sources docs/requirements.md --yes
+         --language es --method light --sources docs/requirements.md \
+         --dev-method ddd,vertical-slice --start walking-skeleton --yes
 ```
 
 Bootstrap resolution order: `--bootstrap PATH`, the source the project recorded, the verified cache
@@ -217,6 +232,9 @@ destructive operation or a governed decision. `gtt method show` lists what the t
 | 5 | project state conflict |
 | 6 | Bootstrap integrity failure |
 | 7 | external dependency unavailable |
+
+`gtt check`: 0 the code respects the method (or nothing to check, or `declared-only`), 1 a forbidden dependency,
+7 the result cannot be determined (the language's tool is not installed).
 
 ## Architecture
 

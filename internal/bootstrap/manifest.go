@@ -17,6 +17,7 @@ var (
 	entryRE   = regexp.MustCompile(`^\s+-\s*\{\s*path:\s*([^,}]+)`)
 	trackRE   = regexp.MustCompile(`^\s+initial_sources:\s*\{\s*path:\s*([^,}]+)`)
 	rewriteRE = regexp.MustCompile(`^\s+-\s*\{\s*path:\s*([^,}]+),(?:.*,)?\s*(?:derived|state):\s*true\s*[,}]`)
+	stateRE   = regexp.MustCompile(`^\s+-\s*\{\s*path:\s*([^,}]+),(?:.*,)?\s*state:\s*true\s*[,}]`)
 )
 
 // Layout reads from the scaffold manifest what the portable core is: the
@@ -58,6 +59,9 @@ func Layout(pkg ports.Package) (ports.CoreLayout, error) {
 		case "engine":
 			if m := rewriteRE.FindStringSubmatch(line); m != nil {
 				layout.Rewritten = append(layout.Rewritten, strings.TrimSpace(m[1]))
+			}
+			if m := stateRE.FindStringSubmatch(line); m != nil {
+				layout.State = append(layout.State, strings.TrimSpace(m[1]))
 			}
 		case "tracking":
 			if m := trackRE.FindStringSubmatch(line); m != nil {

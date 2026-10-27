@@ -27,6 +27,8 @@ type InitOptions struct {
 	Primary       string
 	Language      string
 	Method        string
+	DevStyle      string // development method: pack ids, comma separated, or "help"
+	DevStart      string // how to start: a pack id, "direct" or "help"
 	Sources       []string
 	NoSources     bool
 	Questionnaire string // "", "yes", "no"
@@ -68,6 +70,8 @@ type InitResult struct {
 	// Update is what changed when the human confirmed moving it to the
 	// required release.
 	Update *UpdateResult `json:"update,omitempty"`
+	// DevMethodNote says why init does not ask the development method again.
+	DevMethodNote string `json:"dev_method_note,omitempty"`
 }
 
 // Init is the primary orchestration workflow.
@@ -85,7 +89,11 @@ func (a *App) Init(ctx context.Context, o InitOptions) (InitResult, error) {
 		return a.interrupted(ctx, det.Root, journal, o)
 	}
 	if a.Factory.Installed(det.Root) {
-		return a.ensure(ctx, det.Root, o, res)
+		res, err := a.ensure(ctx, det.Root, o, res)
+		if err == nil && res.Outcome == "already-initialized" {
+			res.DevMethodNote = a.devMethodNote(ctx, det.Root, o)
+		}
+		return res, err
 	}
 	if !det.Confident {
 		a.Report.Info("No project detected.")
@@ -142,6 +150,9 @@ func (a *App) Init(ctx context.Context, o InitOptions) (InitResult, error) {
 	}
 	a.Report.Info("\nSummary:\n\n  Primary ADE: %s\n  Participating: %s\n  Sources: %d\n  Language: %s\n  Methodology: %s\n",
 		ade.Names(registry, []string{sel.Primary}), ade.Names(registry, sel.Participating), len(sel.Sources), sel.Language, sel.Profile)
+	if devMethodSupported(ctx, catalog) {
+		a.Report.Info("  Development method: %s\n", devMethodSummary(sel))
+	}
 	if ok, err := a.confirm("Proceed?", true); err != nil {
 		return res, err
 	} else if !ok {
@@ -292,6 +303,12 @@ func (a *App) collect(ctx context.Context, root string, pkg ports.Package, catal
 	default:
 		return sel, need("The Method Plan", "--method <plan>")
 	}
+
+	// Development method (Method Governance): options and texts from the
+	// Bootstrap's Method Packs. Unanswered stays OPEN; nothing is defaulted.
+	if err := a.collectDevMethod(ctx, catalog, &sel, o); err != nil {
+		return sel, err
+	}
 	return sel, nil
 }
 
@@ -420,6 +437,9 @@ func (a *App) install(ctx context.Context, root string, pkg ports.Package, j *li
 		_, err := a.mutate(ctx, p.B, "methodology.profile.set", args)
 		return err
 	}); err != nil {
+		return fail(err)
+	}
+	if err := step("dev-method", lifecycle.StateInstalling, func() error { return a.recordDevMethod(ctx, p.B, sel) }); err != nil {
 		return fail(err)
 	}
 	questionnaire, err := initialDesign(ctx, p.B)
@@ -628,6 +648,19 @@ func (a *App) handoff(ctx context.Context, p *Project, primary string) (Handoff,
 // itself reports the Initial Design Questionnaire open (pending or
 // in-progress). The CLI judges nothing: no text, or no state, means none.
 func (a *App) nextAction(ctx context.Context, p *Project) string {
+	// A Bootstrap that computes the next action itself (an open questionnaire,
+	// then a change request to process) is asked directly.
+	if supports(ctx, p.B, "session.next-action") {
+		var out struct {
+			NextAction *struct {
+				Human string `json:"human"`
+			} `json:"next_action"`
+		}
+		if _, err := a.query(ctx, p.B, "session.next-action", nil, &out); err == nil && out.NextAction != nil {
+			return out.NextAction.Human // what the person does; the agent's instruction reaches it through the session
+		}
+		return ""
+	}
 	q, err := initialDesign(ctx, p.B)
 	if err != nil || q.NextAction == "" {
 		return ""

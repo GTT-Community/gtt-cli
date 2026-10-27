@@ -16,7 +16,7 @@ const module = "github.com/GTT-Community/gtt-cli/internal/"
 
 var (
 	kernel   = []string{"core", "fsx", "ports"}
-	services = []string{"ade", "project", "methodology", "tracking", "agents", "lifecycle", "snapshot", "export"}
+	services = []string{"ade", "project", "methodology", "tracking", "agents", "lifecycle", "snapshot", "export", "conformance"}
 	adapters = []string{"bootstrap", "execution", "ui"}
 )
 

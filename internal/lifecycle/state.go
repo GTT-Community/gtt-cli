@@ -135,6 +135,10 @@ type Selections struct {
 	Profile       string   `json:"profile"`
 	Sources       []Source `json:"sources"`
 	Questionnaire bool     `json:"questionnaire"`
+	// The development method answered at setup (Method Governance). Empty
+	// means unanswered: the method stays OPEN, nothing is recorded.
+	DevStyle string `json:"dev_style,omitempty"` // pack ids, comma separated, or "help"
+	DevStart string `json:"dev_start,omitempty"` // a pack id, "direct" or "help"
 }
 
 // Source is one selected initial source.

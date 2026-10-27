@@ -126,7 +126,7 @@ func TestBootstrapEvolvesWithoutACLIChange(t *testing.T) {
 	})
 	root := project(t, nil)
 	// The plan prompt shows the Bootstrap's wording, whatever it is.
-	answers := "y\n1\n1\ny\n1\ny\n2\n" // project? ADE 1; language 1; questionnaire yes; plan 1; proceed; exit menu
+	answers := "y\n1\n1\ny\n1\n1\n1\ny\n2\n" // project? ADE 1; language 1; questionnaire yes; plan 1; dev method 1; start 1; proceed; exit menu
 	r := gttIn(t, root, answers, "init", "--bootstrap", c).must(t, 0)
 	if !strings.Contains(r.err, "Featherweight Method") || !strings.Contains(r.err, "A summary rewritten by the Bootstrap.") {
 		t.Errorf("plan names and descriptions come from the Bootstrap:\n%s", r.err)

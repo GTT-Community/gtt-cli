@@ -91,6 +91,7 @@ func (p *prompter) Confirm(q string, _ bool) (bool, error) {
 }
 func (p *prompter) Select(string, []ports.Option) (int, error)        { return 0, nil }
 func (p *prompter) MultiSelect(string, []ports.Option) ([]int, error) { return nil, nil }
+func (p *prompter) Ask(string) (string, error)                        { return "", nil }
 
 func ok(stdout string) ports.OperationResult { return ports.OperationResult{Stdout: stdout} }
 

@@ -117,8 +117,9 @@ jobs:
 
           version="${GITHUB_REF_NAME#v}"
 
-          if npm view "@gtt-community/gtt-cli@${version}" version \
-            --registry=https://registry.npmjs.org >/dev/null 2>&1; then
+          # `npm view` exits 0 with no output for a version that does not exist: test the output.
+          if [ -n "$(npm view "@gtt-community/gtt-cli@${version}" version \
+            --registry=https://registry.npmjs.org 2>/dev/null)" ]; then
             echo "gtt-cli@${version} is already published."
             exit 0
           fi

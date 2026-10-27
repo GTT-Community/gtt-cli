@@ -214,6 +214,10 @@ type CoreLayout struct {
 	// state (a trailing slash names a directory): the Bootstrap's own scripts
 	// rewrite them, so a difference there is never a local customization.
 	Rewritten []string
+	// State are the engine paths the manifest declares as per-project state
+	// (a trailing slash names a directory). A package never ships them: a
+	// local catalog that happens to hold them is not copied into a project.
+	State []string
 	// Tracking is where the Bootstrap declares the initial-source tracking
 	// record (manifest section `tracking:`); empty when it declares none.
 	Tracking string
@@ -306,6 +310,8 @@ type Prompter interface {
 	Confirm(question string, def bool) (bool, error)
 	Select(title string, options []Option) (int, error)
 	MultiSelect(title string, options []Option) ([]int, error)
+	// Ask reads one line of free text; an empty answer is "" (never a default).
+	Ask(question string) (string, error)
 }
 
 // --------------------------------------------------------------------- git

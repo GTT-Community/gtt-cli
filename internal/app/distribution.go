@@ -343,7 +343,7 @@ func (a *App) Update(ctx context.Context, o UpdateOptions) (UpdateResult, error)
 		if err != nil {
 			return res, &core.Error{Code: core.ExitIntegrity, Unmodified: true, What: "The target Bootstrap is unsafe to read.", Why: err.Error()}
 		}
-		for _, rel := range files {
+		for _, rel := range withoutState(files, layout.State) {
 			if target[rel], err = fsx.HashFile(filepath.Join(pkg.Root, filepath.FromSlash(rel))); err != nil {
 				return res, err
 			}
@@ -538,7 +538,7 @@ func (a *App) baseLedger(ctx context.Context, base, version string) (map[string]
 		if err != nil {
 			return nil, err
 		}
-		for _, rel := range files {
+		for _, rel := range withoutState(files, layout.State) {
 			if ledger[rel], err = fsx.HashFile(filepath.Join(pkg.Root, filepath.FromSlash(rel))); err != nil {
 				return nil, err
 			}
@@ -565,6 +565,25 @@ func packageFiles(root, top string) ([]string, error) {
 		files[i] = top + "/" + files[i]
 	}
 	return files, nil
+}
+
+// withoutState drops what the manifest declares per-project state: a package
+// never ships it, even when a local catalog holds it.
+func withoutState(files, state []string) []string {
+	out := files[:0:0]
+	for _, rel := range files {
+		skip := false
+		for _, s := range state {
+			if rel == strings.TrimSuffix(s, "/") || (strings.HasSuffix(s, "/") && strings.HasPrefix(rel, s)) {
+				skip = true
+				break
+			}
+		}
+		if !skip {
+			out = append(out, rel)
+		}
+	}
+	return out
 }
 
 func underAny(rel string, tops []string) bool {

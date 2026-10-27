@@ -46,6 +46,8 @@ func initCmd(e *env) *cobra.Command {
 	f.StringVar(&o.Primary, "primary", "", "Primary ADE id")
 	f.StringVar(&o.Language, "language", "", "interaction language")
 	f.StringVar(&o.Method, "method", "", "Method Plan id")
+	f.StringVar(&o.DevStyle, "dev-method", "", "development method: Method Pack ids, comma separated, or help (see: gtt dev-method list)")
+	f.StringVar(&o.DevStart, "start", "", "how to start: a Method Pack id, direct, or help")
 	f.StringVar(&sources, "sources", "", "initial source documents, comma separated (path or path:type)")
 	f.BoolVar(&o.NoSources, "no-sources", false, "select no initial source document")
 	f.BoolVar(&questionnaire, "questionnaire", false, "materialize the Bootstrap Initial Design Questionnaire")
@@ -73,6 +75,9 @@ func renderInit(p output.Printer, r app.InitResult) {
 	case "already-initialized":
 		p.Line("GTT is already initialized in this project. Nothing was changed.")
 		renderCheck(p, r.Installed)
+		if r.DevMethodNote != "" {
+			p.Line("%s", r.DevMethodNote)
+		}
 		p.Line("See: gtt status")
 		return
 	case "updated":
