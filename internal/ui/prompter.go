@@ -18,6 +18,8 @@ type Prompter struct {
 	in          *bufio.Reader
 	out         io.Writer
 	interactive bool
+	// Lang translates the questions and labels; nil is English.
+	Lang *core.Language
 }
 
 // New builds a prompter. It is interactive only when stdin is a terminal
@@ -49,12 +51,12 @@ func (p *Prompter) line() (string, error) {
 
 // Confirm asks a yes/no question.
 func (p *Prompter) Confirm(question string, def bool) (bool, error) {
-	hint := "[y/N]"
+	hint := p.Lang.T("[y/N]")
 	if def {
-		hint = "[Y/n]"
+		hint = p.Lang.T("[Y/n]")
 	}
 	for {
-		fmt.Fprintf(p.out, "%s %s ", question, hint)
+		fmt.Fprintf(p.out, "%s %s ", p.Lang.T(question), hint)
 		s, err := p.line()
 		if err != nil {
 			return false, err
@@ -71,11 +73,11 @@ func (p *Prompter) Confirm(question string, def bool) (bool, error) {
 }
 
 func (p *Prompter) list(title string, options []ports.Option) {
-	fmt.Fprintf(p.out, "\n%s\n\n", title)
+	fmt.Fprintf(p.out, "\n%s\n\n", p.Lang.T(title))
 	for i, o := range options {
-		fmt.Fprintf(p.out, "  [%d] %s\n", i+1, o.Label)
+		fmt.Fprintf(p.out, "  [%d] %s\n", i+1, p.Lang.T(o.Label))
 		if o.Detail != "" {
-			fmt.Fprintf(p.out, "      %s\n", o.Detail)
+			fmt.Fprintf(p.out, "      %s\n", p.Lang.T(o.Detail))
 		}
 	}
 	fmt.Fprintln(p.out)
@@ -86,7 +88,7 @@ func (p *Prompter) list(title string, options []ports.Option) {
 func (p *Prompter) Select(title string, options []ports.Option) (int, error) {
 	p.list(title, options)
 	for {
-		fmt.Fprintf(p.out, "Select [1-%d]: ", len(options))
+		fmt.Fprint(p.out, p.Lang.Sprintf("Select [1-%d]: ", len(options)))
 		s, err := p.line()
 		if err != nil {
 			return 0, err
@@ -101,7 +103,7 @@ func (p *Prompter) Select(title string, options []ports.Option) (int, error) {
 func (p *Prompter) MultiSelect(title string, options []ports.Option) ([]int, error) {
 	p.list(title, options)
 	for {
-		fmt.Fprint(p.out, "Select one or more (comma separated, empty for none): ")
+		fmt.Fprint(p.out, p.Lang.T("Select one or more (comma separated, empty for none): "))
 		s, err := p.line()
 		if err != nil {
 			return nil, err
@@ -131,6 +133,6 @@ func (p *Prompter) MultiSelect(title string, options []ports.Option) ([]int, err
 
 // Ask reads one line of free text. An empty line is an empty answer.
 func (p *Prompter) Ask(question string) (string, error) {
-	fmt.Fprintf(p.out, "%s ", question)
+	fmt.Fprintf(p.out, "%s ", p.Lang.T(question))
 	return p.line()
 }

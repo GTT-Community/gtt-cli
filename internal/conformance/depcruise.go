@@ -28,6 +28,8 @@ func (DependencyCruiser) Applies(root string) bool {
 	return false
 }
 
+func (DependencyCruiser) Install() string { return "npm install --save-dev dependency-cruiser" }
+
 func (DependencyCruiser) Tool(root string, runner ports.Runner) string {
 	local := filepath.Join(root, "node_modules", ".bin", "depcruise")
 	if info, err := os.Stat(local); err == nil && !info.IsDir() {
@@ -139,4 +141,16 @@ func firstLine(s string) string {
 		return s[:i]
 	}
 	return s
+}
+
+// why is what a tool's failure says: the reading error, then its stderr.
+func why(stderr []byte, err error) string {
+	var parts []string
+	if err != nil {
+		parts = append(parts, err.Error())
+	}
+	if line := firstLine(string(stderr)); line != "" {
+		parts = append(parts, line)
+	}
+	return strings.Join(parts, "; ")
 }

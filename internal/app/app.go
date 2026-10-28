@@ -27,6 +27,8 @@ type App struct {
 	Home      string // user-level GTT home
 	Cwd       string
 	AssumeYes bool // the human pre-answered confirmations with --yes
+	// Lang is the interaction language of this invocation; nil is English.
+	Lang *core.Language
 }
 
 // Project is an installed project bound to its Bootstrap runtime.
@@ -38,9 +40,14 @@ type Project struct {
 	Store     lifecycle.Store
 }
 
-// detect finds where the CLI is running.
+// detect finds where the CLI is running and speaks the language the
+// project recorded, if any.
 func (a *App) detect(ctx context.Context) project.Detection {
-	return project.Detect(ctx, a.Git, a.Factory.Installed, a.Cwd)
+	det := project.Detect(ctx, a.Git, a.Factory.Installed, a.Cwd)
+	if st, err := (lifecycle.Store{Root: det.Root}).Load(); err == nil && st.Language != "" {
+		a.Lang.Set(core.LangProject, st.Language)
+	}
+	return det
 }
 
 // open binds the installed project and enforces compatibility. Every use
@@ -58,6 +65,16 @@ func (a *App) open(ctx context.Context) (*Project, error) {
 		return nil, err
 	}
 	p.Release = rel
+	if st, _ := p.Store.Load(); a.Lang != nil && st.Language == "" {
+		// A project installed before its language was kept in the CLI
+		// state: ask the Bootstrap, for this invocation only.
+		var plan struct {
+			Language string `json:"language"`
+		}
+		if _, err := a.query(ctx, p.B, "methodology.profile.get", nil, &plan); err == nil {
+			a.Lang.Set(core.LangProject, plan.Language)
+		}
+	}
 	return p, nil
 }
 

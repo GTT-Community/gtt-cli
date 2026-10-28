@@ -41,7 +41,12 @@ type Streams struct {
 // Wire returns the cli.Wire for the given streams.
 func Wire(s Streams) cli.Wire {
 	return func(o cli.Options) (*app.App, output.Renderer, error) {
-		out := output.Renderer{Out: s.Out, Err: s.Err, JSON: o.JSON, Verbose: o.Verbose, LogLevel: o.LogLevel}
+		// The interaction language: GTT_LANG here; the project's recorded
+		// language and an explicit --language override it later. The
+		// locale is never read.
+		lang := &core.Language{}
+		lang.Set(core.LangEnv, os.Getenv("GTT_LANG"))
+		out := output.Renderer{Out: s.Out, Err: s.Err, JSON: o.JSON, Verbose: o.Verbose, LogLevel: o.LogLevel, Lang: lang}
 		cwd, err := os.Getwd()
 		if err != nil {
 			return nil, out, core.Errorf(core.ExitFailure, "cannot determine the working directory: %v", err)
@@ -59,6 +64,9 @@ func Wire(s Streams) cli.Wire {
 			// Prompts go to stderr so that stdout stays clean for --json.
 			prompter = ui.New(s.In, s.Err, o.NoInput || o.JSON || s.Prompter != nil)
 		}
+		if p, ok := prompter.(*ui.Prompter); ok {
+			p.Lang = lang
+		}
 		runner := &execution.Runner{Log: out}
 		factory := bootstrap.Factory{Runner: runner}
 		return &app.App{
@@ -74,6 +82,7 @@ func Wire(s Streams) cli.Wire {
 			Home:      Home(),
 			Cwd:       cwd,
 			AssumeYes: o.Yes,
+			Lang:      lang,
 		}, out, nil
 	}
 }

@@ -138,7 +138,7 @@ func configCmd(e *env) *cobra.Command {
 		},
 	}, &cobra.Command{
 		Use:   "methodology [plan]",
-		Short: "Change the Method Plan (same as: gtt method set)",
+		Short: "Change the Autonomy Profile (same as: gtt autonomy set)",
 		Args:  cobra.MaximumNArgs(1),
 		RunE: func(cmd *cobra.Command, args []string) error {
 			res, err := e.app.MethodSet(cmd.Context(), first(args))
@@ -169,7 +169,7 @@ func first(args []string) string {
 
 func renderMethodSet(p output.Printer, r app.MethodResult, err error) {
 	if err == nil {
-		p.Line("✓ Method Plan: %s", r.Plan.Detail.Label)
+		p.Line("✓ Autonomy Profile: %s", r.Plan.Detail.Label)
 	}
 }
 
@@ -181,13 +181,13 @@ func methodCmd(e *env) *cobra.Command {
 				return
 			}
 			plan := res.Plan
-			p.Line("GTT Method Plan")
+			p.Line("GTT Autonomy Profile")
 			if !plan.Selected {
-				p.Section("Plan", "not selected", "Choose one: gtt method set <"+choiceIDs(res)+">")
+				p.Section("Profile", "not selected", "Choose one: gtt autonomy set <"+choiceIDs(res)+">")
 				return
 			}
 			pol := plan.Detail.Policy
-			p.Section("Plan", plan.Detail.Label, plan.Detail.Summary)
+			p.Section("Profile", plan.Detail.Label, plan.Detail.Summary)
 			p.Section("Automation", title(pol.Automation["level"]))
 			p.Section("Without asking", output.List(plan.Interaction.WithoutAsking))
 			asks := make([]string, 0, len(plan.Interaction.AsksFor))
@@ -210,11 +210,12 @@ func methodCmd(e *env) *cobra.Command {
 			}
 		})
 	}
-	cmd := &cobra.Command{Use: "method", Short: "Method Plan: show, set, check", Args: cobra.NoArgs, RunE: show}
-	cmd.AddCommand(&cobra.Command{Use: "show", Short: "Show the Method Plan in force", Args: cobra.NoArgs, RunE: show},
+	cmd := &cobra.Command{Use: "autonomy", Aliases: []string{"method"}, Short: "Autonomy Profile - how much GTT does without asking: show, set, check",
+		Args: cobra.NoArgs, RunE: show}
+	cmd.AddCommand(&cobra.Command{Use: "show", Short: "Show the Autonomy Profile in force", Args: cobra.NoArgs, RunE: show},
 		&cobra.Command{
 			Use:   "set [plan]",
-			Short: "Select or change the Method Plan",
+			Short: "Select or change the Autonomy Profile",
 			Args:  cobra.MaximumNArgs(1),
 			RunE: func(cmd *cobra.Command, args []string) error {
 				res, err := e.app.MethodSet(cmd.Context(), first(args))
@@ -223,7 +224,7 @@ func methodCmd(e *env) *cobra.Command {
 		},
 		&cobra.Command{
 			Use:   "check",
-			Short: "Verify that the plan configuration is coherent",
+			Short: "Verify that the Autonomy Profile configuration is coherent",
 			Args:  cobra.NoArgs,
 			RunE: func(cmd *cobra.Command, _ []string) error {
 				res, err := e.app.MethodCheck(cmd.Context())
@@ -363,13 +364,13 @@ func agentsCmd(e *env) *cobra.Command {
 func renderSource(p output.Printer, s app.SourceReport) {
 	switch s.Outcome {
 	case "applied":
-		p.Line("✓ Directiva aplicada y validada: %s", s.Path)
+		p.Line("✓ Directive applied and validated: %s", s.Path)
 	case "unchanged":
-		p.Line("✓ Sin cambios (ya aplicada y validada): %s", s.Path)
+		p.Line("✓ Unchanged (already applied and validated): %s", s.Path)
 	case "failed":
-		p.Line("✗ Directiva no aplicada: %s (%s)", s.Path, s.Reason)
+		p.Line("✗ Directive not applied: %s (%s)", s.Path, s.Reason)
 	default:
-		p.Line("⚠ Pendiente: %s (%s)", s.Path, s.Reason)
+		p.Line("⚠ Pending: %s (%s)", s.Path, s.Reason)
 	}
 }
 

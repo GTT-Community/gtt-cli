@@ -121,6 +121,12 @@ func (a *App) ExportClean(ctx context.Context, dest string) (ExportResult, error
 	if err != nil {
 		return res, &core.Error{Code: core.ExitFailure, What: "Clean export failed.", Why: err.Error()}
 	}
+	// A host AGENTS.md GTT joined is the host's: it is exported without GTT's block.
+	if host, keep := fsx.HostText(filepath.Join(p.Root, fsx.SharedFile)); keep {
+		if err := os.WriteFile(filepath.Join(dest, fsx.SharedFile), []byte(host), 0o644); err != nil {
+			return res, &core.Error{Code: core.ExitFailure, What: "Clean export failed.", Why: err.Error()}
+		}
+	}
 	// Nothing is recorded in the project: an export leaves it untouched.
 	return res, nil
 }
@@ -213,6 +219,17 @@ func (a *App) Clean(ctx context.Context, noSnapshot bool) (CleanResult, error) {
 	for _, rel := range targets {
 		full := filepath.Join(p.Root, filepath.FromSlash(rel))
 		if !fsx.Exists(full) || contains(res.Kept, rel) {
+			continue
+		}
+		if fsx.IsShared(rel) {
+			if err := fsx.StripOrRemove(full); err != nil {
+				return res, &core.Error{Code: core.ExitFailure, What: "Clean stopped: could not take GTT's block out of " + rel, Why: err.Error()}
+			}
+			if fsx.Exists(full) {
+				res.Kept = append(res.Kept, rel+" (host content kept; GTT's block removed)")
+			} else {
+				res.Removed = append(res.Removed, rel)
+			}
 			continue
 		}
 		if err := os.RemoveAll(full); err != nil {
@@ -351,6 +368,11 @@ func (a *App) Update(ctx context.Context, o UpdateOptions) (UpdateResult, error)
 	}
 	for rel, sum := range target {
 		now, herr := fsx.HashFile(filepath.Join(p.Root, filepath.FromSlash(rel)))
+		if fsx.IsShared(rel) {
+			if block, ok := fsx.BlockHash(filepath.Join(p.Root, filepath.FromSlash(rel))); ok {
+				now = block // the host's lines around GTT's block are not GTT's to compare
+			}
+		}
 		switch {
 		case herr != nil:
 			res.Added = append(res.Added, rel)
@@ -362,7 +384,10 @@ func (a *App) Update(ctx context.Context, o UpdateOptions) (UpdateResult, error)
 		}
 	}
 	for rel, sum := range ledger {
-		if _, still := target[rel]; still || !underAny(rel, layout.Package) {
+		// A catalog file GTT once shipped among the project's proposals (the staged session adapters
+		// before 1.8) and no longer ships: removed when untouched, so it stops posing as the project's own.
+		retired := strings.HasPrefix(rel, "gtt-domain/proposals/") && !fsx.Exists(filepath.Join(pkg.Root, filepath.FromSlash(rel)))
+		if _, still := target[rel]; still || (!underAny(rel, layout.Package) && !retired) {
 			continue
 		}
 		if now, herr := fsx.HashFile(filepath.Join(p.Root, filepath.FromSlash(rel))); herr == nil && now == sum {
@@ -417,7 +442,20 @@ func (a *App) Update(ctx context.Context, o UpdateOptions) (UpdateResult, error)
 		return res, e
 	}
 	for _, rel := range append(append([]string{}, res.Added...), res.Replaced...) {
-		if err := fsx.CopyFile(filepath.Join(pkg.Root, filepath.FromSlash(rel)), filepath.Join(p.Root, filepath.FromSlash(rel)), true); err != nil {
+		from, to := filepath.Join(pkg.Root, filepath.FromSlash(rel)), filepath.Join(p.Root, filepath.FromSlash(rel))
+		if fsx.IsShared(rel) {
+			if _, joined := fsx.BlockHash(to); joined {
+				text, err := os.ReadFile(from)
+				if err == nil {
+					err = fsx.WriteMerged(to, string(text))
+				}
+				if err != nil {
+					return fail(err)
+				}
+				continue
+			}
+		}
+		if err := fsx.CopyFile(from, to, true); err != nil {
 			return fail(err)
 		}
 	}
@@ -426,6 +464,7 @@ func (a *App) Update(ctx context.Context, o UpdateOptions) (UpdateResult, error)
 			return fail(err)
 		}
 	}
+	pruneEmptyParents(p.Root, res.Removed)
 	a.Report.Info("PASS\n\nValidating...")
 	updated := a.Factory.At(p.Root) // the updated Bootstrap: a fresh runtime
 	if _, err := a.gate(ctx, updated); err != nil {

@@ -77,6 +77,7 @@ type InitResult struct {
 // Init is the primary orchestration workflow.
 func (a *App) Init(ctx context.Context, o InitOptions) (InitResult, error) {
 	res := InitResult{Schema: core.OutputSchema}
+	a.Lang.Set(core.LangExplicit, o.Language)
 	det := a.detect(ctx)
 	res.Project = det.Root
 	store := lifecycle.Store{Root: det.Root}
@@ -179,6 +180,33 @@ func (a *App) collect(ctx context.Context, root string, pkg ports.Package, catal
 			Why: "GTT never infers it.", Next: "Run in a terminal, or pass " + flag + "."}
 	}
 
+	// Language first, among those the Bootstrap supports: it is the language of everything that follows.
+	langs := pkg.Release.SupportedLanguages
+	switch {
+	case o.Language != "":
+		if !contains(langs, o.Language) {
+			return sel, &core.Error{Code: core.ExitUsage, Unmodified: true, What: "Unsupported language: " + o.Language,
+				Why: "This Bootstrap supports: " + strings.Join(langs, ", ")}
+		}
+		sel.Language = o.Language
+	case len(langs) == 1:
+		sel.Language = langs[0]
+	case len(langs) == 0:
+	case a.Prompt.Interactive():
+		opts := make([]ports.Option, len(langs))
+		for i, l := range langs {
+			opts[i] = ports.Option{Label: l}
+		}
+		i, err := a.Prompt.Select("Language:", opts)
+		if err != nil {
+			return sel, err
+		}
+		sel.Language = langs[i]
+	default:
+		return sel, need("The language", "--language "+strings.Join(langs, "|"))
+	}
+	a.Lang.Set(core.LangExplicit, sel.Language) // everything that follows speaks it
+
 	// ADEs: detection is an observation; participation is a choice.
 	registry, err := ade.Registry(ctx, catalog)
 	if err != nil {
@@ -206,12 +234,16 @@ func (a *App) collect(ctx context.Context, root string, pkg ports.Package, catal
 		}
 		sel.Participating = o.ADEs
 	case a.Prompt.Interactive():
-		picked, err := a.Prompt.MultiSelect("ADE candidates (detection is not participation).\nSelect the ADEs that will participate in this project:", options)
-		if err != nil {
-			return sel, err
-		}
-		for _, i := range picked {
-			sel.Participating = append(sel.Participating, candidates[i].ID)
+		question := "ADE candidates (detection is not participation).\nSelect the ADEs that will participate in this project:"
+		for attempt := 0; attempt < 3 && len(sel.Participating) == 0; attempt++ {
+			picked, err := a.Prompt.MultiSelect(question, options)
+			if err != nil {
+				return sel, err
+			}
+			for _, i := range picked {
+				sel.Participating = append(sel.Participating, candidates[i].ID)
+			}
+			question = "Select at least one ADE (the one you work in is enough):"
 		}
 	default:
 		return sel, need("The participating ADEs", "--ade id[,id]")
@@ -242,39 +274,13 @@ func (a *App) collect(ctx context.Context, root string, pkg ports.Package, catal
 		return sel, &core.Error{Code: core.ExitUsage, Unmodified: true, What: "The Primary ADE must be one of the participating ADEs."}
 	}
 
-	// Language, among those the Bootstrap supports.
-	langs := pkg.Release.SupportedLanguages
-	switch {
-	case o.Language != "":
-		if !contains(langs, o.Language) {
-			return sel, &core.Error{Code: core.ExitUsage, Unmodified: true, What: "Unsupported language: " + o.Language,
-				Why: "This Bootstrap supports: " + strings.Join(langs, ", ")}
-		}
-		sel.Language = o.Language
-	case len(langs) == 1:
-		sel.Language = langs[0]
-	case len(langs) == 0:
-	case a.Prompt.Interactive():
-		opts := make([]ports.Option, len(langs))
-		for i, l := range langs {
-			opts[i] = ports.Option{Label: l}
-		}
-		i, err := a.Prompt.Select("Language:", opts)
-		if err != nil {
-			return sel, err
-		}
-		sel.Language = langs[i]
-	default:
-		return sel, need("The language", "--language "+strings.Join(langs, "|"))
-	}
-
 	// Initial sources: the CLI lists candidates and records the selection.
 	// It never decides that a document is authoritative.
 	if err := a.collectSources(ctx, root, pkg, &sel, o); err != nil {
 		return sel, err
 	}
 
-	// Method Plan: the names and descriptions come from the Bootstrap.
+	// Autonomy Profile: the names and descriptions come from the Bootstrap.
 	choices, err := methodology.Choices(ctx, catalog)
 	if err != nil {
 		return sel, err
@@ -286,7 +292,7 @@ func (a *App) collect(ctx context.Context, root string, pkg ports.Package, catal
 			found = found || c.ID == o.Method
 		}
 		if !found {
-			return sel, &core.Error{Code: core.ExitUsage, Unmodified: true, What: "Unknown Method Plan: " + o.Method}
+			return sel, &core.Error{Code: core.ExitUsage, Unmodified: true, What: "Unknown Autonomy Profile: " + o.Method}
 		}
 		sel.Profile = o.Method
 	case a.Prompt.Interactive():
@@ -294,14 +300,14 @@ func (a *App) collect(ctx context.Context, root string, pkg ports.Package, catal
 		for i, c := range choices {
 			opts[i] = ports.Option{Label: c.Label, Detail: c.Summary}
 		}
-		i, err := a.Prompt.Select("GTT Method Plan\n\nChoose how GTT is applied to this project:", opts)
+		i, err := a.Prompt.Select("GTT Autonomy Profile\n\nChoose how GTT is applied to this project:", opts)
 		if err != nil {
 			return sel, err
 		}
 		sel.Profile = choices[i].ID
 		a.Report.Info("Bootstrap will apply the semantics of the selected plan.")
 	default:
-		return sel, need("The Method Plan", "--method <plan>")
+		return sel, need("The Autonomy Profile", "--autonomy <profile>")
 	}
 
 	// Development method (Method Governance): options and texts from the
@@ -483,7 +489,7 @@ func (a *App) install(ctx context.Context, root string, pkg ports.Package, j *li
 	}
 
 	st, _ := store.Load()
-	st.Bootstrap, st.CoreLedger = &j.Bootstrap, j.CoreLedger
+	st.Bootstrap, st.CoreLedger, st.Language = &j.Bootstrap, j.CoreLedger, sel.Language
 	if layout, lerr := a.Installer.Layout(pkg); lerr == nil {
 		noteRewritten(&st, root, j.CoreLedger, ledgerPaths(j.CoreLedger, layout))
 	}
@@ -770,7 +776,8 @@ func (a *App) restore(ctx context.Context, root string, pkg ports.Package, s sna
 		return fail(&core.Error{Code: core.ExitFailure, What: "Bootstrap validation failed after restore.", Why: strings.Join(append(v.Failing, v.Messages...), "\n")})
 	}
 	st, _ := store.Load()
-	st.Bootstrap, st.CoreLedger = &j.Bootstrap, ledger
+	st.Bootstrap, st.CoreLedger, st.Language = &j.Bootstrap, ledger, s.Language
+	a.Lang.Set(core.LangProject, s.Language)
 	noteRewritten(&st, root, ledger, ledgerPaths(ledger, layout))
 	st.History = append(st.History, lifecycle.Event{At: lifecycle.Timestamp(), Event: "restore", Detail: "snapshot " + s.Snapshot})
 	if err := store.Save(st); err != nil {

@@ -98,8 +98,8 @@ func TestReadOnlyCommandsAreIdempotentAndJSON(t *testing.T) {
 func TestStatusPresentsBootstrapState(t *testing.T) {
 	root := installed(t, nil)
 	out := gtt(t, root, "status").must(t, 0).out
-	for _, want := range []string{"GTT Project Status", "Compatibility: PASS", "Primary: ", "Participating: ", "Excluded: ", "Methodology:\n  Medium",
-		"Freeze: NOT FROZEN", "OPEN: 0", "BLOCKING: 0", "Validation:\n  PASS", "Session:"} {
+	for _, want := range []string{"GTT Project Status", "Compatibility: PASS", "Primary: ", "Participating: ", "Excluded: ", "Autonomy Profile:\n  Medium",
+		"Freeze: NOT FROZEN", "Open gaps: 0", "Blocking gaps: 0", "Validation:\n  PASS", "Session:"} {
 		if !strings.Contains(out, want) {
 			t.Errorf("status lacks %q:\n%s", want, out)
 		}
@@ -214,4 +214,30 @@ func TestTeamPolicyFollowsTheWorkingAgreements(t *testing.T) {
 	// A new governed artifact is registered by the deterministic upkeep.
 	gtt(t, root, "sync").must(t, 0)
 	gtt(t, root, "validate", "--ci").must(t, 0)
+}
+
+func TestDesignResetStartsOverBeforeTheFreezeOnly(t *testing.T) {
+	root := project(t, map[string]string{"design-a.md": "# A\n", "payments.md": "# Payments\n"})
+	initProject(t, root, pristine, defaults...)
+	template := read(t, root, "gtt-domain/context/stack.md")
+	gtt(t, root, "design", "add", "design-a.md", "payments.md").must(t, 0)
+	write(t, root, "gtt-domain/context/stack.md", template+"\ndrafted by THINK\n")
+	write(t, root, "gtt-domain/context/design/EPIC-001.md", "# EPIC-001\n")
+	write(t, root, "SOURCE-BRIEF.md", "# A\n")
+	gtt(t, root, "design", "reset").must(t, 3) // no terminal, no --yes: refused
+	r := gtt(t, root, "design", "reset", "--yes").must(t, 0)
+	if read(t, root, "gtt-domain/context/stack.md") != template || exists(root, "gtt-domain/context/design/EPIC-001.md") || exists(root, "SOURCE-BRIEF.md") {
+		t.Fatalf("the design must be back at the templates:\n%s", r.out)
+	}
+	if !strings.Contains(r.out, ".gtt/local/design-reset/") {
+		t.Errorf("the reset must name its backup:\n%s", r.out)
+	}
+	gtt(t, root, "validate").must(t, 0)
+	if !strings.Contains(gtt(t, root, "sources").must(t, 0).out, "payments.md") {
+		t.Error("recorded design documents stay after a reset")
+	}
+	write(t, root, "gtt-domain/.frozen", "2026-10-28T00:00:00Z\n")
+	if r := gtt(t, root, "design", "reset", "--yes").must(t, 5); !strings.Contains(r.err, "change-request.md") {
+		t.Errorf("after a freeze a reset is refused and points at the change flow:\n%s", r.err)
+	}
 }

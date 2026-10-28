@@ -1,4 +1,4 @@
-// Package methodology reads the selected Method Plan from the Bootstrap and
+// Package methodology reads the selected Autonomy Profile from the Bootstrap and
 // answers one operational question: may the CLI do this without asking?
 // What a plan means is defined by the Bootstrap; this package only executes
 // the operating policy the Bootstrap declares, using its policy vocabulary.
@@ -41,7 +41,7 @@ const (
 	GovernedDecision   = "governed_decision"
 )
 
-// Plan is the selected Method Plan as the Bootstrap reports it.
+// Plan is the selected Autonomy Profile as the Bootstrap reports it.
 type Plan struct {
 	Profile   string   `json:"profile"`
 	Selected  bool     `json:"selected"`
@@ -126,10 +126,10 @@ func Load(ctx context.Context, b ports.Bootstrap) (Plan, error) {
 		return p, err
 	}
 	if !res.OK() {
-		return p, &core.Error{Code: core.ExitFailure, What: "The Bootstrap could not report the Method Plan.", Why: res.Stderr}
+		return p, &core.Error{Code: core.ExitFailure, What: "The Bootstrap could not report the Autonomy Profile.", Why: res.Stderr}
 	}
 	if err := res.JSON(&p); err != nil {
-		return p, &core.Error{Code: core.ExitFailure, What: "The Method Plan report is unreadable.", Why: err.Error()}
+		return p, &core.Error{Code: core.ExitFailure, What: "The Autonomy Profile report is unreadable.", Why: err.Error()}
 	}
 	if !p.usesTeamPolicy() {
 		return p, nil

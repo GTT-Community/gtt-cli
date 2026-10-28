@@ -133,31 +133,31 @@ func TestSourceTrackingLifecycle(t *testing.T) {
 	root := installed(t, map[string]string{"INITIAL-001.md": "# directive v1\n", "INITIAL-002.md": "# other\n"},
 		"--ade", "claude", "--language", "en", "--method", "light", "--sources", "INITIAL-001.md")
 	out := gtt(t, root, "sources").must(t, 0).out
-	if !strings.Contains(out, "✓ Sin cambios (ya aplicada y validada): INITIAL-001.md") || !strings.Contains(out, "⚠ Pendiente: INITIAL-002.md") {
+	if !strings.Contains(out, "✓ Unchanged (already applied and validated): INITIAL-001.md") || !strings.Contains(out, "⚠ Pending: INITIAL-002.md") {
 		t.Fatalf("applied by init without a second command; unselected stays pending:\n%s", out)
 	}
 	// Reprocessing unchanged content does nothing.
-	if out = gtt(t, root, "sources", "apply").must(t, 0).out; !strings.Contains(out, "Sin cambios (ya aplicada y validada): INITIAL-001.md") {
+	if out = gtt(t, root, "sources", "apply").must(t, 0).out; !strings.Contains(out, "Unchanged (already applied and validated): INITIAL-001.md") {
 		t.Errorf("unchanged content must not be reprocessed:\n%s", out)
 	}
 	// Same name, new content: pending again, then applied again.
 	write(t, root, "INITIAL-001.md", "# directive v2\n")
-	if out = gtt(t, root, "sources").must(t, 0).out; !strings.Contains(out, "⚠ Pendiente: INITIAL-001.md (content changed") {
+	if out = gtt(t, root, "sources").must(t, 0).out; !strings.Contains(out, "⚠ Pending: INITIAL-001.md (content changed") {
 		t.Fatalf("a modified MD must be detected:\n%s", out)
 	}
-	if out = gtt(t, root, "sources", "apply").must(t, 0).out; !strings.Contains(out, "✓ Directiva aplicada y validada: INITIAL-001.md") {
+	if out = gtt(t, root, "sources", "apply").must(t, 0).out; !strings.Contains(out, "✓ Directive applied and validated: INITIAL-001.md") {
 		t.Fatalf("got:\n%s", out)
 	}
 	if tr := read(t, root, ".gtt/cli/tracking.json"); !strings.Contains(tr, "\"previous\"") || !strings.Contains(tr, "VALIDATED") {
 		t.Errorf("the processed version must be traceable:\n%s", tr)
 	}
 	// Naming a path selects it.
-	if out = gtt(t, root, "sources", "apply", "INITIAL-002.md:requirements").must(t, 0).out; !strings.Contains(out, "✓ Directiva aplicada y validada: INITIAL-002.md") {
+	if out = gtt(t, root, "sources", "apply", "INITIAL-002.md:requirements").must(t, 0).out; !strings.Contains(out, "✓ Directive applied and validated: INITIAL-002.md") {
 		t.Fatalf("got:\n%s", out)
 	}
 	// A failure is never recorded as applied.
 	r := gtt(t, root, "sources", "apply", "MISSING.md").must(t, 1)
-	if !strings.Contains(r.out, "✗ Directiva no aplicada: MISSING.md") {
+	if !strings.Contains(r.out, "✗ Directive not applied: MISSING.md") {
 		t.Errorf("got:\n%s", r.out)
 	}
 	if tr := read(t, root, ".gtt/cli/tracking.json"); strings.Contains(tr, "MISSING.md") {
@@ -167,7 +167,7 @@ func TestSourceTrackingLifecycle(t *testing.T) {
 	write(t, root, "INITIAL-001.md", "# directive v3\n")
 	os.Remove(filepath.Join(root, "gtt-domain", "backlog.md"))
 	r = gtt(t, root, "sources", "apply").must(t, 1)
-	if !strings.Contains(r.out, "✗ Directiva no aplicada: INITIAL-001.md") {
+	if !strings.Contains(r.out, "✗ Directive not applied: INITIAL-001.md") {
 		t.Errorf("an unvalidated application must not be marked:\n%s", r.out)
 	}
 	if tr := read(t, root, ".gtt/cli/tracking.json"); !strings.Contains(tr, "\"state\": \"FAILED\"") {

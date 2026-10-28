@@ -22,13 +22,13 @@ GTT Method -> GTT Bootstrap -> versioned contracts -> GTT CLI -> ADE -> Human
 ## Features
 
 - **One-command setup.** `gtt init` finds, downloads and verifies GTT Bootstrap, asks only the decisions that are
-  yours (which ADEs participate and which is Primary, language, Method Plan, initial design documents), installs
+  yours (which ADEs participate and which is Primary, language, Autonomy Profile, initial design documents), installs
   transactionally, validates, and hands off to your Primary ADE.
 - **Several ADEs, one governance.** Claude Code, GitHub Copilot, Codex and Kiro side by side. Detected is never
   participating: GTT installs only the integrations you choose.
 - **No design document? No problem.** It offers the Bootstrap's Initial Design Questionnaire, which your ADE
   guides you through.
-- **Method Plans.** Light, Medium, Hard and Team decide how much GTT does without asking. Destructive operations
+- **Autonomy Profiles.** Light, Medium, Hard and Team decide how much GTT does without asking. Destructive operations
   and governed decisions always need you.
 - **Development method.** `gtt init` asks how you want to develop (Vertical Slice, DDD, Hexagonal, Layered,
   Event-First) and how to start (Walking Skeleton or straight to the main functionality), with the texts of the
@@ -53,7 +53,7 @@ GTT Method -> GTT Bootstrap -> versioned contracts -> GTT CLI -> ADE -> Human
   [Python 3](https://www.python.org/downloads/windows/). The CLI finds Git Bash on its own and never uses the WSL
   `bash.exe`; set `GTT_BASH` to point it at another bash.
   Note: GTT Bootstrap up to 1.5.0 starts its own scripts with `bash` by name, which on Windows is the WSL `bash.exe`,
-  so `gtt init` and other operations fail there. From Bootstrap 1.5.1 on - this CLI ships with 1.7.0 - they run with
+  so `gtt init` and other operations fail there. From Bootstrap 1.5.1 on - this CLI ships with 1.8.0 - they run with
   the bash the CLI hands it (`GTT_BASH`).
 
 ## Installation
@@ -73,8 +73,8 @@ Then check it with `gtt version`.
 
 - Run it once without installing: `uvx --from gtt-cli gtt version` or `npx @gtt-community/gtt-cli version`.
 - Upgrade: run the installer again, `uv tool upgrade gtt-cli`, or `npm update -g @gtt-community/gtt-cli`.
-- A specific version: `GTT_VERSION=1.7.0` with the curl or PowerShell installer, `uv tool install gtt-cli==1.7.0`, or
-  `npm install -g @gtt-community/gtt-cli@1.7.0`.
+- A specific version: `GTT_VERSION=1.8.0` with the curl or PowerShell installer, `uv tool install gtt-cli==1.8.0`, or
+  `npm install -g @gtt-community/gtt-cli@1.8.0`.
 - Install location for curl and PowerShell: `GTT_INSTALL_DIR` (default `/usr/local/bin` or `~/.local/bin`; on Windows
   `%LOCALAPPDATA%\Programs\gtt`, added to your PATH).
 - `pipx install gtt-cli` works as well, and every archive can be downloaded by hand from
@@ -97,7 +97,7 @@ make build        # writes ./gtt
 
 ```bash
 cd my-project
-gtt init          # interactive: choose ADEs, Primary ADE, language, Method Plan, design documents
+gtt init          # interactive: choose ADEs, Primary ADE, language, Autonomy Profile, design documents
 gtt status        # where the project stands
 ```
 
@@ -120,7 +120,7 @@ The integration tests drive the real CLI against a real Bootstrap catalog: `GTT_
 
 | Command | What it does |
 |---|---|
-| `gtt init` | Resolve, verify and negotiate a Bootstrap; ask for participating ADEs, the Primary ADE, language, initial sources, the Method Plan and the development method; install transactionally; validate; hand off to the Primary ADE |
+| `gtt init` | Resolve, verify and negotiate a Bootstrap; ask for participating ADEs, the Primary ADE, language, initial sources, the Autonomy Profile and the development method; install transactionally; validate; hand off to the Primary ADE |
 | `gtt status` | Deterministic project state (`--fast` skips the Bootstrap validation) |
 | `gtt inspect` | Topology and installation state |
 | `gtt validate [--ci]` | The Bootstrap's validation, unaltered |
@@ -132,9 +132,9 @@ The integration tests drive the real CLI against a real Bootstrap catalog: `GTT_
 | `gtt export --clean [dest]` | A clean delivery copy; the project is not modified |
 | `gtt clean` | Remove GTT from the project (asks; offers a recovery snapshot) |
 | `gtt version` | CLI version, the Bootstrap release it ships with, and the Bootstrap installed in the project |
-| `gtt method [show\|set\|check]` | Method Plan: Light, Medium, Hard, Team (`gtt config methodology` is an alias of `set`) |
+| `gtt autonomy [show\|set\|check]` (alias: `gtt method`) | Autonomy Profile: Light, Medium, Hard, Team (`gtt config methodology` is an alias of `set`) |
 | `gtt dev-method [show\|list]` | The development method (Method Governance), read-only: the method in force, its status (ratified / open), the ADR that locks it and its verification level; `list` shows the Method Packs with their short text. It changes only through a change request |
-| `gtt check` | Method Conformance: the code against the ratified method's dependency rules, through the language's own tool (JavaScript/TypeScript: dependency-cruiser, installed in the project). A violation is a conflict, never corrected; without an adapter for the language the method is reported `declared-only` |
+| `gtt check` | Method Conformance: the code against the ratified method's dependency rules, through the language's own tool (see *Method Conformance* below). A violation is a conflict, never corrected; without an adapter for the language the method is reported `declared-only` |
 | `gtt change ["what"] [--reason ...]` | Request a governed change in the middle of the work: it is written to `gtt-domain/change-request.md` through the Bootstrap with an id, the agent is told to process it into a proposal (the session's Next action), and the CLI offers to open the Primary ADE. `gtt change show` follows it |
 | `gtt proposals [list\|show\|withdraw]` | The proposals, ADR drafts and staged promotion sets, with their state and the request they answer; `withdraw` archives one (never deletes it) |
 | `gtt promote <set>` | Apply a staged promotion set after reviewing its diff (a human act) |
@@ -218,7 +218,7 @@ TA-02 | team | policy.agent_context_sync | automatic_safe
 
 Accepted values: `automatic`, `automatic_safe`, `confirm`, `propose_confirm`. Undeclared values stay
 `propose_confirm`. Personal preferences never set team policy, and no declaration removes the confirmation of a
-destructive operation or a governed decision. `gtt method show` lists what the team declared.
+destructive operation or a governed decision. `gtt autonomy show` lists what the team declared.
 
 ## Exit codes
 
@@ -235,6 +235,20 @@ destructive operation or a governed decision. `gtt method show` lists what the t
 
 `gtt check`: 0 the code respects the method (or nothing to check, or `declared-only`), 1 a forbidden dependency,
 7 the result cannot be determined (the language's tool is not installed).
+
+### Method Conformance
+
+`gtt check` has no import analyser of its own: it writes the rules into the configuration of the language's own
+tool, runs it, and reports what the tool finds. The language is detected from the project's manifest. The tool is
+never installed for you; when it is missing, the result cannot be determined (exit 7) and the install command is shown.
+
+- Go (`go.mod`): the `go` toolchain itself (`go list`); nothing else to install.
+- Java/Kotlin (`pom.xml`, `build.gradle`, `build.gradle.kts`): `jdeps` from a JDK 11+; it reads compiled classes, so build first (`mvn compile` or `gradle classes`).
+- PHP (`composer.json`): deptrac, in `vendor/bin` or on the PATH (`composer require --dev deptrac/deptrac`).
+- Python (`pyproject.toml`, `setup.py`, `setup.cfg`, `requirements*.txt`): import-linter, in `.venv`/`venv` or on the PATH (`pip install import-linter`).
+- JavaScript/TypeScript (`package.json`, `tsconfig.json`): dependency-cruiser, in `node_modules` or on the PATH (`npm install --save-dev dependency-cruiser`).
+
+Other languages, .NET included, have no adapter: the method is reported `declared-only`.
 
 ## Architecture
 

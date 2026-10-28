@@ -54,9 +54,8 @@ jobs:
     name: Integration tests against GTT Bootstrap (${{ matrix.os }})
     runs-on: ${{ matrix.os }}
     timeout-minutes: 60
-    # Windows integration needs a Bootstrap that runs its scripts with Git Bash:
-    # reports/BUG-bootstrap-windows-wsl-bash.md in gtt-cli-dev. Until it ships,
-    # a Windows failure is reported without failing the run.
+    # Windows: the Bootstrap resolves Git Bash itself since 1.5.1 (.gtt/scripts/gtt_bash.py).
+    # Until a green Windows run confirms it, a Windows failure is reported without failing the run.
     continue-on-error: ${{ matrix.os == 'windows-latest' }}
     strategy:
       fail-fast: false

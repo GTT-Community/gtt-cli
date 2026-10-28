@@ -11,14 +11,14 @@ import (
 	"github.com/GTT-Community/gtt-cli/internal/ports"
 )
 
-// MethodResult is `gtt method show`.
+// MethodResult is `gtt autonomy show` (alias: gtt method).
 type MethodResult struct {
 	Schema  int                  `json:"schema"`
 	Plan    methodology.Plan     `json:"plan"`
 	Choices []methodology.Choice `json:"choices,omitempty"`
 }
 
-// MethodShow reports the Method Plan in force, in the Bootstrap's words.
+// MethodShow reports the Autonomy Profile in force, in the Bootstrap's words.
 func (a *App) MethodShow(ctx context.Context) (MethodResult, error) {
 	p, err := a.open(ctx)
 	if err != nil {
@@ -49,13 +49,13 @@ func (a *App) MethodSet(ctx context.Context, id string) (MethodResult, error) {
 	}
 	if id == "" {
 		if !a.Prompt.Interactive() {
-			return MethodResult{}, &core.Error{Code: core.ExitUsage, Unmodified: true, What: "The Method Plan must be chosen by a human.", Next: "Run: gtt method set <plan>"}
+			return MethodResult{}, &core.Error{Code: core.ExitUsage, Unmodified: true, What: "The Autonomy Profile must be chosen by a human.", Next: "Run: gtt autonomy set <profile>"}
 		}
 		opts := make([]ports.Option, len(choices))
 		for i, c := range choices {
 			opts[i] = ports.Option{Label: c.Label, Detail: c.Summary}
 		}
-		i, err := a.Prompt.Select("GTT Method Plan\n\nChoose how GTT is applied to this project:", opts)
+		i, err := a.Prompt.Select("GTT Autonomy Profile\n\nChoose how GTT is applied to this project:", opts)
 		if err != nil {
 			return MethodResult{}, err
 		}
@@ -66,7 +66,7 @@ func (a *App) MethodSet(ctx context.Context, id string) (MethodResult, error) {
 		known = known || c.ID == id
 	}
 	if !known {
-		return MethodResult{}, &core.Error{Code: core.ExitUsage, Unmodified: true, What: "Unknown Method Plan: " + id}
+		return MethodResult{}, &core.Error{Code: core.ExitUsage, Unmodified: true, What: "Unknown Autonomy Profile: " + id}
 	}
 	if current.Selected && current.Profile == id {
 		return MethodResult{Schema: core.OutputSchema, Plan: current, Choices: choices}, nil
@@ -112,7 +112,7 @@ func (a *App) MethodCheck(ctx context.Context) (DoctorResult, error) {
 	}
 	switch {
 	case !plan.Selected:
-		add("Plan selected", Fail, "no Method Plan selected; run: gtt method set <plan>")
+		add("Plan selected", Fail, "no Autonomy Profile selected; run: gtt autonomy set <profile>")
 	case !contains(plan.Supported, plan.Profile):
 		add("Plan selected", Fail, plan.Profile+" is not a plan this Bootstrap supports")
 	default:
@@ -160,7 +160,7 @@ func (a *App) MethodCheck(ctx context.Context) (DoctorResult, error) {
 		add("Required artifacts and integrity", Pass, "")
 	}
 	if res.Totals[Fail] > 0 {
-		return res, core.Errorf(core.ExitFailure, "the Method Plan configuration is not coherent")
+		return res, core.Errorf(core.ExitFailure, "the Autonomy Profile configuration is not coherent")
 	}
 	return res, nil
 }
@@ -226,6 +226,11 @@ func (a *App) ConfigLanguage(ctx context.Context, lang string) error {
 	if _, err := a.mutate(ctx, p.B, "methodology.profile.set", map[string]string{"language": lang}); err != nil {
 		return err
 	}
+	if st, err := p.Store.Load(); err == nil {
+		st.Language = lang
+		_ = p.Store.Save(st)
+	}
+	a.Lang.Set(core.LangExplicit, lang)
 	a.log(p.Root, "config.language", "success", map[string]any{"language": lang})
 	return nil
 }

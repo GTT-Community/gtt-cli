@@ -107,7 +107,7 @@ func (a *App) Check(ctx context.Context) (CheckResult, error) {
 		return res, &core.Error{Code: core.ExitUnavailable, Unmodified: true,
 			What: "Method Conformance cannot be determined: " + adapter.ID() + " is not installed in this project.",
 			Why:  "GTT verifies the code with the language's own tool and has no analyser of its own.",
-			Next: "Install it (npm install --save-dev dependency-cruiser) and run: gtt check"}
+			Next: "Install it (" + adapter.Install() + ") and run: gtt check"}
 	}
 	out, err := adapter.Check(ctx, p.Root, tool, rows, a.Runner)
 	if err != nil {

@@ -2,6 +2,8 @@ package output
 
 import (
 	"bytes"
+	"fmt"
+	"strings"
 	"testing"
 )
 
@@ -24,5 +26,26 @@ func TestLogWritesToStderrFromTheThresholdUp(t *testing.T) {
 		if out.Len() != 0 {
 			t.Errorf("threshold %q: logs must never reach stdout: %q", threshold, out.String())
 		}
+	}
+}
+
+type tagged struct{}
+
+func (tagged) Sprintf(format string, args ...any) string { return fmt.Sprintf("es:"+format, args...) }
+func (tagged) T(message string) string                   { return "es:" + message }
+
+func TestHumanLinesAreTranslatedAndJSONIsNot(t *testing.T) {
+	var out bytes.Buffer
+	r := Renderer{Out: &out, Lang: tagged{}}
+	r.Info("step %s", "x")
+	r.Emit(map[string]string{"k": "v"}, func(p Printer) { p.Line("line %d", 1); p.Section("title", "item") })
+	if got := out.String(); got != "es:step x\nes:line 1\n\nes:title:\n  es:item\n" {
+		t.Errorf("got %q", got)
+	}
+	out.Reset()
+	r.JSON = true
+	r.Emit(map[string]string{"k": "v"}, func(p Printer) {})
+	if !strings.Contains(out.String(), `"k": "v"`) {
+		t.Errorf("JSON is never translated: %q", out.String())
 	}
 }

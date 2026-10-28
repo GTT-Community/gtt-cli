@@ -17,7 +17,8 @@ type Installer struct{}
 func (Installer) Layout(pkg ports.Package) (ports.CoreLayout, error) { return Layout(pkg) }
 
 // Conflicts lists core paths that already exist in the project. A conflict
-// is reported, never merged.
+// is reported, never merged - except the shared instruction file (AGENTS.md),
+// which GTT joins as a delimited block instead (see shared.go).
 func (Installer) Conflicts(pkg ports.Package, projectRoot string) ([]string, error) {
 	layout, err := Layout(pkg)
 	if err != nil {
@@ -29,7 +30,7 @@ func (Installer) Conflicts(pkg ports.Package, projectRoot string) ([]string, err
 		if err != nil {
 			return nil, &core.Error{Code: core.ExitIntegrity, Unmodified: true, What: "The Bootstrap manifest declares an unsafe path.", Why: err.Error()}
 		}
-		if fsx.Exists(target) {
+		if fsx.Exists(target) && !fsx.IsShared(p) {
 			out = append(out, p)
 		}
 	}
@@ -86,12 +87,33 @@ func (i Installer) Install(pkg ports.Package, projectRoot string) (map[string]st
 		}
 	}
 	var committed []string
+	hostShared := map[string][]byte{} // a host file GTT joined, as it was before
+	undo := func() {
+		for _, done := range committed {
+			if original, ok := hostShared[done]; ok {
+				os.WriteFile(done, original, 0o644)
+				continue
+			}
+			os.RemoveAll(done)
+		}
+	}
 	for _, p := range layout.Paths {
 		target := filepath.Join(projectRoot, filepath.FromSlash(p))
-		if err := os.Rename(filepath.Join(stage, filepath.FromSlash(p)), target); err != nil {
-			for _, done := range committed {
-				os.RemoveAll(done)
+		staged := filepath.Join(stage, filepath.FromSlash(p))
+		var err error
+		if fsx.IsShared(p) && fsx.Exists(target) {
+			var original, gtt []byte
+			if original, err = os.ReadFile(target); err == nil {
+				if gtt, err = os.ReadFile(staged); err == nil {
+					hostShared[target] = original
+					err = fsx.WriteMerged(target, string(gtt))
+				}
 			}
+		} else {
+			err = os.Rename(staged, target)
+		}
+		if err != nil {
+			undo()
 			return nil, &core.Error{Code: core.ExitFailure, Unmodified: true, What: "Could not commit the GTT core; the installation was rolled back.", Why: err.Error()}
 		}
 		committed = append(committed, target)
@@ -106,7 +128,11 @@ func (Installer) Remove(projectRoot string, layout ports.CoreLayout) error {
 		if err != nil {
 			return err
 		}
-		if err := os.RemoveAll(target); err != nil {
+		remove := os.RemoveAll
+		if fsx.IsShared(p) {
+			remove = fsx.StripOrRemove // the host's own lines stay
+		}
+		if err := remove(target); err != nil {
 			return err
 		}
 	}

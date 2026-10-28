@@ -56,9 +56,9 @@ func renderStatus(p output.Printer, r app.StatusResult, verbose bool) {
 		"Excluded: "+names(r.ADENames, v.ADE.Excluded))
 	plan := title(v.Methodology.Profile)
 	if v.Methodology.Source != "project" {
-		plan = "not selected (run: gtt method set <plan>)"
+		plan = "not selected (run: gtt autonomy set <profile>)"
 	}
-	p.Section("Methodology", plan)
+	p.Section("Autonomy Profile", plan)
 	applied, pending := 0, 0
 	for _, s := range r.Sources.Sources {
 		if s.Outcome == "unchanged" {
@@ -76,9 +76,16 @@ func renderStatus(p output.Printer, r app.StatusResult, verbose bool) {
 	if v.Freeze.Frozen {
 		freeze = "ACTIVE"
 	}
-	p.Section("Governance", "Freeze: "+freeze, fmt.Sprintf("OPEN: %d", v.Governance.Gaps.Open), fmt.Sprintf("BLOCKING: %d", v.Governance.Gaps.Blocking),
+	gov := []string{"Freeze: " + freeze, fmt.Sprintf("Open gaps: %d", v.Governance.Gaps.Open), fmt.Sprintf("Blocking gaps: %d", v.Governance.Gaps.Blocking),
 		fmt.Sprintf("Conflicts: %d", v.Governance.UnresolvedConflicts), fmt.Sprintf("Proposals: %d", len(v.Governance.PendingProposals)),
-		"Change Request: "+upper(v.Governance.ChangeRequest))
+		"Change Request: " + upper(v.Governance.ChangeRequest)}
+	if o := v.Governance.Observations; v.Freeze.Frozen {
+		gov = append(gov, fmt.Sprintf("Observations: %d blocking, %d governance, %d warning", o.Blocking, o.Governance, o.Warning))
+		if o.Stopping > 0 {
+			gov = append(gov, fmt.Sprintf("STOP: %d observation(s) stop work until fixed or decided (see: bash .gtt/scripts/gtt-observe.sh backlog)", o.Stopping))
+		}
+	}
+	p.Section("Governance", gov...)
 	val := "NOT RUN"
 	if v.Validation.Result != "" {
 		val = upper(v.Validation.Result)
@@ -328,7 +335,7 @@ func renderAudit(p output.Printer, r app.AuditResult, md bool) {
 	item("Primary", names(r.ADENames, nonEmpty(v.ADE.Primary)))
 	item("Participating", names(r.ADENames, v.ADE.Participating))
 	item("Excluded", names(r.ADENames, v.ADE.Excluded))
-	head("Methodology")
+	head("Autonomy Profile")
 	item("Profile", orNone(v.Methodology.Profile)+" (source: "+v.Methodology.Source+")")
 	item("Language", orNone(v.Methodology.Language))
 	head("Initial sources")
@@ -343,7 +350,9 @@ func renderAudit(p output.Printer, r app.AuditResult, md bool) {
 	item("Frozen", output.YesNo(v.Freeze.Frozen))
 	item("Proposals", output.List(v.Governance.PendingProposals))
 	item("Change request", v.Governance.ChangeRequest)
-	item("OPEN / BLOCKING", fmt.Sprintf("%d / %d", v.Governance.Gaps.Open, v.Governance.Gaps.Blocking))
+	item("Open / blocking gaps", fmt.Sprintf("%d / %d", v.Governance.Gaps.Open, v.Governance.Gaps.Blocking))
+	item("Observations (blocking / governance / warning)", fmt.Sprintf("%d / %d / %d", v.Governance.Observations.Blocking,
+		v.Governance.Observations.Governance, v.Governance.Observations.Warning))
 	head("Recovery snapshots")
 	for _, s := range r.Snapshots {
 		item(s.Meta.CreatedAt, s.Snapshot+" ("+s.Meta.Reason+")")

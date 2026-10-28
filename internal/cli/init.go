@@ -45,7 +45,9 @@ func initCmd(e *env) *cobra.Command {
 	f.StringVar(&ades, "ade", "", "participating ADEs, comma separated (ids from the Bootstrap registry)")
 	f.StringVar(&o.Primary, "primary", "", "Primary ADE id")
 	f.StringVar(&o.Language, "language", "", "interaction language")
-	f.StringVar(&o.Method, "method", "", "Method Plan id")
+	f.StringVar(&o.Method, "autonomy", "", "Autonomy Profile: how much GTT does without asking (light, medium, hard, team)")
+	f.StringVar(&o.Method, "method", "", "former name of --autonomy")
+	_ = f.MarkHidden("method")
 	f.StringVar(&o.DevStyle, "dev-method", "", "development method: Method Pack ids, comma separated, or help (see: gtt dev-method list)")
 	f.StringVar(&o.DevStart, "start", "", "how to start: a Method Pack id, direct, or help")
 	f.StringVar(&sources, "sources", "", "initial source documents, comma separated (path or path:type)")
@@ -185,7 +187,8 @@ func existing(e *env, cmd *cobra.Command, check *app.BootstrapCheck) error {
 		}
 	}
 	choice, err := e.app.Prompt.Select(title, []ports.Option{{Label: "Inspect"}, {Label: "Validate"}, {Label: "Update"},
-		{Label: "Reconfigure operational settings"}, {Label: "Abort"}})
+		{Label: "Reconfigure operational settings"}, {Label: "Add design documents", Detail: "gtt design add"},
+		{Label: "Start the design over (before the first freeze)", Detail: "gtt design reset"}, {Label: "Abort"}})
 	if err != nil {
 		return err
 	}
@@ -202,11 +205,22 @@ func existing(e *env, cmd *cobra.Command, check *app.BootstrapCheck) error {
 	case 2:
 		return run("update")
 	case 3:
-		sub, err := e.app.Prompt.Select("Reconfigure:", []ports.Option{{Label: "Primary ADE"}, {Label: "Method Plan"}, {Label: "Participating ADEs (agents sync)"}})
+		sub, err := e.app.Prompt.Select("Reconfigure:", []ports.Option{{Label: "Primary ADE"}, {Label: "Autonomy Profile"}, {Label: "Participating ADEs (agents sync)"}})
 		if err != nil {
 			return err
 		}
-		return run([][]string{{"config", "primary-ade"}, {"method", "set"}, {"agents", "sync"}}[sub]...)
+		return run([][]string{{"config", "primary-ade"}, {"autonomy", "set"}, {"agents", "sync"}}[sub]...)
+	case 4:
+		answer, err := e.app.Prompt.Ask("Design document path(s), separated by spaces:")
+		if err != nil {
+			return err
+		}
+		if paths := strings.Fields(answer); len(paths) > 0 {
+			return run(append([]string{"design", "add"}, paths...)...)
+		}
+		return core.ErrCancelled
+	case 5:
+		return run("design", "reset")
 	}
 	return core.ErrCancelled
 }

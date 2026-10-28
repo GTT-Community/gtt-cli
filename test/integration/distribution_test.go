@@ -72,7 +72,7 @@ func TestCleanNeedsConfirmationAndSnapshotRestores(t *testing.T) {
 			t.Errorf("application file %s must be untouched", f)
 		}
 	}
-	if !strings.Contains(r.out, "Recovery snapshot") {
+	if !strings.Contains(r.out, "Snapshot de recuperación") { // the project speaks Spanish
 		t.Fatalf("a snapshot is created before a destructive clean:\n%s", r.out)
 	}
 	if snaps := gtt(t, root, "snapshot", "list").must(t, 0).out; !strings.Contains(snaps, "Primary copilot") {
@@ -84,11 +84,12 @@ func TestCleanNeedsConfirmationAndSnapshotRestores(t *testing.T) {
 		t.Fatalf("git init: %v %s", err, out)
 	}
 	r = gtt(t, root, "init", "--bootstrap", pristine).must(t, 3)
+	// Nothing records the language any more: the detection is in English.
 	if !strings.Contains(r.out, "GTT recovery snapshot detected") || exists(root, ".gtt") {
 		t.Fatalf("detection without restore:\n%s\n%s", r.out, r.err)
 	}
 	r = gtt(t, root, "init", "--bootstrap", pristine, "--yes").must(t, 0)
-	if !strings.Contains(r.out, "restored") {
+	if !strings.Contains(r.out, "restaurada") { // the restored project speaks Spanish again
 		t.Fatalf("got:\n%s", r.out)
 	}
 	st := gtt(t, root, "status", "--fast", "--json").must(t, 0).json(t)["status"].(map[string]any)
@@ -130,7 +131,7 @@ func TestUpdateIsTransactionalAndPreservesProjectState(t *testing.T) {
 		"--ade", "claude,copilot", "--primary", "copilot", "--language", "es", "--method", "hard", "--sources", "docs/spec.md")
 	// Same version: nothing to do.
 	r := gtt(t, root, "update", "--bootstrap", pristine).must(t, 0)
-	if !strings.Contains(r.out, "already installed") {
+	if !strings.Contains(r.out, "ya está instalado") {
 		t.Fatalf("got:\n%s", r.out)
 	}
 	// A local change to a package file must survive an update.

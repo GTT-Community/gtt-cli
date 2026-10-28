@@ -33,7 +33,7 @@ func devMethodCmd(e *env) *cobra.Command {
 		Short: "Show the development method in force (Vertical Slice, DDD...): read-only",
 		Long: "Show the development method in force: its status (ratified / open), the ADR that locks it and its\n" +
 			"verification level. It is chosen at gtt init and ratified by the freeze; afterwards it changes only\n" +
-			"through a change request. Not to be confused with the Method Plan (gtt method).",
+			"through a change request. Not to be confused with the Autonomy Profile (gtt autonomy).",
 		Args: cobra.NoArgs,
 		RunE: show,
 	}
@@ -105,7 +105,8 @@ func checkCmd(e *env) *cobra.Command {
 		Short: "Verify that the code respects the development method's dependency rules",
 		Long: "Method Conformance. Reads the ratified Method Lock and its dependency rules, as stack.md section 5\n" +
 			"writes them with the project's real paths, and verifies them with the language's own tool through an\n" +
-			"adapter (JavaScript/TypeScript: dependency-cruiser). A forbidden dependency is reported as a conflict -\n" +
+			"adapter (Go: go list; Java/Kotlin: jdeps; PHP: deptrac; Python: import-linter; JavaScript/TypeScript:\n" +
+			"dependency-cruiser). A forbidden dependency is reported as a conflict -\n" +
 			"rule, source file, dependency - and never corrected.\n\n" +
 			"Exit codes: 0 pass (or nothing to check, or declared-only: no adapter for the language),\n" +
 			"1 conflict, 7 cannot be determined (the language's tool is not installed).",

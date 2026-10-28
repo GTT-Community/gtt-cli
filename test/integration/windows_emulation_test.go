@@ -113,7 +113,7 @@ func TestWindowsEmulationTheCLIHandsItsBashToTheBootstrap(t *testing.T) {
 	gtt(t, root, "doctor").must(t, 0)
 	gtt(t, root, "agents", "check", "--ci").must(t, 0)
 	gtt(t, root, "sync").must(t, 0)
-	if r := gtt(t, root, "init", "--bootstrap", catalog, "--yes"); r.code != 0 || !strings.Contains(r.out, "present and verified") {
+	if r := gtt(t, root, "init", "--bootstrap", catalog, "--yes"); r.code != 0 || !strings.Contains(r.out, "presente y verificado") {
 		t.Errorf("a second init must reuse the verified Bootstrap:\n%s\n%s", r.out, r.err)
 	}
 	// The same lifecycle through an update to a later release of the corrected Bootstrap.

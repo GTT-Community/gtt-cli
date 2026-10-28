@@ -88,7 +88,7 @@ func Execute(ctx context.Context, wire Wire, args []string, stdout, stderr io.Wr
 		data, _ := json.MarshalIndent(doc, "", "  ")
 		fmt.Fprintln(stderr, string(data))
 	} else {
-		fmt.Fprintln(stderr, ce.Error())
+		fmt.Fprintln(stderr, ce.Render(e.out.Lang))
 	}
 	return int(ce.Code)
 }
@@ -115,7 +115,7 @@ func newRoot(e *env) *cobra.Command {
 	root.AddCommand(
 		initCmd(e), statusCmd(e), inspectCmd(e), validateCmd(e), resumeCmd(e), freezeCmd(e), doctorCmd(e), auditCmd(e),
 		updateCmd(e), exportCmd(e), cleanCmd(e), versionCmd(e),
-		configCmd(e), methodCmd(e), devMethodCmd(e), checkCmd(e), changeCmd(e), proposalsCmd(e), promoteCmd(e), undoCmd(e), agentsCmd(e), sourcesCmd(e), syncCmd(e), snapshotCmd(e), artifactCmd(e), releaseCmd(e),
+		configCmd(e), methodCmd(e), devMethodCmd(e), checkCmd(e), changeCmd(e), proposalsCmd(e), promoteCmd(e), undoCmd(e), agentsCmd(e), sourcesCmd(e), designCmd(e), syncCmd(e), snapshotCmd(e), artifactCmd(e), releaseCmd(e),
 	)
 	return root
 }

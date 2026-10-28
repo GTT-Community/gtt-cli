@@ -94,16 +94,21 @@ func TestInitNeverInfersAHumanDecision(t *testing.T) {
 
 func TestInteractiveInitAsksAndRecords(t *testing.T) {
 	root := project(t, map[string]string{"docs/requirements.md": "# r\n", "docs/architecture.md": "# a\n"})
-	// not a project? yes; ADEs 1,3 (claude, copilot); primary 2 (copilot); language 2 (es);
-	// sources 1,2; plan 1 (light); development method 1 (Vertical Slice, listed first as
+	// not a project? yes; language 2 (es), asked first; ADEs 1,3 (claude, copilot); primary 2 (copilot);
+	// sources 1,2; profile 1 (light); development method 1 (Vertical Slice, listed first as
 	// recommended) and start 1 (Walking Skeleton); proceed; then exit the handoff menu.
-	answers := "y\n1,3\n2\n2\n1,2\n1\n1\n1\ny\n2\n"
+	// Everything after the language is asked in that language.
+	answers := "y\n2\n1,3\n2\n1,2\n1\n1\n1\ny\n2\n"
 	r := gttIn(t, root, answers, "init", "--bootstrap", pristine).must(t, 0)
-	for _, want := range []string{"detection is not participation", "Select the Primary ADE", "Light Method", "Candidate source documents",
+	for _, want := range []string{"Language:", "detectar no es participar", "Elige el ADE principal", "Light", "Documentos fuente candidatos",
+		"¿Continuar? [S/n]", "Salir",
 		"¿Cómo quieres organizar el desarrollo de tu solución?", "Vertical Slice (recomendado)", "Conviene si:", "¿Cómo quieres empezar?"} {
 		if !strings.Contains(r.err, want) {
 			t.Errorf("prompt %q was not shown", want)
 		}
+	}
+	if !strings.Contains(r.out, "Resumen:") || !strings.Contains(r.out, "Inicialización de GTT completa.") {
+		t.Errorf("the result speaks the chosen language:\n%s", r.out)
 	}
 	plan := methodology(t, root)
 	if plan["profile"] != "light" || plan["language"] != "es" {
@@ -143,11 +148,12 @@ func TestNoDocumentOffersTheBootstrapQuestionnaire(t *testing.T) {
 	gtt(t, root, "validate").must(t, 0)
 }
 
-func TestNoQuestionnaireKeepsTheGenericNextStep(t *testing.T) {
+func TestNoQuestionnaireStillNamesTheDesignAsNextStep(t *testing.T) {
 	root := project(t, nil)
 	r := initProject(t, root, pristine, defaults...)
-	if !strings.Contains(r.out, "Next:\nLaunch ") || strings.Contains(r.out, "Initial Design Questionnaire, or resumes it") {
-		t.Errorf("without an open questionnaire the Next step stays the generic one:\n%s", r.out)
+	if !strings.Contains(r.out, "Next:\nOpen the project in the Primary ADE and write anything: its first answer starts the design") ||
+		strings.Contains(r.out, "Initial Design Questionnaire, or resumes it") {
+		t.Errorf("without a questionnaire the Next step is the design itself, never a questionnaire to resume:\n%s", r.out)
 	}
 }
 
@@ -167,7 +173,7 @@ func TestInitIsIdempotentAndNeverReinstalls(t *testing.T) {
 	initProject(t, root, pristine, defaults...)
 	before := treeHash(t, root)
 	r := gtt(t, root, "init", "--bootstrap", pristine, "--ade", "kiro", "--method", "light", "--language", "es", "--no-sources", "--yes").must(t, 0)
-	if !strings.Contains(r.out, "already initialized") || treeHash(t, root) != before {
+	if !strings.Contains(r.out, "ya está inicializado") || treeHash(t, root) != before { // --language es: the answer is in Spanish
 		t.Errorf("a second init must change nothing:\n%s", r.out)
 	}
 }
@@ -176,8 +182,38 @@ func TestNamespaceConflictIsReportedNotMerged(t *testing.T) {
 	root := project(t, map[string]string{"AGENTS.md": "my own agents file\n", "gtt-domain/mine.txt": "x\n"})
 	before := treeHash(t, root)
 	r := gtt(t, root, append([]string{"init", "--bootstrap", pristine, "--yes"}, defaults...)...).must(t, 5)
-	if !strings.Contains(r.err, "AGENTS.md") || !strings.Contains(r.err, "gtt-domain") || treeHash(t, root) != before {
+	if !strings.Contains(r.err, "gtt-domain") || treeHash(t, root) != before {
 		t.Errorf("conflict handling:\n%s", r.err)
+	}
+	if strings.Contains(r.err, "AGENTS.md") {
+		t.Errorf("an existing AGENTS.md is joined, never a conflict (Canon 3.0 §28):\n%s", r.err)
+	}
+}
+
+func TestExistingAgentsFileIsJoinedNotTakenOver(t *testing.T) {
+	host := "# Team rules\n\n- Use pnpm.\n"
+	root := project(t, map[string]string{"AGENTS.md": host})
+	gtt(t, root, append([]string{"init", "--bootstrap", pristine, "--yes"}, defaults...)...).must(t, 0)
+	got := read(t, root, "AGENTS.md")
+	if !strings.HasPrefix(got, host) || strings.Count(got, "\n<!-- gtt:begin") != 1 || !strings.Contains(got, "GTT Bootstrap Agent Contract") {
+		t.Fatalf("the host's lines must stay first and GTT's contract join them as one block:\n%.400s", got)
+	}
+	gtt(t, root, "validate").must(t, 0)
+	gtt(t, root, "clean", "--no-snapshot", "--yes").must(t, 0)
+	if read(t, root, "AGENTS.md") != host {
+		t.Errorf("clean must take out only GTT's block:\n%s", read(t, root, "AGENTS.md"))
+	}
+}
+
+func TestFailedInstallKeepsTheHostAgentsFile(t *testing.T) {
+	// The core (with AGENTS.md joined) is committed, then an overlay conflict fails the install.
+	root := project(t, map[string]string{"AGENTS.md": "# Team rules\n", ".claude/CLAUDE.md": "my own instructions\n"})
+	before := treeHash(t, root)
+	if r := gtt(t, root, append([]string{"init", "--bootstrap", pristine, "--yes"}, defaults...)...); r.code == 0 {
+		t.Fatal("must fail")
+	}
+	if treeHash(t, root) != before || read(t, root, "AGENTS.md") != "# Team rules\n" {
+		t.Errorf("a failed init must give the host its AGENTS.md back unchanged:\n%s", read(t, root, "AGENTS.md"))
 	}
 }
 

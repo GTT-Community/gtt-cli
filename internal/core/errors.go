@@ -30,17 +30,23 @@ type Error struct {
 	Err        error
 }
 
-func (e *Error) Error() string {
+func (e *Error) Error() string { return e.Render(nil) }
+
+// Render writes the error for a human in a language; nil is English.
+func (e *Error) Render(l interface{ T(string) string }) string {
+	if l == nil {
+		l = (*Language)(nil)
+	}
 	var b strings.Builder
-	b.WriteString(e.What)
+	b.WriteString(l.T(e.What))
 	if e.Why != "" {
-		b.WriteString("\n\nReason:\n" + e.Why)
+		b.WriteString("\n\n" + l.T("Reason:") + "\n" + l.T(e.Why))
 	}
 	if e.Unmodified {
-		b.WriteString("\n\nNo project files were modified.")
+		b.WriteString("\n\n" + l.T("No project files were modified."))
 	}
 	if e.Next != "" {
-		b.WriteString("\n\nNext step:\n" + e.Next)
+		b.WriteString("\n\n" + l.T("Next step:") + "\n" + l.T(e.Next))
 	}
 	return b.String()
 }

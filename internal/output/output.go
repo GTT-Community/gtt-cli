@@ -16,6 +16,28 @@ type Renderer struct {
 	Verbose bool
 	// LogLevel is the least severe level written by Log; empty means warn.
 	LogLevel string
+	// Lang translates what a human reads; nil is English. JSON and logs
+	// are never translated.
+	Lang Translator
+}
+
+// Translator turns the English messages of the code into the interaction
+// language (core.Language).
+type Translator interface {
+	Sprintf(format string, args ...any) string
+	T(message string) string
+}
+
+type english struct{}
+
+func (english) Sprintf(format string, args ...any) string { return fmt.Sprintf(format, args...) }
+func (english) T(message string) string                   { return message }
+
+func speak(t Translator) Translator {
+	if t == nil {
+		return english{}
+	}
+	return t
 }
 
 // LogLevels are the internal log levels, most severe first.
@@ -51,14 +73,14 @@ func (r Renderer) Emit(v any, human func(p Printer)) error {
 		enc.SetIndent("", "  ")
 		return enc.Encode(v)
 	}
-	human(Printer{w: r.Out})
+	human(Printer{w: r.Out, lang: speak(r.Lang)})
 	return nil
 }
 
 // Info writes a progress line for humans; silent in JSON mode.
 func (r Renderer) Info(format string, args ...any) {
 	if !r.JSON {
-		fmt.Fprintf(r.Out, format+"\n", args...)
+		fmt.Fprintln(r.Out, speak(r.Lang).Sprintf(format, args...))
 	}
 }
 
@@ -70,16 +92,19 @@ func (r Renderer) Detail(text string) {
 }
 
 // Printer writes human-readable lines.
-type Printer struct{ w io.Writer }
+type Printer struct {
+	w    io.Writer
+	lang Translator
+}
 
 // Line writes one formatted line.
-func (p Printer) Line(format string, args ...any) { fmt.Fprintf(p.w, format+"\n", args...) }
+func (p Printer) Line(format string, args ...any) { fmt.Fprintln(p.w, p.lang.Sprintf(format, args...)) }
 
 // Section writes a heading followed by indented lines.
 func (p Printer) Section(title string, lines ...string) {
-	fmt.Fprintf(p.w, "\n%s:\n", title)
+	fmt.Fprintf(p.w, "\n%s:\n", p.lang.T(title))
 	for _, l := range lines {
-		fmt.Fprintf(p.w, "  %s\n", l)
+		fmt.Fprintf(p.w, "  %s\n", p.lang.T(l))
 	}
 }
 

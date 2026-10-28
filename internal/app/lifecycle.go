@@ -56,6 +56,12 @@ type bootstrapStatus struct {
 		} `json:"gaps"`
 		PendingProposals    []string `json:"pending_proposals"`
 		UnresolvedConflicts int      `json:"unresolved_conflicts"`
+		Observations        struct {
+			Warning    int `json:"warning"`
+			Governance int `json:"governance"`
+			Blocking   int `json:"blocking"`
+			Stopping   int `json:"stopping"`
+		} `json:"observations"`
 	} `json:"governance"`
 	Freeze struct {
 		Frozen bool    `json:"frozen"`
@@ -439,7 +445,7 @@ func (a *App) Doctor(ctx context.Context) (DoctorResult, error) {
 	case err != nil:
 		add("Methodology profile contract", CannotDetermine, err.Error())
 	case !plan.Selected:
-		add("Methodology profile contract", Warn, "no Method Plan selected; run: gtt method set <plan>")
+		add("Methodology profile contract", Warn, "no Autonomy Profile selected; run: gtt autonomy set <profile>")
 	default:
 		add("Methodology profile contract", Pass, plan.Detail.Label)
 	}

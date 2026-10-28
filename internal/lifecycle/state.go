@@ -54,6 +54,9 @@ type State struct {
 	// release without having been customized by anyone.
 	Rewritten []string `json:"bootstrap_rewritten,omitempty"`
 	History   []Event  `json:"history,omitempty"`
+	// Language is the interaction language the project recorded through the
+	// Bootstrap, kept here so that every command speaks it without asking.
+	Language string `json:"language,omitempty"`
 }
 
 const notice = "GTT CLI operational state: derived, reconstructible, never an authority. Written only by the gtt CLI."
