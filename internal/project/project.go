@@ -49,7 +49,11 @@ func Detect(ctx context.Context, git ports.Git, installed func(string) bool, sta
 	if err != nil {
 		abs = start
 	}
+	abs = canonical(abs)
 	gitRoot, hasGit := git.Root(ctx, abs)
+	if hasGit {
+		gitRoot = canonical(gitRoot)
+	}
 	for dir := abs; ; dir = filepath.Dir(dir) {
 		if installed(dir) {
 			return Detection{Root: dir, GitRoot: gitRoot, Basis: "gtt", Confident: true}
@@ -62,6 +66,18 @@ func Detect(ctx context.Context, git ports.Git, installed func(string) bool, sta
 		return Detection{Root: gitRoot, GitRoot: gitRoot, Basis: "git", Confident: true}
 	}
 	return Detection{Root: abs, Basis: "cwd", Confident: false}
+}
+
+// canonical gives one spelling per directory, so the root found from the working
+// directory and the one Git reports compare equal and key the same snapshots:
+// Git prints forward slashes and long names on Windows, and resolved symlinks on
+// macOS (/private/var), where the working directory may use neither.
+func canonical(dir string) string {
+	dir = filepath.Clean(filepath.FromSlash(dir))
+	if resolved, err := filepath.EvalSymlinks(dir); err == nil {
+		return resolved
+	}
+	return dir
 }
 
 // documentExts are the formats offered as candidate initial sources.
