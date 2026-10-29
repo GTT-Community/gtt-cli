@@ -45,3 +45,27 @@ func TestDocumentsAreCandidatesOnly(t *testing.T) {
 		t.Errorf("got %v want %v", got, want)
 	}
 }
+
+// Git prints the root resolved and with forward slashes; a working directory reached through a symlink
+// (macOS /var, a Windows junction) spells it differently. The root keeps the working directory's spelling,
+// so a recovery snapshot keyed by it is found again after `git init`.
+func TestDetectSpellsTheGitRootLikeTheWorkingDirectory(t *testing.T) {
+	real := t.TempDir()
+	link := filepath.Join(t.TempDir(), "link")
+	if err := os.Symlink(real, link); err != nil {
+		t.Skip("symlinks are not available here:", err)
+	}
+	sub := filepath.Join(link, "a", "b")
+	if err := os.MkdirAll(sub, 0o755); err != nil {
+		t.Fatal(err)
+	}
+	resolved, err := filepath.EvalSymlinks(real)
+	if err != nil {
+		t.Fatal(err)
+	}
+	none := func(string) bool { return false }
+	d := Detect(context.Background(), fakeGit{root: filepath.ToSlash(resolved)}, none, sub)
+	if d.Root != link || d.GitRoot != link || d.Basis != "git" {
+		t.Errorf("the git root keeps the working directory's spelling: %+v, want %s", d, link)
+	}
+}

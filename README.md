@@ -24,7 +24,7 @@ GTT Method -> GTT Bootstrap -> versioned contracts -> GTT CLI -> ADE -> Human
 - **One-command setup.** `gtt init` finds, downloads and verifies GTT Bootstrap, asks only the decisions that are
   yours (which ADEs participate and which is Primary, language, Autonomy Profile, initial design documents), installs
   transactionally, validates, and hands off to your Primary ADE.
-- **Several ADEs, one governance.** Claude Code, GitHub Copilot, Codex and Kiro side by side. Detected is never
+- **Several ADEs, one governance.** Claude Code, GitHub Copilot, Codex, Kiro, Cursor, Google Antigravity and OpenHands side by side. Detected is never
   participating: GTT installs only the integrations you choose.
 - **No design document? No problem.** It offers the Bootstrap's Initial Design Questionnaire, which your ADE
   guides you through.
@@ -53,7 +53,7 @@ GTT Method -> GTT Bootstrap -> versioned contracts -> GTT CLI -> ADE -> Human
   [Python 3](https://www.python.org/downloads/windows/). The CLI finds Git Bash on its own and never uses the WSL
   `bash.exe`; set `GTT_BASH` to point it at another bash.
   Note: GTT Bootstrap up to 1.5.0 starts its own scripts with `bash` by name, which on Windows is the WSL `bash.exe`,
-  so `gtt init` and other operations fail there. From Bootstrap 1.5.1 on - this CLI ships with 1.9.0 - they run with
+  so `gtt init` and other operations fail there. From Bootstrap 1.5.1 on - this CLI ships with 1.9.1 - they run with
   the bash the CLI hands it (`GTT_BASH`).
 
 ## Installation
@@ -73,8 +73,8 @@ Then check it with `gtt version`.
 
 - Run it once without installing: `uvx --from gtt-cli gtt version` or `npx @gtt-community/gtt-cli version`.
 - Upgrade: run the installer again, `uv tool upgrade gtt-cli`, or `npm update -g @gtt-community/gtt-cli`.
-- A specific version: `GTT_VERSION=1.9.0` with the curl or PowerShell installer, `uv tool install gtt-cli==1.9.0`, or
-  `npm install -g @gtt-community/gtt-cli@1.9.0`.
+- A specific version: `GTT_VERSION=1.9.1` with the curl or PowerShell installer, `uv tool install gtt-cli==1.9.1`, or
+  `npm install -g @gtt-community/gtt-cli@1.9.1`.
 - Install location for curl and PowerShell: `GTT_INSTALL_DIR` (default `/usr/local/bin` or `~/.local/bin`; on Windows
   `%LOCALAPPDATA%\Programs\gtt`, added to your PATH).
 - `pipx install gtt-cli` works as well, and every archive can be downloaded by hand from
@@ -158,7 +158,7 @@ never defaulted. `--dev-method help` leaves it for the agent to propose during T
 
 ```bash
 gtt init --bootstrap ../gtt-bootstrap --ade claude,copilot --primary claude \
-         --language es --method light --sources docs/requirements.md \
+         --language es --autonomy light --sources docs/requirements.md \
          --dev-method ddd,vertical-slice --start walking-skeleton --yes
 ```
 

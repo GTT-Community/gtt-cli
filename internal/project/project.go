@@ -49,10 +49,9 @@ func Detect(ctx context.Context, git ports.Git, installed func(string) bool, sta
 	if err != nil {
 		abs = start
 	}
-	abs = canonical(abs)
 	gitRoot, hasGit := git.Root(ctx, abs)
 	if hasGit {
-		gitRoot = canonical(gitRoot)
+		gitRoot = spelledLike(abs, gitRoot)
 	}
 	for dir := abs; ; dir = filepath.Dir(dir) {
 		if installed(dir) {
@@ -68,10 +67,26 @@ func Detect(ctx context.Context, git ports.Git, installed func(string) bool, sta
 	return Detection{Root: abs, Basis: "cwd", Confident: false}
 }
 
-// canonical gives one spelling per directory, so the root found from the working
-// directory and the one Git reports compare equal and key the same snapshots:
-// Git prints forward slashes and long names on Windows, and resolved symlinks on
-// macOS (/private/var), where the working directory may use neither.
+// spelledLike returns root - a directory that contains dir, as Git prints it - spelled the way dir is.
+// Git prints forward slashes and long names on Windows, and resolved symlinks on macOS (/private/var),
+// where the working directory may use neither: the root found from the working directory and the one
+// Git reports must be one spelling, or a recovery snapshot keyed by the root is not found again after
+// `git init`. Only the comparison resolves the path; the root keeps the working directory's spelling.
+func spelledLike(dir, root string) string {
+	rel, err := filepath.Rel(canonical(root), canonical(dir))
+	if err != nil || rel == ".." || strings.HasPrefix(rel, ".."+string(filepath.Separator)) {
+		return filepath.Clean(filepath.FromSlash(root))
+	}
+	out := dir
+	if rel != "." {
+		for range strings.Split(rel, string(filepath.Separator)) {
+			out = filepath.Dir(out)
+		}
+	}
+	return out
+}
+
+// canonical resolves a directory for comparison only.
 func canonical(dir string) string {
 	dir = filepath.Clean(filepath.FromSlash(dir))
 	if resolved, err := filepath.EvalSymlinks(dir); err == nil {
