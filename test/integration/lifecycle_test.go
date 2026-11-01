@@ -161,6 +161,43 @@ func TestMethodPlanChangeIsExplicitAndBootstrapDecides(t *testing.T) {
 	}
 }
 
+// A plan change explains itself in the Bootstrap's words and points the other way;
+// after the freeze a less strict plan has a named governed path, and only an Accepted ADR
+// that records exactly that change opens it.
+func TestMethodPlanChangeCommentsAndGovernedWayDown(t *testing.T) {
+	root := installed(t, nil, "--ade", "claude", "--language", "en", "--method", "hard", "--no-sources", "--no-questionnaire")
+	out := gtt(t, root, "method", "set", "light").must(t, 0).out
+	for _, want := range []string{"Hard → Light", "Relaxed in this plan", "documentation-depth", "gtt autonomy set hard"} {
+		if !strings.Contains(out, want) {
+			t.Errorf("relaxing must explain itself (%q):\n%s", want, out)
+		}
+	}
+	out = gtt(t, root, "method", "set", "medium").must(t, 0).out
+	if !strings.Contains(out, "Light → Medium") || !strings.Contains(out, "gtt autonomy set light") {
+		t.Errorf("reinforcing must say what changed and offer the way back:\n%s", out)
+	}
+	doc := gtt(t, root, "method", "set", "team", "--json").must(t, 0).json(t)
+	if change, _ := doc["change"].(map[string]any); change["direction"] != "reinforced" || change["from"] != "medium" {
+		t.Errorf("--json carries the change: %v", doc)
+	}
+
+	write(t, root, "gtt-domain/.frozen", "2026-01-01T00:00:00Z\n")
+	r := gtt(t, root, "method", "set", "light", "--json").must(t, 5)
+	if strings.TrimSpace(r.out) != "" || !strings.Contains(r.err, "gtt-propose-change, form 7") || !strings.Contains(r.err, "--adr ADR-NNN") {
+		t.Errorf("a refusal prints no empty result and names the governed path:\nout=%q\nerr=%s", r.out, r.err)
+	}
+	adr := "gtt-domain/adr/ADR-050-relax-plan.md"
+	write(t, root, adr, "# ADR-050\n\n- Status: Accepted\n- Autonomy Profile: team -> medium\n")
+	gtt(t, root, "method", "set", "light", "--adr", "ADR-050").must(t, 5) // records another change
+	if methodology(t, root)["profile"] != "team" {
+		t.Fatal("an ADR for another change must not authorise this one")
+	}
+	gtt(t, root, "method", "set", "medium", "--adr", "ADR-050").must(t, 0)
+	if methodology(t, root)["profile"] != "medium" {
+		t.Error("the Accepted ADR that records team -> medium authorises it")
+	}
+}
+
 func TestPrimaryADEChangePreservesSecondaries(t *testing.T) {
 	root := installed(t, nil, "--ade", "claude,copilot", "--primary", "claude", "--language", "en", "--method", "medium", "--no-sources", "--no-questionnaire")
 	claude := treeHash(t, filepath.Join(root, ".claude"))

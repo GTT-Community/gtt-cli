@@ -15,7 +15,7 @@ var Version = baseVersion
 
 // baseVersion is the version of a plain source build. It must stay a
 // constant: -ldflags -X only replaces constant-initialized strings.
-const baseVersion = "1.9.1"
+const baseVersion = "1.10.0"
 
 func init() {
 	if Version == baseVersion {
@@ -39,7 +39,7 @@ func moduleVersion(base string) string {
 
 // CLICapabilities are the capability ids this CLI declares to a Bootstrap
 // during negotiation.
-var CLICapabilities = []string{"contract.negotiate.v1", "operation.execute.v1"}
+var CLICapabilities = []string{"contract.negotiate.v1", "operation.execute.v1", "delivery.v1"}
 
 // BootstrapSchemas are the Bootstrap schema versions this CLI understands.
 var BootstrapSchemas = []int{1}
@@ -51,7 +51,7 @@ const BootstrapID = "gtt-bootstrap"
 // with. Pinning the CLI therefore pins the Bootstrap. It is resolved from its
 // release tag (BootstrapTag), never from a branch head; another release is
 // used only when the human names it explicitly.
-const BootstrapPin = "1.9.1"
+const BootstrapPin = "1.10.0"
 
 // BootstrapTag is the release tag of a Bootstrap version.
 func BootstrapTag(version string) string { return "v" + version }

@@ -96,9 +96,9 @@ func TestInteractiveInitAsksAndRecords(t *testing.T) {
 	root := project(t, map[string]string{"docs/requirements.md": "# r\n", "docs/architecture.md": "# a\n"})
 	// not a project? yes; language 2 (es), asked first; ADEs 1,3 (claude, copilot); primary 2 (copilot);
 	// sources 1,2; profile 1 (light); development method 1 (Vertical Slice, listed first as
-	// recommended) and start 1 (Walking Skeleton); proceed; then exit the handoff menu.
+	// recommended) and start 1 (Walking Skeleton); delivery D1 4 (not known yet) and D3 4 (no date); proceed; then exit the handoff menu.
 	// Everything after the language is asked in that language.
-	answers := "y\n2\n1,3\n2\n1,2\n1\n1\n1\ny\n2\n"
+	answers := "y\n2\n1,3\n2\n1,2\n1\n1\n1\n4\n4\ny\n2\n"
 	r := gttIn(t, root, answers, "init", "--bootstrap", pristine).must(t, 0)
 	for _, want := range []string{"Language:", "detectar no es participar", "Elige el ADE principal", "Light", "Documentos fuente candidatos",
 		"¿Continuar? [S/n]", "Salir",

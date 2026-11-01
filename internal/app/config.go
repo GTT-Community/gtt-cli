@@ -16,7 +16,16 @@ type MethodResult struct {
 	Schema  int                  `json:"schema"`
 	Plan    methodology.Plan     `json:"plan"`
 	Choices []methodology.Choice `json:"choices,omitempty"`
+	// Change says what the change just made means, from the Bootstrap's contract.
+	Change *methodology.Change `json:"change,omitempty"`
 }
+
+// Directions of a plan change, as the CLI renders them.
+const (
+	ChangeInitial    = methodology.Initial
+	ChangeRelaxed    = methodology.Relaxed
+	ChangeReinforced = methodology.Reinforced
+)
 
 // MethodShow reports the Autonomy Profile in force, in the Bootstrap's words.
 func (a *App) MethodShow(ctx context.Context) (MethodResult, error) {
@@ -34,7 +43,7 @@ func (a *App) MethodShow(ctx context.Context) (MethodResult, error) {
 
 // MethodSet records a plan chosen by the human. Whether the transition is
 // allowed is the Bootstrap's decision; a refusal is reported, not overridden.
-func (a *App) MethodSet(ctx context.Context, id string) (MethodResult, error) {
+func (a *App) MethodSet(ctx context.Context, id, adr string) (MethodResult, error) {
 	p, err := a.open(ctx)
 	if err != nil {
 		return MethodResult{}, err
@@ -71,26 +80,39 @@ func (a *App) MethodSet(ctx context.Context, id string) (MethodResult, error) {
 	if current.Selected && current.Profile == id {
 		return MethodResult{Schema: core.OutputSchema, Plan: current, Choices: choices}, nil
 	}
-	dry, err := p.B.Execute(ctx, ports.OperationRequest{Operation: "methodology.profile.set", Args: map[string]string{"profile": id}})
+	args := map[string]string{"profile": id}
+	if adr != "" {
+		args["adr"] = adr
+	}
+	dry, err := p.B.Execute(ctx, ports.OperationRequest{Operation: "methodology.profile.set", Args: args})
 	if err != nil {
 		return MethodResult{}, err
 	}
 	if !dry.OK() {
 		return MethodResult{}, &core.Error{Code: core.ExitConflict, Unmodified: true,
 			What: "This change requires the project's GTT change process.\n\nNo direct profile change was made.",
-			Why:  strings.TrimSpace(dry.Stdout + "\n" + dry.Stderr)}
+			Why:  strings.TrimSpace(dry.Stdout + "\n" + dry.Stderr),
+			Next: "Ask your agent for an Autonomy Profile change proposal (gtt-propose-change, form 7).\nOnce its ADR is promoted, run: gtt autonomy set " + id + " --adr ADR-NNN"}
 	}
-	if _, err := p.B.Execute(ctx, ports.OperationRequest{Operation: "methodology.profile.set", Args: map[string]string{"profile": id}, Apply: true}); err != nil {
+	if _, err := p.B.Execute(ctx, ports.OperationRequest{Operation: "methodology.profile.set", Args: args, Apply: true}); err != nil {
 		return MethodResult{}, err
 	}
-	from := "not selected"
+	from, before := "not selected", ""
 	if current.Selected {
-		from = current.Profile
+		from, before = current.Profile, current.Profile
 	}
 	_ = p.Store.Record("method-plan", from+" -> "+id)
 	a.log(p.Root, "method.set", "success", map[string]any{"from": from, "to": id})
 	plan, err := methodology.Load(ctx, p.B)
-	return MethodResult{Schema: core.OutputSchema, Plan: plan, Choices: choices}, err
+	if err != nil {
+		return MethodResult{}, err
+	}
+	res := MethodResult{Schema: core.OutputSchema, Plan: plan, Choices: choices}
+	// The change is made; a comment that cannot be built must not hide that.
+	if change, cerr := methodology.Compare(ctx, p.B, before, id); cerr == nil {
+		res.Change = &change
+	}
+	return res, nil
 }
 
 // MethodCheck verifies that the plan configuration is coherent: a plan is

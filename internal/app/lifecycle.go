@@ -87,6 +87,7 @@ type StatusResult struct {
 	Status    json.RawMessage    `json:"status"` // the Bootstrap status document, verbatim
 	Agents    agents.Environment `json:"agents"`
 	Sources   SourcesResult      `json:"initial_sources"`
+	Delivery  string             `json:"delivery,omitempty"` // the Bootstrap's summary of the delivery plan; empty when it has none
 	View      bootstrapStatus    `json:"-"`
 }
 
@@ -119,6 +120,7 @@ func (a *App) Status(ctx context.Context, withValidation bool) (StatusResult, er
 	if res.Sources, err = a.sourcesState(ctx, p); err != nil {
 		return res, err
 	}
+	res.Delivery = a.deliveryLine(ctx, p.B)
 	return res, nil
 }
 

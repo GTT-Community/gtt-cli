@@ -22,21 +22,25 @@ import (
 // InitOptions are the answers the human gave on the command line. Anything
 // left empty is asked; without a terminal it is refused, never inferred.
 type InitOptions struct {
-	Resolve       ResolveOptions
-	ADEs          []string
-	Primary       string
-	Language      string
-	Method        string
-	DevStyle      string // development method: pack ids, comma separated, or "help"
-	DevStart      string // how to start: a pack id, "direct" or "help"
-	Sources       []string
-	NoSources     bool
-	Questionnaire string // "", "yes", "no"
-	Launch        bool
-	Resume        bool
-	Rollback      bool
-	Snapshot      string // explicit recovery snapshot to restore
-	NoRestore     bool
+	Resolve         ResolveOptions
+	ADEs            []string
+	Primary         string
+	Language        string
+	Method          string
+	DevStyle        string // development method: pack ids, comma separated, or "help"
+	DevStart        string // how to start: a pack id, "direct" or "help"
+	DeliveryWho     string // who builds: solo, solo-multi or team
+	DeliveryLanes   string // parallel fronts: a number or "propose"
+	DeliveryHorizon string // days, weeks, month or none
+	DeliveryTeam    string // team member names, comma separated
+	Sources         []string
+	NoSources       bool
+	Questionnaire   string // "", "yes", "no"
+	Launch          bool
+	Resume          bool
+	Rollback        bool
+	Snapshot        string // explicit recovery snapshot to restore
+	NoRestore       bool
 }
 
 // Handoff is what the CLI delivers to the Primary ADE: where the
@@ -153,6 +157,9 @@ func (a *App) Init(ctx context.Context, o InitOptions) (InitResult, error) {
 		ade.Names(registry, []string{sel.Primary}), ade.Names(registry, sel.Participating), len(sel.Sources), sel.Language, sel.Profile)
 	if devMethodSupported(ctx, catalog) {
 		a.Report.Info("  Development method: %s\n", devMethodSummary(sel))
+		if sel.DeliveryWho != "" || sel.DeliveryLanes != "" || sel.DeliveryHorizon != "" {
+			a.Report.Info("  Delivery: %s\n", deliverySummary(sel))
+		}
 	}
 	if ok, err := a.confirm("Proceed?", true); err != nil {
 		return res, err
@@ -315,6 +322,11 @@ func (a *App) collect(ctx context.Context, root string, pkg ports.Package, catal
 	if err := a.collectDevMethod(ctx, catalog, &sel, o); err != nil {
 		return sel, err
 	}
+	// Delivery Planning (D1-D3): who builds, how many fronts, for when. Right
+	// after the Autonomy Profile; the questions come from the Bootstrap.
+	if err := a.collectDelivery(ctx, catalog, &sel, o); err != nil {
+		return sel, err
+	}
 	return sel, nil
 }
 
@@ -446,6 +458,9 @@ func (a *App) install(ctx context.Context, root string, pkg ports.Package, j *li
 		return fail(err)
 	}
 	if err := step("dev-method", lifecycle.StateInstalling, func() error { return a.recordDevMethod(ctx, p.B, sel) }); err != nil {
+		return fail(err)
+	}
+	if err := step("delivery", lifecycle.StateInstalling, func() error { return a.recordDelivery(ctx, p.B, sel) }); err != nil {
 		return fail(err)
 	}
 	questionnaire, err := initialDesign(ctx, p.B)

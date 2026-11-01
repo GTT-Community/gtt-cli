@@ -141,8 +141,8 @@ func configCmd(e *env) *cobra.Command {
 		Short: "Change the Autonomy Profile (same as: gtt autonomy set)",
 		Args:  cobra.MaximumNArgs(1),
 		RunE: func(cmd *cobra.Command, args []string) error {
-			res, err := e.app.MethodSet(cmd.Context(), first(args))
-			return e.emit(res, err, func(p output.Printer) { renderMethodSet(p, res, err) })
+			res, err := e.app.MethodSet(cmd.Context(), first(args), "")
+			return e.emit(res, err, func(p output.Printer) { renderMethodSet(p, res, err, e.opts.Verbose) })
 		},
 	}, &cobra.Command{
 		Use:   "language <lang>",
@@ -167,13 +167,52 @@ func first(args []string) string {
 	return ""
 }
 
-func renderMethodSet(p output.Printer, r app.MethodResult, err error) {
-	if err == nil {
-		p.Line("✓ Autonomy Profile: %s", r.Plan.Detail.Label)
+func renderMethodSet(p output.Printer, r app.MethodResult, err error, verbose bool) {
+	if err != nil {
+		return
+	}
+	p.Line("✓ Autonomy Profile: %s", r.Plan.Detail.Label)
+	c := r.Change
+	if c == nil || c.From == c.To {
+		return
+	}
+	switch c.Direction {
+	case app.ChangeRelaxed:
+		p.Line("\nGTT now asks less of you than before (%s → %s). Nothing in governance was weakened: decisions, destructive operations and the freeze still need you.", title(c.From), title(c.To))
+	case app.ChangeReinforced:
+		p.Line("\nGTT now asks more of you than before (%s → %s), to reinforce control of the project.", title(c.From), title(c.To))
+	}
+	// Relaxed controls already say what is different; show the differences only when there are none.
+	if len(c.Relaxes) > 0 {
+		p.Section("Relaxed in this plan", c.Relaxes...)
+	} else if len(c.Differences) > 0 {
+		lines := make([]string, 0, len(c.Differences))
+		for _, d := range c.Differences {
+			lines = append(lines, d.Control+": "+d.To)
+		}
+		if !verbose && len(lines) > 3 {
+			lines = append(lines[:3], fmt.Sprintf("… and %d more (use -v)", len(c.Differences)-3))
+		}
+		p.Section("What is different now", lines...)
+	}
+	switch c.Direction {
+	case app.ChangeRelaxed:
+		if c.Opposite != "" {
+			p.Line("\nIf it later feels too loose, reinforce it any time: gtt autonomy set %s", c.Opposite)
+		}
+	case app.ChangeReinforced:
+		if c.Opposite != "" {
+			p.Line("\nIf it feels too heavy, you can go back: gtt autonomy set %s (after the freeze this is a governed change and needs an ADR)", c.Opposite)
+		}
+	case app.ChangeInitial:
+		if c.Opposite != "" {
+			p.Line("\nYou can change it any time: gtt autonomy set <plan> (after the freeze, only to a stricter one)")
+		}
 	}
 }
 
 func methodCmd(e *env) *cobra.Command {
+	var adr string
 	show := func(cmd *cobra.Command, _ []string) error {
 		res, err := e.app.MethodShow(cmd.Context())
 		return e.emit(res, err, func(p output.Printer) {
@@ -212,16 +251,24 @@ func methodCmd(e *env) *cobra.Command {
 	}
 	cmd := &cobra.Command{Use: "autonomy", Aliases: []string{"method"}, Short: "Autonomy Profile - how much GTT does without asking: show, set, check",
 		Args: cobra.NoArgs, RunE: show}
-	cmd.AddCommand(&cobra.Command{Use: "show", Short: "Show the Autonomy Profile in force", Args: cobra.NoArgs, RunE: show},
-		&cobra.Command{
-			Use:   "set [plan]",
-			Short: "Select or change the Autonomy Profile",
-			Args:  cobra.MaximumNArgs(1),
-			RunE: func(cmd *cobra.Command, args []string) error {
-				res, err := e.app.MethodSet(cmd.Context(), first(args))
-				return e.emit(res, err, func(p output.Printer) { renderMethodSet(p, res, err) })
-			},
+	set := &cobra.Command{
+		Use:   "set [plan]",
+		Short: "Select or change the Autonomy Profile",
+		Long: "Select or change the Autonomy Profile. Before the freeze a plan can be changed in either direction; " +
+			"after it only a stricter one. A less strict plan after the freeze is a governed change: " +
+			"pass the Accepted ADR that records it with --adr.",
+		Args: cobra.MaximumNArgs(1),
+		RunE: func(cmd *cobra.Command, args []string) error {
+			res, err := e.app.MethodSet(cmd.Context(), first(args), adr)
+			if err != nil {
+				// A refused change has no result to print; the error carries it.
+				return err
+			}
+			return e.emit(res, nil, func(p output.Printer) { renderMethodSet(p, res, nil, e.opts.Verbose) })
 		},
+	}
+	set.Flags().StringVar(&adr, "adr", "", "Accepted ADR that records a less strict plan after the freeze")
+	cmd.AddCommand(&cobra.Command{Use: "show", Short: "Show the Autonomy Profile in force", Args: cobra.NoArgs, RunE: show}, set,
 		&cobra.Command{
 			Use:   "check",
 			Short: "Verify that the Autonomy Profile configuration is coherent",

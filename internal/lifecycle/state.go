@@ -142,6 +142,11 @@ type Selections struct {
 	// means unanswered: the method stays OPEN, nothing is recorded.
 	DevStyle string `json:"dev_style,omitempty"` // pack ids, comma separated, or "help"
 	DevStart string `json:"dev_start,omitempty"` // a pack id, "direct" or "help"
+	// Delivery Planning answered at setup (D1-D3). Empty means unanswered: OPEN.
+	DeliveryWho     string `json:"delivery_who,omitempty"`
+	DeliveryLanes   string `json:"delivery_lanes,omitempty"`
+	DeliveryHorizon string `json:"delivery_horizon,omitempty"`
+	DeliveryTeam    string `json:"delivery_team,omitempty"`
 }
 
 // Source is one selected initial source.

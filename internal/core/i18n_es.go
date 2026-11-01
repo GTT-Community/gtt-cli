@@ -158,6 +158,15 @@ var spanish = map[string]string{
 	"The GTT Bootstrap %s installed in this project failed its own contract check.":                 "El GTT Bootstrap %s instalado en este proyecto no pasó su propia verificación de contrato.",
 	"Restore the Bootstrap files from version control, or reinstall: gtt clean, then gtt init.":     "Restaura los archivos del Bootstrap desde el control de versiones, o reinstala: gtt clean y luego gtt init.",
 
+	// autonomy set: what the change means.
+	"\nGTT now asks less of you than before (%s → %s). Nothing in governance was weakened: decisions, destructive operations and the freeze still need you.": "\nGTT ahora te pide menos que antes (%s → %s). Nada de la gobernanza se debilitó: las decisiones, las operaciones destructivas y el freeze siguen requiriéndote.",
+	"\nGTT now asks more of you than before (%s → %s), to reinforce control of the project.":                                                                 "\nGTT ahora te pide más que antes (%s → %s), para reforzar el control del proyecto.",
+	"Relaxed in this plan":  "Se relaja en este plan",
+	"What is different now": "Qué cambia ahora",
+	"\nIf it later feels too loose, reinforce it any time: gtt autonomy set %s":                                                              "\nSi más adelante lo sientes muy laxo, puedes reforzarlo cuando quieras: gtt autonomy set %s",
+	"\nIf it feels too heavy, you can go back: gtt autonomy set %s (after the freeze this is a governed change and needs an ADR)":            "\nSi te resulta muy pesado, puedes volver: gtt autonomy set %s (tras el freeze es un cambio gobernado y requiere un ADR)",
+	"\nYou can change it any time: gtt autonomy set <plan> (after the freeze, only to a stricter one)":                                       "\nPuedes cambiarlo cuando quieras: gtt autonomy set <plan> (tras el freeze, solo a uno más estricto)",
+	"Ask your agent for an Autonomy Profile change proposal (gtt-propose-change, form 7).\nOnce its ADR is promoted, run: gtt autonomy set ": "Pide a tu agente una propuesta de cambio de Autonomy Profile (gtt-propose-change, forma 7).\nCuando su ADR esté promovido, ejecuta: gtt autonomy set ",
 	// status, inspect, validate.
 	"GTT Project Status": "Estado del proyecto GTT",
 	"Project":            "Proyecto",

@@ -105,6 +105,13 @@ func renderStatus(p output.Printer, r app.StatusResult, verbose bool) {
 		session = "CURRENT"
 	}
 	p.Section("Session", session)
+	if r.Delivery != "" {
+		lines := strings.Split(r.Delivery, "\n")
+		if len(lines) > 2 {
+			lines = lines[:2]
+		}
+		p.Section("Delivery", lines...)
+	}
 	if verbose {
 		p.Line("\nBootstrap status document:\n%s", string(r.Status))
 	}
