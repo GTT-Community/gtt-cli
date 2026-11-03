@@ -228,6 +228,7 @@ var spanish = map[string]string{
 	"Run `gtt freeze` yourself.": "Ejecuta `gtt freeze` tú mismo.",
 	"Freeze ratifies the governed context of this project. There is no unfreeze:\nafter it, governed context changes only through the governed change process.\n": "El freeze ratifica el contexto gobernado de este proyecto. No hay vuelta atrás:\ndespués, el contexto gobernado solo cambia mediante el proceso de cambio gobernado.\n",
 	"Freeze the governed context now?":  "¿Hacer freeze del contexto gobernado ahora?",
+	"Run it now?":                       "¿Ejecutarlo ahora?",
 	"The project is already frozen.":    "El proyecto ya está en freeze.",
 	"The Bootstrap refused the freeze.": "El Bootstrap rechazó el freeze.",
 
