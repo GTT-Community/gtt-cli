@@ -96,6 +96,12 @@ func TestReviewMeasuresAndTheHumanDefinesWhatIsTooMuch(t *testing.T) {
 	if target["declared"] != true || target["cap_h"].(float64) != 1 {
 		t.Errorf("the cap is the human's: %v", target)
 	}
+	gtt(t, root, "delivery", "review", "--scope-min", "500").must(t, 0)
+	size = gtt(t, root, "delivery", "review", "--json").must(t, 0).json(t)
+	floor := size["floor"].(map[string]any)
+	if floor["declared"] != true || floor["min_h"].(float64) != 500 {
+		t.Errorf("the minimum is the human's too: %v", floor)
+	}
 	gtt(t, root, "delivery", "review", "--single-pass").must(t, 0)
 	state := gtt(t, root, "delivery", "--json").must(t, 0).json(t)["state"].(map[string]any)
 	if state["pace"] != "flow" || state["horizon"] != "none" {

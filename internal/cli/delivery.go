@@ -43,6 +43,7 @@ func deliveryCmd(e *env) *cobra.Command {
 	f.StringVar(&o.Pace, "pace", "", "days or flow: the rhythm every plan document must speak in")
 	f.StringVar(&o.Preset, "preset", "", "single-pass: continuous flow with no date")
 	f.StringVar(&o.ScopeCap, "scope-cap", "", "agent hours you consider too much for the project (a number, or none)")
+	f.StringVar(&o.ScopeMin, "scope-min", "", "agent hours you consider too little for the project (a number, or none)")
 	f.StringVar(&o.GrowthPct, "growth-pct", "", "warn when the open Stories grow by this percentage since the reference")
 	f.BoolVar(&o.Rebase, "rebase", false, "take today's size as the reference for growth")
 	f.StringVar(&o.Priority, "priority", "", "speed, balance or own")
@@ -68,6 +69,7 @@ func deliveryCmd(e *env) *cobra.Command {
 	rf.BoolVar(&ro.Keep, "keep", false, "keep it as it is: today's size becomes the reference")
 	rf.BoolVar(&ro.SinglePass, "single-pass", false, "switch to one pass: continuous flow, no date")
 	rf.StringVar(&ro.ScopeCap, "scope-cap", "", "agent hours you consider too much (a number, or none)")
+	rf.StringVar(&ro.ScopeMin, "scope-min", "", "agent hours you consider too little (a number, or none)")
 	rf.StringVar(&ro.GrowthPct, "growth-pct", "", "warn when the open Stories grow by this percentage since the reference")
 	cmd.AddCommand(&cobra.Command{Use: "show", Short: "Show the delivery answers", Args: cobra.NoArgs, RunE: show}, set, review)
 	return cmd
@@ -272,6 +274,20 @@ func renderSize(p output.Printer, r app.DeliverySize) {
 	default:
 		p.Line("  your cap: %g h - cannot be compared (not measurable)", *r.Target.CapH)
 	}
+	if r.Floor.Declared && r.Floor.MinH != nil {
+		switch r.Floor.State {
+		case "under":
+			total := 0.0
+			if r.TotalH != nil {
+				total = *r.TotalH
+			}
+			p.Line("  your minimum: %g h - UNDER it (the plan totals %g h)", *r.Floor.MinH, total)
+		case "ok":
+			p.Line("  your minimum: %g h - reached", *r.Floor.MinH)
+		default:
+			p.Line("  your minimum: %g h - cannot be compared (not measurable)", *r.Floor.MinH)
+		}
+	}
 	if r.Baseline != nil && r.Growth != nil {
 		line := fmt.Sprintf("  since %s: %+d open Stories", r.Baseline.At, r.Growth.StoriesAdded)
 		if r.Growth.StoriesPct != nil {
@@ -288,8 +304,11 @@ func renderSize(p output.Printer, r app.DeliverySize) {
 	case "":
 		if len(r.Choices) > 0 {
 			p.Line("")
-			p.Line("To answer: gtt delivery review --keep | --single-pass | --scope-cap <hours|none>; or run it on a terminal to be asked.")
+			p.Line("To answer: gtt delivery review --keep | --single-pass | --scope-cap <hours|none> | --scope-min <hours|none>; or run it on a terminal to be asked.")
 		}
+	case "expand":
+		p.Line("")
+		p.Line("%s", r.ExpandNote)
 	case "slim":
 		p.Line("")
 		p.Line("%s", r.SlimNote)

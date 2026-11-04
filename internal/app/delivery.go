@@ -139,8 +139,8 @@ type DeliveryReport struct {
 
 // DeliverySetOptions are the answers given on the command line.
 type DeliverySetOptions struct {
-	Who, Lanes, Horizon, Pace, Priority, ThirdParty, Restrictions, EpicCap, Team, Preset, ScopeCap, GrowthPct string
-	Rebase                                                                                                    bool
+	Who, Lanes, Horizon, Pace, Priority, ThirdParty, Restrictions, EpicCap, Team, Preset, ScopeCap, ScopeMin, GrowthPct string
+	Rebase                                                                                                              bool
 }
 
 func (o DeliverySetOptions) empty() bool { return o == DeliverySetOptions{} }
@@ -149,7 +149,7 @@ func (o DeliverySetOptions) args() map[string]string {
 	args := map[string]string{}
 	for k, v := range map[string]string{"who": o.Who, "lanes": o.Lanes, "horizon": o.Horizon, "pace": o.Pace, "priority": o.Priority,
 		"third_party": o.ThirdParty, "restrictions": o.Restrictions, "epic_cap": o.EpicCap, "team": o.Team,
-		"preset": o.Preset, "scope_cap": o.ScopeCap, "growth_pct": o.GrowthPct} {
+		"preset": o.Preset, "scope_cap": o.ScopeCap, "scope_min": o.ScopeMin, "growth_pct": o.GrowthPct} {
 		if v != "" {
 			args[k] = v
 		}

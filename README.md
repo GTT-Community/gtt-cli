@@ -53,7 +53,7 @@ GTT Method -> GTT Bootstrap -> versioned contracts -> GTT CLI -> ADE -> Human
   [Python 3](https://www.python.org/downloads/windows/). The CLI finds Git Bash on its own and never uses the WSL
   `bash.exe`; set `GTT_BASH` to point it at another bash.
   Note: GTT Bootstrap up to 1.5.0 starts its own scripts with `bash` by name, which on Windows is the WSL `bash.exe`,
-  so `gtt init` and other operations fail there. From Bootstrap 1.5.1 on - this CLI ships with 1.15.0 - they run with
+  so `gtt init` and other operations fail there. From Bootstrap 1.5.1 on - this CLI ships with 1.16.0 - they run with
   the bash the CLI hands it (`GTT_BASH`).
 
 ## Installation
@@ -134,7 +134,7 @@ The integration tests drive the real CLI against a real Bootstrap catalog: `GTT_
 | `gtt version` | CLI version, the Bootstrap release it ships with, and the Bootstrap installed in the project |
 | `gtt autonomy [show\|set\|check]` (alias: `gtt method`) | Autonomy Profile: Light, Medium, Hard, Team (`gtt config methodology` is an alias of `set`) |
 | `gtt dev-method [show\|list]` | The development method (Method Governance), read-only: the method in force, its status (ratified / open), the ADR that locks it and its verification level; `list` shows the Method Packs with their short text. It changes only through a change request |
-| `gtt delivery review [--keep\|--single-pass\|--scope-cap <h>]` | How big the project is, as facts: open Stories, remaining agent hours (or "not measurable"), capacity until your date, growth since the reference size and your own cap. GTT judges only against what you declared. On a terminal it asks what to do: keep it, set a cap, one pass, slim down, or change the answers |
+| `gtt delivery review [--keep\|--single-pass\|--scope-cap <h>\|--scope-min <h>]` | How big the project is, as facts: open Stories, remaining agent hours (or "not measurable"), capacity until your date, growth since the reference size and your own cap. GTT judges only against what you declared. On a terminal it asks what to do: keep it, set a cap, one pass, slim down, or change the answers |
 | `gtt delivery [show\|set]` | Delivery Planning answers: who builds, parallel fronts, deadline, pace (`days` or `flow`), priority, third-party services, Epic cap. `set` changes them at any time (operation, not architecture); the questions come from the Bootstrap's contract |
 | `gtt plan [--lanes]` | The delivery plan the Bootstrap computes: fronts, longest chain, estimated finish against the deadline and the levers when it does not fit. `--lanes` prints one summary per front and the `git worktree add` commands to copy; GTT creates no agent, session or worktree |
 | `gtt report [--epic EPIC-NNN]` | Percent per Epic, real against estimated time, calibration (uncalibrated below 3 measured Stories), forecast and the open DLV signals. `--json` for tools |

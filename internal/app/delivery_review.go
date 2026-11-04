@@ -36,6 +36,9 @@ type DeliverySize struct {
 	Growth       *DeliveryGrowth   `json:"growth"`
 	Choices      []DeliveryChoice  `json:"choices"`
 	SlimNote     string            `json:"slim_note"`
+	ExpandNote   string            `json:"expand_note"`
+	TotalH       *float64          `json:"total_h"`
+	Floor        DeliveryFloor     `json:"floor"`
 	PaceValues   map[string]string `json:"pace_values"`
 	Prompts      map[string]string `json:"prompts"`
 	Action       string            `json:"action,omitempty"`
@@ -49,6 +52,13 @@ type DeliveryTarget struct {
 	CapH     *float64 `json:"cap_h"`
 	State    string   `json:"state"`
 	OverPct  *int     `json:"over_pct"`
+}
+
+// DeliveryFloor is the minimum the human declared, if any.
+type DeliveryFloor struct {
+	Declared bool     `json:"declared"`
+	MinH     *float64 `json:"min_h"`
+	State    string   `json:"state"`
 }
 
 // DeliveryBaseline is the size when the human declared the plan.
@@ -82,6 +92,7 @@ type DeliveryLever struct {
 type ReviewOptions struct {
 	Keep, SinglePass bool
 	ScopeCap         string
+	ScopeMin         string
 	GrowthPct        string
 }
 
@@ -125,7 +136,7 @@ func (a *App) DeliveryReview(ctx context.Context, lang string, o ReviewOptions) 
 		choice = "keep"
 	case o.SinglePass:
 		choice = "single-pass"
-	case o.ScopeCap != "" || o.GrowthPct != "":
+	case o.ScopeCap != "" || o.ScopeMin != "" || o.GrowthPct != "":
 		choice = "target"
 	case a.Prompt.Interactive():
 		labels := make([]ports.Option, 0, len(res.Choices))
@@ -148,14 +159,22 @@ func (a *App) DeliveryReview(ctx context.Context, lang string, o ReviewOptions) 
 	case "single-pass":
 		set.Preset, set.Rebase = "single-pass", true
 	case "target":
-		set.ScopeCap, set.GrowthPct = o.ScopeCap, o.GrowthPct
-		if set.ScopeCap == "" && set.GrowthPct == "" {
+		set.ScopeCap, set.ScopeMin, set.GrowthPct = o.ScopeCap, o.ScopeMin, o.GrowthPct
+		if set.ScopeCap == "" && set.ScopeMin == "" && set.GrowthPct == "" {
 			answer, err := a.Prompt.Ask(res.Prompts["cap"])
 			if err != nil {
 				return res, err
 			}
 			set.ScopeCap = strings.TrimSpace(answer)
+			answer, err = a.Prompt.Ask(res.Prompts["floor"])
+			if err != nil {
+				return res, err
+			}
+			set.ScopeMin = strings.TrimSpace(answer)
 		}
+	case "expand":
+		res.Action = "expand"
+		return res, nil
 	case "slim":
 		res.Action = "slim"
 		if plan, err := a.DeliveryPlanFor(ctx, false); err == nil {
