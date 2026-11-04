@@ -139,14 +139,14 @@ type DeliveryReport struct {
 
 // DeliverySetOptions are the answers given on the command line.
 type DeliverySetOptions struct {
-	Who, Lanes, Horizon, Priority, ThirdParty, Restrictions, EpicCap, Team string
+	Who, Lanes, Horizon, Pace, Priority, ThirdParty, Restrictions, EpicCap, Team string
 }
 
 func (o DeliverySetOptions) empty() bool { return o == DeliverySetOptions{} }
 
 func (o DeliverySetOptions) args() map[string]string {
 	args := map[string]string{}
-	for k, v := range map[string]string{"who": o.Who, "lanes": o.Lanes, "horizon": o.Horizon, "priority": o.Priority,
+	for k, v := range map[string]string{"who": o.Who, "lanes": o.Lanes, "horizon": o.Horizon, "pace": o.Pace, "priority": o.Priority,
 		"third_party": o.ThirdParty, "restrictions": o.Restrictions, "epic_cap": o.EpicCap, "team": o.Team} {
 		if v != "" {
 			args[k] = v
@@ -299,7 +299,7 @@ func (a *App) DeliverySet(ctx context.Context, o DeliverySetOptions) (DeliverySt
 	}
 	if o.empty() {
 		return DeliveryState{}, &core.Error{Code: core.ExitUsage, Unmodified: true, What: "Nothing to set.",
-			Next: "Give --who, --lanes, --horizon, --priority, --third-party, --restrictions, --epic-cap or --team."}
+			Next: "Give --who, --lanes, --horizon, --pace, --priority, --third-party, --restrictions, --epic-cap or --team."}
 	}
 	if _, err := a.mutate(ctx, p.B, "delivery.select", o.args()); err != nil {
 		return DeliveryState{}, err

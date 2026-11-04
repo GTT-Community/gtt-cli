@@ -68,6 +68,17 @@ func TestDeliverySetWorksAtAnyTimeAndRefusesNonsense(t *testing.T) {
 	gtt(t, root, "delivery", "set").must(t, 3)
 }
 
+func TestDeliverySetRecordsThePace(t *testing.T) {
+	root := project(t, nil)
+	initProject(t, root, pristine, defaults...)
+	gtt(t, root, "delivery", "set", "--pace", "flow").must(t, 0)
+	state := gtt(t, root, "delivery", "--json").must(t, 0).json(t)["state"].(map[string]any)
+	if state["pace"] != "flow" {
+		t.Errorf("pace recorded: %v", state)
+	}
+	gtt(t, root, "delivery", "set", "--pace", "weekly").must(t, 5)
+}
+
 func TestPlanAndReportAreComputedByTheBootstrap(t *testing.T) {
 	root := project(t, nil)
 	initProject(t, root, pristine, append(defaults, "--builders", "solo-multi", "--lanes", "2", "--horizon", "days")...)

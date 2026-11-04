@@ -40,6 +40,7 @@ func deliveryCmd(e *env) *cobra.Command {
 	f.StringVar(&o.Who, "who", "", "solo, solo-multi or team")
 	f.StringVar(&o.Lanes, "lanes", "", "parallel fronts: a number, or propose")
 	f.StringVar(&o.Horizon, "horizon", "", "days, weeks, month or none")
+	f.StringVar(&o.Pace, "pace", "", "days or flow: the rhythm every plan document must speak in")
 	f.StringVar(&o.Priority, "priority", "", "speed, balance or own")
 	f.StringVar(&o.ThirdParty, "third-party", "", "third-party services: yes, oss, restricted or OPEN")
 	f.StringVar(&o.Restrictions, "restrictions", "", "which restrictions apply to third-party services")
@@ -96,7 +97,7 @@ func renderDelivery(p output.Printer, r app.DeliveryState) {
 		return "OPEN"
 	}
 	p.Line("Delivery (profile %s)", r.Profile)
-	for _, k := range []string{"who", "lanes", "horizon", "deadline", "priority", "third_party"} {
+	for _, k := range []string{"who", "lanes", "horizon", "deadline", "pace", "priority", "third_party"} {
 		if v, ok := r.State[k]; ok && v != nil {
 			p.Line("  %-12s %s", k+":", fmt.Sprint(v))
 		}
