@@ -17,18 +17,22 @@ import (
 
 // PendingItem is one event, as `pending.list` declares it.
 type PendingItem struct {
-	ID          string   `json:"id"`
-	Number      int      `json:"number"`
-	Kind        string   `json:"kind"` // ASK | DEC
-	Title       string   `json:"title"`
-	Class       string   `json:"class"`
-	Created     string   `json:"created"`
-	State       string   `json:"state"` // open | answered | attended
-	Answer      string   `json:"answer"`
-	Blocks      string   `json:"blocks"`
-	Recommended int      `json:"recommended"`
-	Options     []string `json:"options"`
-	Path        string   `json:"path"`
+	ID          string            `json:"id"`
+	Number      int               `json:"number"`
+	Kind        string            `json:"kind"` // ASK | DEC
+	Title       string            `json:"title"`
+	Class       string            `json:"class"`
+	Created     string            `json:"created"`
+	State       string            `json:"state"` // open | answered | attended
+	Answer      string            `json:"answer"`
+	Blocks      string            `json:"blocks"`
+	Recommended int               `json:"recommended"`
+	Options     []string          `json:"options"`
+	Notes       map[string]string `json:"notes"`
+	Topic       string            `json:"topic"`
+	Discuss     bool              `json:"discuss"`
+	Closing     []string          `json:"closing"`
+	Path        string            `json:"path"`
 }
 
 // PendingList is `gtt pending`.

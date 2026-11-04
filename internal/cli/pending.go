@@ -70,5 +70,29 @@ func renderPending(p output.Printer, r app.PendingList) {
 			}
 		}
 		p.Line("%-4d %s  %s%s", it.Number, it.Kind, it.Title, tail)
+		if it.Kind == "ASK" && it.State == "open" {
+			renderForm(p, it)
+		}
 	}
+}
+
+// renderForm shows an open question in the form its file has: the topic, each option with what happens, and the two closing lines.
+func renderForm(p output.Printer, it app.PendingItem) {
+	if it.Topic != "" {
+		p.Line("       %s", it.Topic)
+	}
+	for i, option := range it.Options {
+		mark := ""
+		if i+1 == it.Recommended {
+			mark = " *"
+		}
+		p.Line("       %d. %s%s", i+1, option, mark)
+		if note := it.Notes[strconv.Itoa(i+1)]; note != "" {
+			p.Line("          %s", note)
+		}
+	}
+	for i, line := range it.Closing {
+		p.Line("       %d. %s", len(it.Options)+1+i, line)
+	}
+	p.Line("       answer: gtt answer %d <number>", it.Number)
 }

@@ -38,7 +38,7 @@ func agentAsks(t *testing.T, root string, args ...string) {
 
 func askBilling(t *testing.T, root string) {
 	agentAsks(t, root, "ask", "--type", "money", "--question", "Manual billing with an invoice in v1?", "--why", "Decides if online billing enters v1.",
-		"--option", "Yes, manual with invoice", "--option", "No, online billing from v1", "--recommended", "1")
+		"--header", "Billing in v1", "--option", "Yes, manual with invoice | I build the invoice flow.", "--option", "No, online billing from v1 | I integrate the payment provider first.", "--recommended", "1")
 }
 
 func decideUnencrypted(t *testing.T, root string) {
@@ -58,6 +58,11 @@ func TestPendingIsEmptyByDefaultAndListsWhatWaits(t *testing.T) {
 	if !strings.Contains(out, "ASK") || !strings.Contains(out, "Manual billing with an invoice in v1?") || !strings.Contains(out, "recommended 1") ||
 		!strings.Contains(out, "DEC") || !strings.Contains(out, "Phone data goes unencrypted in v1") {
 		t.Errorf("one line per event, the recommended option shown:\n%s", out)
+	}
+	for _, want := range []string{"Billing in v1", "1. Yes, manual with invoice *", "I build the invoice flow.", "3. Something else", "4. Talk about it in the chat", "gtt answer 1 <number>"} {
+		if !strings.Contains(out, want) {
+			t.Errorf("an open question is shown in the form of its file, missing %q:\n%s", want, out)
+		}
 	}
 }
 
