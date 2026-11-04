@@ -80,9 +80,9 @@ func TestAnswerRefusesWhatTheBootstrapRefuses(t *testing.T) {
 	root := pendingProject(t)
 	askBilling(t, root)
 	before := read(t, root, "gtt-domain/pending/ASK-001.md")
-	gtt(t, root, "answer", "1", "3").must(t, 1)                                   // no such option
+	gtt(t, root, "answer", "1", "3").must(t, 1)                                 // no such option
 	gtt(t, root, "answer", "1", "sk-abcdefghijklmnopqrstuvwxyz0123").must(t, 1) // a key
-	gtt(t, root, "answer", "9", "1").must(t, 3)                                  // no such event
+	gtt(t, root, "answer", "9", "1").must(t, 3)                                 // no such event
 	gtt(t, root, "answer", "banana", "1").must(t, 3)
 	gtt(t, root, "answer", "1").must(t, 3) // an answer is missing
 	if read(t, root, "gtt-domain/pending/ASK-001.md") != before {
