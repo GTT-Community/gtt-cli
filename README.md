@@ -53,7 +53,7 @@ GTT Method -> GTT Bootstrap -> versioned contracts -> GTT CLI -> ADE -> Human
   [Python 3](https://www.python.org/downloads/windows/). The CLI finds Git Bash on its own and never uses the WSL
   `bash.exe`; set `GTT_BASH` to point it at another bash.
   Note: GTT Bootstrap up to 1.5.0 starts its own scripts with `bash` by name, which on Windows is the WSL `bash.exe`,
-  so `gtt init` and other operations fail there. From Bootstrap 1.5.1 on - this CLI ships with 1.10.0 - they run with
+  so `gtt init` and other operations fail there. From Bootstrap 1.5.1 on - this CLI ships with 1.12.0 - they run with
   the bash the CLI hands it (`GTT_BASH`).
 
 ## Installation
@@ -138,6 +138,8 @@ The integration tests drive the real CLI against a real Bootstrap catalog: `GTT_
 | `gtt plan [--lanes]` | The delivery plan the Bootstrap computes: fronts, longest chain, estimated finish against the deadline and the levers when it does not fit. `--lanes` prints one summary per front and the `git worktree add` commands to copy; GTT creates no agent, session or worktree |
 | `gtt report [--epic EPIC-NNN]` | Percent per Epic, real against estimated time, calibration (uncalibrated below 3 measured Stories), forecast and the open DLV signals. `--json` for tools |
 | `gtt run [n]` | Simple execution. With no argument, lists what the agent prepared for you to run, one line each. `gtt run 3` shows the steps, asks once if the run changes something (never `--yes`), runs the sealed script the Bootstrap generated, logs it in `gtt-domain/run/log.jsonl` and archives it in `gtt-domain/run/done/`; a run that changes nothing needs no question. `gtt run show <n>` and `gtt run check` only read. Agents are denied `gtt run <n>` |
+| `gtt pending` | Lists what waits for you in `gtt-domain/pending/`: the open questions (with the recommended option and what they block) and the decisions the agent took. Empty when nothing needs you. Read-only. |
+| `gtt answer <n> <answer>` / `gtt answer ok` | Your answer to a pending event: `gtt answer 14 1` chooses option 1 of question 14; `gtt answer ok` approves every pending decision. It shows what it writes, then writes it through the Bootstrap (an answer that looks like a key is refused). A human act: an agent is denied it. |
 | `gtt check` | Method Conformance: the code against the ratified method's dependency rules, through the language's own tool (see *Method Conformance* below). A violation is a conflict, never corrected; without an adapter for the language the method is reported `declared-only` |
 | `gtt change ["what"] [--reason ...]` | Request a governed change in the middle of the work: it is written to `gtt-domain/change-request.md` through the Bootstrap with an id, the agent is told to process it into a proposal (the session's Next action), and the CLI offers to open the Primary ADE. `gtt change show` follows it |
 | `gtt proposals [list\|show\|withdraw]` | The proposals, ADR drafts and staged promotion sets, with their state and the request they answer; `withdraw` archives one (never deletes it) |
