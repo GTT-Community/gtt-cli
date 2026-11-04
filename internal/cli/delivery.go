@@ -41,12 +41,35 @@ func deliveryCmd(e *env) *cobra.Command {
 	f.StringVar(&o.Lanes, "lanes", "", "parallel fronts: a number, or propose")
 	f.StringVar(&o.Horizon, "horizon", "", "days, weeks, month or none")
 	f.StringVar(&o.Pace, "pace", "", "days or flow: the rhythm every plan document must speak in")
+	f.StringVar(&o.Preset, "preset", "", "single-pass: continuous flow with no date")
+	f.StringVar(&o.ScopeCap, "scope-cap", "", "agent hours you consider too much for the project (a number, or none)")
+	f.StringVar(&o.GrowthPct, "growth-pct", "", "warn when the open Stories grow by this percentage since the reference")
+	f.BoolVar(&o.Rebase, "rebase", false, "take today's size as the reference for growth")
 	f.StringVar(&o.Priority, "priority", "", "speed, balance or own")
 	f.StringVar(&o.ThirdParty, "third-party", "", "third-party services: yes, oss, restricted or OPEN")
 	f.StringVar(&o.Restrictions, "restrictions", "", "which restrictions apply to third-party services")
 	f.StringVar(&o.EpicCap, "epic-cap", "", "agent hours per Epic before GTT warns (default 8)")
 	f.StringVar(&o.Team, "team", "", "team member names, comma separated")
-	cmd.AddCommand(&cobra.Command{Use: "show", Short: "Show the delivery answers", Args: cobra.NoArgs, RunE: show}, set)
+	var ro app.ReviewOptions
+	review := &cobra.Command{
+		Use:   "review",
+		Short: "How big the project is, and the way to change the answers (keep, set a cap, one pass, slim down)",
+		Long: "Measure the backlog (open Stories, estimated hours, growth since you declared the plan, your own cap) and offer the way\n" +
+			"back to the answers. GTT reports; what is too much is yours to say. On a terminal it asks what to do; with --keep,\n" +
+			"--single-pass or --scope-cap it answers without asking. Slimming down (cutting or merging Epics) is a proposal\n" +
+			"you decide, never done by GTT.",
+		Args: cobra.NoArgs,
+		RunE: func(cmd *cobra.Command, _ []string) error {
+			res, err := e.app.DeliveryReview(cmd.Context(), e.app.Lang.Code(), ro)
+			return e.emit(res, err, func(p output.Printer) { renderSize(p, res) })
+		},
+	}
+	rf := review.Flags()
+	rf.BoolVar(&ro.Keep, "keep", false, "keep it as it is: today's size becomes the reference")
+	rf.BoolVar(&ro.SinglePass, "single-pass", false, "switch to one pass: continuous flow, no date")
+	rf.StringVar(&ro.ScopeCap, "scope-cap", "", "agent hours you consider too much (a number, or none)")
+	rf.StringVar(&ro.GrowthPct, "growth-pct", "", "warn when the open Stories grow by this percentage since the reference")
+	cmd.AddCommand(&cobra.Command{Use: "show", Short: "Show the delivery answers", Args: cobra.NoArgs, RunE: show}, set, review)
 	return cmd
 }
 
@@ -218,5 +241,63 @@ func renderReport(p output.Printer, r app.DeliveryReport) {
 	}
 	for _, s := range r.Signals {
 		p.Line("  %s %s: %s", s.Rule, s.Artifact, s.Detail)
+	}
+}
+
+func renderSize(p output.Printer, r app.DeliverySize) {
+	p.Line("Size: %d open Stories in %d live Epics, %d done", r.OpenStories, r.LiveEpics, r.DoneStories)
+	if r.Measurable && r.RemainingH != nil {
+		days := 0
+		if r.DaysOfWork != nil {
+			days = *r.DaysOfWork
+		}
+		p.Line("  remaining: %g agent h (~%d day(s) of work on one front); %d%% of the open Stories have a duration", *r.RemainingH, days, r.CoveragePct)
+	} else {
+		p.Line("  remaining: NOT MEASURABLE - only %d%% of the open Stories have a duration (add `Estimate:` to the Epics)", r.CoveragePct)
+	}
+	if r.CapacityH != nil {
+		line := fmt.Sprintf("  until the deadline %s: %g agent h of capacity on %d front(s)", r.Deadline, *r.CapacityH, r.Fronts)
+		if r.OfCapacity != nil {
+			line += fmt.Sprintf("; the remaining work is %d%% of it", *r.OfCapacity)
+		}
+		p.Line("%s", line)
+	}
+	switch {
+	case !r.Target.Declared:
+		p.Line("  your cap: none declared - you decide what is too much (gtt delivery review --scope-cap <hours>)")
+	case r.Target.State == "over" && r.Target.OverPct != nil:
+		p.Line("  your cap: %g h - OVER by %d%%", *r.Target.CapH, *r.Target.OverPct)
+	case r.Target.State == "within":
+		p.Line("  your cap: %g h - within", *r.Target.CapH)
+	default:
+		p.Line("  your cap: %g h - cannot be compared (not measurable)", *r.Target.CapH)
+	}
+	if r.Baseline != nil && r.Growth != nil {
+		line := fmt.Sprintf("  since %s: %+d open Stories", r.Baseline.At, r.Growth.StoriesAdded)
+		if r.Growth.StoriesPct != nil {
+			line += fmt.Sprintf(" (%+d%%)", *r.Growth.StoriesPct)
+		}
+		if r.Growth.HoursPct != nil {
+			line += fmt.Sprintf(", hours %+d%%", *r.Growth.HoursPct)
+		}
+		p.Line("%s; warning at +%g%%", line, r.GrowthLimit)
+	} else if r.Declared {
+		p.Line("  reference size: not taken yet (gtt delivery set --rebase when the backlog is defined)")
+	}
+	switch r.Action {
+	case "":
+		if len(r.Choices) > 0 {
+			p.Line("")
+			p.Line("To answer: gtt delivery review --keep | --single-pass | --scope-cap <hours|none>; or run it on a terminal to be asked.")
+		}
+	case "slim":
+		p.Line("")
+		p.Line("%s", r.SlimNote)
+		for _, l := range r.Levers {
+			p.Line("  %s saves about %g h: %s", l.Epic, l.SavesH, l.Lever)
+		}
+	default:
+		p.Line("")
+		p.Line("Recorded: %s.", r.Action)
 	}
 }

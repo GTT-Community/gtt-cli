@@ -79,6 +79,31 @@ func TestDeliverySetRecordsThePace(t *testing.T) {
 	gtt(t, root, "delivery", "set", "--pace", "weekly").must(t, 5)
 }
 
+func TestReviewMeasuresAndTheHumanDefinesWhatIsTooMuch(t *testing.T) {
+	root := project(t, nil)
+	initProject(t, root, pristine, append(defaults, "--builders", "solo", "--horizon", "weeks")...)
+	write(t, root, "gtt-domain/backlog.md", deliveryBacklog)
+	size := gtt(t, root, "delivery", "review", "--json").must(t, 0).json(t)
+	if size["open_stories"] == nil || size["target"].(map[string]any)["declared"] != false {
+		t.Errorf("a review measures and judges nothing without a cap the human declared: %v", size)
+	}
+	if out := gtt(t, root, "delivery", "review").must(t, 0).out; !strings.Contains(out, "none declared") || !strings.Contains(out, "--scope-cap") {
+		t.Errorf("without a cap it says the human decides:\n%s", out)
+	}
+	gtt(t, root, "delivery", "review", "--scope-cap", "1").must(t, 0)
+	size = gtt(t, root, "delivery", "review", "--json").must(t, 0).json(t)
+	target := size["target"].(map[string]any)
+	if target["declared"] != true || target["cap_h"].(float64) != 1 {
+		t.Errorf("the cap is the human's: %v", target)
+	}
+	gtt(t, root, "delivery", "review", "--single-pass").must(t, 0)
+	state := gtt(t, root, "delivery", "--json").must(t, 0).json(t)["state"].(map[string]any)
+	if state["pace"] != "flow" || state["horizon"] != "none" {
+		t.Errorf("one pass is continuous flow with no date: %v", state)
+	}
+	gtt(t, root, "delivery", "review", "--scope-cap", "abc").must(t, 5)
+}
+
 func TestPlanAndReportAreComputedByTheBootstrap(t *testing.T) {
 	root := project(t, nil)
 	initProject(t, root, pristine, append(defaults, "--builders", "solo-multi", "--lanes", "2", "--horizon", "days")...)
