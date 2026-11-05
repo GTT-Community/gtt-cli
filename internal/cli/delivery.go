@@ -247,7 +247,11 @@ func renderReport(p output.Printer, r app.DeliveryReport) {
 }
 
 func renderSize(p output.Printer, r app.DeliverySize) {
-	p.Line("Size: %d open Stories in %d live Epics, %d done", r.OpenStories, r.LiveEpics, r.DoneStories)
+	if r.OpenEpics > 0 {
+		p.Line("Size: %d open Stories in %d of %d live Epics, %d done", r.OpenStories, r.OpenEpics, r.LiveEpics, r.DoneStories)
+	} else {
+		p.Line("Size: %d open Stories in %d live Epics, %d done", r.OpenStories, r.LiveEpics, r.DoneStories)
+	}
 	if r.Measurable && r.RemainingH != nil {
 		days := 0
 		if r.DaysOfWork != nil {

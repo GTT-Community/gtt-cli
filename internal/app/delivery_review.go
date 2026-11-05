@@ -23,6 +23,7 @@ type DeliverySize struct {
 	OpenStories  int               `json:"open_stories"`
 	DoneStories  int               `json:"done_stories"`
 	LiveEpics    int               `json:"live_epics"`
+	OpenEpics    int               `json:"open_epics"`
 	CoveragePct  int               `json:"coverage_pct"`
 	Measurable   bool              `json:"measurable"`
 	RemainingH   *float64          `json:"remaining_h"`
