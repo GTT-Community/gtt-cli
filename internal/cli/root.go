@@ -10,6 +10,7 @@ import (
 	"io"
 	"slices"
 	"strings"
+	"time"
 
 	"github.com/spf13/cobra"
 
@@ -104,6 +105,9 @@ func newRoot(e *env) *cobra.Command {
 		PersistentPreRunE: func(cmd *cobra.Command, _ []string) error {
 			return e.setup()
 		},
+		PersistentPostRun: func(cmd *cobra.Command, _ []string) {
+			e.staleNotice(cmd)
+		},
 	}
 	pf := root.PersistentFlags()
 	pf.BoolVar(&e.opts.JSON, "json", false, "machine-readable JSON output")
@@ -130,4 +134,24 @@ func addResolveFlags(cmd *cobra.Command, r *app.ResolveOptions) {
 	f.StringVar(&r.Path, "bootstrap", "", "path to a local GTT Bootstrap package")
 	f.StringVar(&r.Version, "bootstrap-version", "", "exact Bootstrap release to use instead of the one this CLI ships with")
 	f.BoolVar(&r.Offline, "offline", false, "use only a local path or the verified cache")
+}
+
+// staleNotice tells, on the entry points only, that this binary is old. One line on stderr, never in
+// --json, never a failure, no network: it only says what the binary already knows about its own age.
+func (e *env) staleNotice(cmd *cobra.Command) {
+	switch cmd.Name() {
+	case "init", "status", "version":
+	default:
+		return
+	}
+	if e.opts.JSON {
+		return
+	}
+	days, stale := core.StaleDays(time.Now())
+	if !stale {
+		return
+	}
+	fmt.Fprintf(cmd.ErrOrStderr(),
+		"⚠ This gtt (%s) was built %d days ago; newer releases carry a more complete Bootstrap. Update: npm i -g @gtt-community/gtt-cli  |  Esta versión de gtt tiene %d días: actualiza con el mismo comando.\n",
+		core.Version, days, days)
 }

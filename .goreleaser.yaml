@@ -21,7 +21,7 @@ builds:
     flags:
       - -trimpath
     ldflags:
-      - -s -w -X github.com/GTT-Community/gtt-cli/internal/core.Version={{ .Version }}
+      - -s -w -X github.com/GTT-Community/gtt-cli/internal/core.Version={{ .Version }} -X github.com/GTT-Community/gtt-cli/internal/core.BuildDate={{ .CommitDate }}
     mod_timestamp: "{{ .CommitTimestamp }}"
 
 archives:
