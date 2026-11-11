@@ -281,6 +281,19 @@ func (a *App) Freeze(ctx context.Context) (string, error) {
 		return "", &core.Error{Code: core.ExitUsage, Unmodified: true, What: "Freeze is a human ratification.",
 			Why: "It must be confirmed by a person in a terminal; it is never run unattended or by an agent.", Next: "Run `gtt freeze` yourself."}
 	}
+	// Verify before asking (A1): everything the freeze would refuse is said now, not after the confirmation.
+	// A Bootstrap that offers no `check` argument is asked as before.
+	if supports(ctx, p.B, "freeze") {
+		if chk, cerr := p.B.Execute(ctx, ports.OperationRequest{Operation: "freeze", Args: map[string]string{"check": "true"}, ConfirmedByHuman: true}); cerr == nil {
+			text := strings.TrimSpace(chk.Stdout + "\n" + chk.Stderr)
+			switch chk.ExitCode {
+			case 2:
+				return "Already frozen: the governed state has not changed. Nothing to do.", nil
+			case 1:
+				return text, &core.Error{Code: core.ExitFailure, Unmodified: true, What: "The freeze would be refused. Nothing was asked and nothing was written.", Why: text}
+			}
+		}
+	}
 	a.Report.Info("Freeze ratifies the governed context of this project. There is no unfreeze:\nafter it, governed context changes only through the governed change process.\n")
 	ok, err := a.Prompt.Confirm("Freeze the governed context now?", false)
 	if err != nil {
@@ -298,8 +311,8 @@ func (a *App) Freeze(ctx context.Context) (string, error) {
 	switch out.ExitCode {
 	case 0:
 		return text, nil
-	case 2:
-		return text, &core.Error{Code: core.ExitConflict, Unmodified: true, What: "The project is already frozen.", Why: text}
+	case 2: // already frozen and unchanged: a success (one exit rule: 0 done, 2 already done, 1 refused)
+		return "Already frozen: the governed state has not changed. Nothing to do.", nil
 	default:
 		return text, &core.Error{Code: core.ExitFailure, Unmodified: true, What: "The Bootstrap refused the freeze.", Why: text}
 	}

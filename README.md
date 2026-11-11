@@ -53,7 +53,7 @@ GTT Method -> GTT Bootstrap -> versioned contracts -> GTT CLI -> ADE -> Human
   [Python 3](https://www.python.org/downloads/windows/). The CLI finds Git Bash on its own and never uses the WSL
   `bash.exe`; set `GTT_BASH` to point it at another bash.
   Note: GTT Bootstrap up to 1.5.0 starts its own scripts with `bash` by name, which on Windows is the WSL `bash.exe`,
-  so `gtt init` and other operations fail there. From Bootstrap 1.5.1 on - this CLI ships with 1.18.0 - they run with
+  so `gtt init` and other operations fail there. From Bootstrap 1.5.1 on - this CLI ships with 1.19.0 - they run with
   the bash the CLI hands it (`GTT_BASH`).
 
 ## Installation
@@ -141,6 +141,9 @@ The integration tests drive the real CLI against a real Bootstrap catalog: `GTT_
 | `gtt run [n]` | Simple execution. With no argument, lists what the agent prepared for you to run, one line each. `gtt run 3` shows the steps, asks once if the run changes something (never `--yes`), runs the sealed script the Bootstrap generated, logs it in `gtt-domain/run/log.jsonl` and archives it in `gtt-domain/run/done/`; a run that changes nothing needs no question. `gtt run show <n>` and `gtt run check` only read. Agents are denied `gtt run <n>` |
 | `gtt pending` | Lists what waits for you in `gtt-domain/pending/`: the open questions, each in the same form as its file (topic, the question, numbered options with what happens, the recommended one marked, something else, talk about it in the chat) and what they block and the decisions the agent took. Empty when nothing needs you. Read-only. |
 | `gtt answer <n> <answer>` / `gtt answer ok` | Your answer to a pending event: `gtt answer 14 1` chooses option 1 of question 14; `gtt answer ok` approves every pending decision. It shows what it writes, then writes it through the Bootstrap (an answer that looks like a key is refused). A human act: an agent is denied it. |
+| `gtt sonar [folder] [--log] [--no-open]` | GTT Sonar, read only. Inside a project it generates that project's page and opens it. In a folder that holds projects (`cd ~/dev && gtt sonar`) it finds every GTT project under it and shows them all, to move between them in the page; a project with an older Bootstrap is read with the newer one without touching it. `--all` uses the list of `gtt sonar list` when you keep one. `--log`: opened on the latest activity. The page changes nothing: every act that needs you is a command to copy and run here. A repo whose Bootstrap has no Sonar is a row that says `update GTT in this repo`. |
+| `gtt sonar add <path>` / `list` / `remove <path>` | The portfolio list, in `~/.config/gtt/sonar.json`. The repos are never touched. |
+| `gtt idea add <text>` / `list` / `park <IDEA-NNN>` / `drop <IDEA-NNN>` | Your ideas for the project, one file each in `docs/ideas/`, kept exactly as you wrote them. The agent may only add one line saying what became of an idea. Adding, parking and dropping are yours (an agent is denied them). |
 | `gtt check` | Method Conformance: the code against the ratified method's dependency rules, through the language's own tool (see *Method Conformance* below). A violation is a conflict, never corrected; without an adapter for the language the method is reported `declared-only` |
 | `gtt change ["what"] [--reason ...]` | Request a governed change in the middle of the work: it is written to `gtt-domain/change-request.md` through the Bootstrap with an id, the agent is told to process it into a proposal (the session's Next action), and the CLI offers to open the Primary ADE. `gtt change show` follows it |
 | `gtt proposals [list\|show\|withdraw]` | The proposals, ADR drafts and staged promotion sets, with their state and the request they answer; `withdraw` archives one (never deletes it) |

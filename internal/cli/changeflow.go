@@ -164,6 +164,19 @@ func promoteCmd(e *env) *cobra.Command {
 	}
 }
 
+// approveCmd is `gtt approve <epic>`: the human approves an Epic and its design together.
+func approveCmd(e *env) *cobra.Command {
+	return &cobra.Command{
+		Use:   "approve <epic>",
+		Short: "Approve an Epic and its design together after seeing them (a human act)",
+		Args:  cobra.ExactArgs(1),
+		RunE: func(cmd *cobra.Command, args []string) error {
+			res, err := e.app.Approve(cmd.Context(), args[0])
+			return e.emit(res, err, func(p output.Printer) { p.Line("%s", res.Output) })
+		},
+	}
+}
+
 // undoCmd is `gtt undo`: one step back, never an unfreeze.
 func undoCmd(e *env) *cobra.Command {
 	return &cobra.Command{

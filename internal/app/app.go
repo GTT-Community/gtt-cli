@@ -155,7 +155,14 @@ func (a *App) log(root, operation, result string, extra map[string]any) {
 		fields[k] = v
 	}
 	lifecycle.Store{Root: root}.Log(fields)
+	if humanActs[operation] {
+		a.refreshSonar(root) // the page follows the state: regenerated at the end of every act of the human
+	}
 }
+
+// humanActs are the CLI acts after which the Sonar page is refreshed.
+var humanActs = map[string]bool{"answer": true, "approve": true, "promote": true, "undo": true, "freeze": true, "run": true,
+	"change.request": true, "proposal.withdraw": true, "idea.add": true, "idea.park": true, "idea.drop": true}
 
 // validation is the Bootstrap's validation result.
 type validation struct {

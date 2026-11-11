@@ -281,6 +281,25 @@ func (a *App) Promote(ctx context.Context, set string) (StepResult, error) {
 	return res, err
 }
 
+// Approve approves an Epic and its design together: the human's act, after seeing it. Approving what is
+// already approved is a success that changes nothing.
+func (a *App) Approve(ctx context.Context, epic string) (StepResult, error) {
+	p, err := a.open(ctx)
+	if err != nil {
+		return StepResult{}, err
+	}
+	if !supports(ctx, p.B, "epic.approve") {
+		return StepResult{}, &core.Error{Code: core.ExitIncompatible, Unmodified: true,
+			What: "The installed GTT Bootstrap " + p.Release.Bootstrap.Version + " does not offer the Epic approval through the CLI.", Next: "Run: gtt update"}
+	}
+	res, err := a.human(ctx, p.B, "epic.approve", map[string]string{"epic": epic}, "Approve this Epic and its design?")
+	res.Target = epic
+	if err == nil {
+		a.log(p.Root, "approve", "success", map[string]any{"epic": epic})
+	}
+	return res, err
+}
+
 // Undo puts back what the last promotion replaced. It is never an unfreeze:
 // when that promotion froze, the Bootstrap records a new freeze over the
 // earlier state and keeps the history.
