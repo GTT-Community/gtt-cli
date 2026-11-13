@@ -221,12 +221,17 @@ func TestAnotherReleaseIsReportedAndChangedOnlyOnConfirmation(t *testing.T) {
 	write(t, root, "gtt-domain/context/stack.md", read(t, root, "gtt-domain/context/stack.md")+"\nProject note: the governed stack of this project.\n")
 	write(t, root, "gtt-domain/context/constraints.md", read(t, root, "gtt-domain/context/constraints.md")+"\nProject note: a hard limit of this project.\n")
 	write(t, root, "gtt-domain/adr/ADR-900-project-decision.md", read(t, root, "gtt-domain/adr/ADR-TEMPLATE.md"))
-	write(t, root, "gtt-domain/change-request.md", read(t, root, "gtt-domain/change-request.md")+"\nProject note: a request the team is drafting.\n")
+	if exists(root, "gtt-domain/change-request.md") { // the inbox Bootstrap has no desk
+		write(t, root, "gtt-domain/change-request.md", read(t, root, "gtt-domain/change-request.md")+"\nProject note: a request the team is drafting.\n")
+	}
 	write(t, root, "gtt-domain/.frozen", "frozen: 2026-01-01T00:00:00Z\n")
 	write(t, root, "SOURCE-BRIEF.md", "# The design this project was bootstrapped from\n")
 	state := func() string {
 		var parts []string
 		for _, rel := range governed {
+			if !exists(root, rel) && rel == "gtt-domain/change-request.md" {
+				continue
+			}
 			parts = append(parts, rel+"\x00"+read(t, root, rel))
 		}
 		return strings.Join(parts, "\x01")

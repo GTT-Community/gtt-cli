@@ -43,7 +43,10 @@ func answerCmd(e *env) *cobra.Command {
 		RunE: func(cmd *cobra.Command, args []string) error {
 			res, err := e.app.PendingRespond(cmd.Context(), args[0], strings.Join(args[1:], " "))
 			return e.emit(res, err, func(p output.Printer) {
-				if len(res.Answered) > 0 {
+				switch {
+				case len(res.Answered) > 0 && res.Review:
+					p.Line("%s", res.Output)
+				case len(res.Answered) > 0:
 					p.Line("Written. The agent applies it on its next message.")
 				}
 			})
@@ -70,7 +73,7 @@ func renderPending(p output.Printer, r app.PendingList) {
 			}
 		}
 		p.Line("%-4d %s  %s%s", it.Number, it.Kind, it.Title, tail)
-		if it.Kind == "ASK" && it.State == "open" {
+		if (it.Kind == "ASK" || it.Kind == "REV") && it.State == "open" {
 			renderForm(p, it)
 		}
 	}
@@ -92,6 +95,9 @@ func renderForm(p output.Printer, it app.PendingItem) {
 		}
 	}
 	for i, line := range it.Closing {
+		if it.Kind == "REV" {
+			break // a review is answered with one of its options
+		}
 		p.Line("       %d. %s", len(it.Options)+1+i, line)
 	}
 	p.Line("       answer: gtt answer %d <number>", it.Number)

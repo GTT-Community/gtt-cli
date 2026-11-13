@@ -5,6 +5,28 @@ package core
 // with their %s/%d slots, which the translation keeps in the same order or
 // names by index). Product terms stay as the method names them.
 var spanish = map[string]string{
+	// The inbox.
+	"this Bootstrap does not offer the inbox: gtt update": "este Bootstrap no ofrece la bandeja: gtt update",
+	"The inbox is empty.":                     "La bandeja está vacía.",
+	"New (%d)":                                "Nuevas (%d)",
+	"In review (%d)":                          "En revisión (%d)",
+	"Accepted (%d)":                           "Aceptadas (%d)",
+	"To ratify (%d)":                          "Por ratificar (%d)",
+	"In progress (%d)":                        "En trabajo (%d)",
+	"Parked (%d)":                             "Aparcadas (%d)",
+	"Closed (%d)":                             "Cerradas (%d)",
+	"Rejected (%d)":                           "Rechazadas (%d)",
+	"Write this idea down?":                   "¿Anotar esta idea?",
+	"Create this ADR draft?":                  "¿Crear este borrador de ADR?",
+	"Take this ADR into the inbox?":           "¿Llevar este ADR a la bandeja?",
+	"Park it? You can reopen it later":        "¿Aparcarla? Puedes reabrirla después",
+	"Reject it? It is archived, not deleted":  "¿Rechazarla? Se archiva, no se borra",
+	"Discard it? It is archived, not deleted": "¿Descartarla? Se archiva, no se borra",
+	"Reopen it?":                              "¿Reabrirla?",
+	"Change the priority?":                    "¿Cambiar la prioridad?",
+	"Migrate the inbox as shown?":             "¿Migrar la bandeja como se muestra?",
+	"Follow it with: gtt inbox":               "Síguela con: gtt inbox",
+	"The inbox has something to migrate and it was not confirmed: gtt inbox migrate": "La bandeja tiene algo que migrar y no se confirmó: gtt inbox migrate",
 	// Generic error frame, prompts and values.
 	"Reason:":                         "Motivo:",
 	"Next step:":                      "Siguiente paso:",

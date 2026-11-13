@@ -338,3 +338,28 @@ type Reporter interface {
 type Logger interface {
 	Log(level, format string, args ...any)
 }
+
+// ---------------------------------------------------------------- upgrade
+
+// UpgradePlan is what replacing this binary with another release would do.
+type UpgradePlan struct {
+	Channel string   `json:"channel"`           // npm, uv, pipx, go or direct
+	Exe     string   `json:"executable"`        // the binary being replaced
+	Target  string   `json:"target"`            // the release to install
+	Command []string `json:"command,omitempty"` // the package manager command it would run
+	// Manual is set when the CLI cannot or should not do it itself; Hint is the exact command a human runs.
+	Manual bool   `json:"manual,omitempty"`
+	Hint   string `json:"hint,omitempty"`
+	Reason string `json:"reason,omitempty"`
+}
+
+// SelfUpgrader replaces the gtt binary with another release. Only this port touches the network for
+// the CLI's own sake; it never touches a project.
+type SelfUpgrader interface {
+	// Latest is the newest published release, as MAJOR.MINOR.PATCH.
+	Latest(ctx context.Context) (string, error)
+	// Plan decides how the running binary would be replaced by the target release.
+	Plan(target string) UpgradePlan
+	// Apply replaces the binary. On failure the previous binary is back in place.
+	Apply(ctx context.Context, plan UpgradePlan) error
+}

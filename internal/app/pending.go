@@ -19,7 +19,7 @@ import (
 type PendingItem struct {
 	ID          string            `json:"id"`
 	Number      int               `json:"number"`
-	Kind        string            `json:"kind"` // ASK | DEC
+	Kind        string            `json:"kind"` // ASK | DEC | REV
 	Title       string            `json:"title"`
 	Class       string            `json:"class"`
 	Created     string            `json:"created"`
@@ -48,6 +48,8 @@ type PendingAnswer struct {
 	Schema   int      `json:"schema"`
 	Answered []string `json:"answered"`
 	Output   string   `json:"output"`
+	// Review is true when the answer decided a REV: the Bootstrap applied it at once, nothing waits for the agent.
+	Review bool `json:"review,omitempty"`
 }
 
 func notPendingSupported(version string) error {
@@ -84,10 +86,10 @@ func (a *App) PendingEvents(ctx context.Context, all bool) (PendingList, error) 
 	return res, nil
 }
 
-// pendingRef accepts `14`, `014`, `ASK-14` and `DEC-015`.
+// pendingRef accepts `14`, `014`, `ASK-14`, `DEC-015` and `REV-016`.
 func pendingRef(ref string) (int, error) {
 	s := strings.ToUpper(strings.TrimSpace(ref))
-	s = strings.TrimPrefix(strings.TrimPrefix(s, "ASK-"), "DEC-")
+	s = strings.TrimPrefix(strings.TrimPrefix(strings.TrimPrefix(s, "ASK-"), "DEC-"), "REV-")
 	n, err := strconv.Atoi(s)
 	if err != nil || n < 1 {
 		return 0, &core.Error{Code: core.ExitUsage, Unmodified: true, What: fmt.Sprintf("%q is not an event.", ref), Next: "Use the number `gtt pending` lists: gtt answer 14 1"}
@@ -147,6 +149,7 @@ func (a *App) PendingRespond(ctx context.Context, ref, reply string) (PendingAns
 			return res, &core.Error{Code: core.ExitConflict, Unmodified: true, What: found.ID + " is already attended.", Next: "The next session deletes it."}
 		}
 		targets = append(targets, describe(*found, reply))
+		res.Review = found.Kind == "REV"
 		args["ref"], args["reply"] = strconv.Itoa(n), reply
 	}
 	for _, t := range targets {

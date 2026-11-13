@@ -23,6 +23,8 @@ type fakeBootstrap struct {
 	requests   []ports.OperationRequest
 	version    string   // installed release; empty means 1.2.0
 	problems   []string // what the Bootstrap's own contract check reports
+	caps       []ports.Capability
+	ops        map[string]ports.Operation
 }
 
 func (f *fakeBootstrap) Root() string { return f.root }
@@ -40,9 +42,9 @@ func (f *fakeBootstrap) Negotiate(context.Context) (ports.Negotiation, error) {
 	}
 	return ports.Negotiation{Reasons: []string{"requires CLI 9.0.0"}}, nil
 }
-func (f *fakeBootstrap) Capabilities(context.Context) ([]ports.Capability, error) { return nil, nil }
+func (f *fakeBootstrap) Capabilities(context.Context) ([]ports.Capability, error) { return f.caps, nil }
 func (f *fakeBootstrap) Operations(context.Context) (map[string]ports.Operation, error) {
-	return nil, nil
+	return f.ops, nil
 }
 func (f *fakeBootstrap) Show(_ context.Context, contract string) (json.RawMessage, error) {
 	return json.RawMessage(f.shows[contract]), nil

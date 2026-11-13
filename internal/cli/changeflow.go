@@ -88,7 +88,7 @@ func renderChange(p output.Printer, r app.ChangeState) {
 	switch r.State {
 	case "pending":
 		p.Line("\nThe agent is told to process it at the start of its next session; it drafts a proposal and decides nothing.")
-		p.Line("Follow it with: gtt proposals")
+		p.Line("Follow it with: gtt inbox")
 	case "processed":
 		p.Line("\nAnswered by:\n  %s", strings.Join(r.Proposals, "\n  "))
 	}
@@ -100,6 +100,17 @@ func proposalsCmd(e *env) *cobra.Command {
 		res, err := e.app.Proposals(cmd.Context())
 		return e.emit(res, err, func(p output.Printer) { renderProposals(p, res) })
 	}
+	var why string
+	reject := &cobra.Command{
+		Use:   "reject <PROP-NNN>",
+		Short: "Discard a proposal without a review (a human act; same as: gtt inbox reject)",
+		Args:  cobra.ExactArgs(1),
+		RunE: func(cmd *cobra.Command, args []string) error {
+			res, err := e.app.InboxReject(cmd.Context(), args[0], why)
+			return e.emit(res, err, func(p output.Printer) { renderInboxAct(p, res) })
+		},
+	}
+	reject.Flags().StringVar(&why, "reason", "", "why, in one line")
 	cmd := &cobra.Command{Use: "proposals", Short: "List proposals, ADR drafts and promotion sets, with their state", Args: cobra.NoArgs, RunE: list}
 	var by string
 	withdraw := &cobra.Command{
@@ -121,11 +132,26 @@ func proposalsCmd(e *env) *cobra.Command {
 				res, err := e.app.ProposalShow(cmd.Context(), args[0])
 				return e.emit(res, err, func(p output.Printer) { p.Line("%s", strings.TrimRight(res.Content, "\n")) })
 			},
-		}, withdraw)
+		}, withdraw, reject)
 	return cmd
 }
 
 func renderProposals(p output.Printer, r app.ProposalsResult) {
+	if r.Inbox != nil {
+		// The proposals are PROP-NNN in the inbox: that view is the list. Promotion sets still show below.
+		renderInbox(p, *r.Inbox)
+		var sets []app.Proposal
+		for _, x := range r.Proposals {
+			if x.Kind == "promotion-set" {
+				sets = append(sets, x)
+			}
+		}
+		r.Proposals = sets
+		if len(sets) == 0 {
+			return
+		}
+		p.Line("")
+	}
 	if r.Request.State == "pending" || r.Request.State == "processed" {
 		p.Line("Change request %s: %s\n", r.Request.ID, r.Request.State)
 	}

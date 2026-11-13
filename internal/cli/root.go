@@ -107,6 +107,7 @@ func newRoot(e *env) *cobra.Command {
 		},
 		PersistentPostRun: func(cmd *cobra.Command, _ []string) {
 			e.staleNotice(cmd)
+			e.autoUpgrade(cmd)
 		},
 	}
 	pf := root.PersistentFlags()
@@ -118,8 +119,8 @@ func newRoot(e *env) *cobra.Command {
 	pf.StringVarP(&e.opts.Dir, "dir", "C", "", "run as if started in this directory")
 	root.AddCommand(
 		initCmd(e), statusCmd(e), inspectCmd(e), validateCmd(e), resumeCmd(e), freezeCmd(e), doctorCmd(e), auditCmd(e),
-		updateCmd(e), exportCmd(e), cleanCmd(e), versionCmd(e),
-		configCmd(e), methodCmd(e), devMethodCmd(e), deliveryCmd(e), planCmd(e), reportCmd(e), runCmd(e), pendingCmd(e), answerCmd(e), checkCmd(e), changeCmd(e), proposalsCmd(e), promoteCmd(e), approveCmd(e), undoCmd(e), agentsCmd(e), sourcesCmd(e), designCmd(e), syncCmd(e), snapshotCmd(e), artifactCmd(e), releaseCmd(e), sonarCmd(e), ideaCmd(e),
+		updateCmd(e), upgradeCmd(e), exportCmd(e), cleanCmd(e), versionCmd(e),
+		configCmd(e), methodCmd(e), devMethodCmd(e), deliveryCmd(e), planCmd(e), reportCmd(e), runCmd(e), pendingCmd(e), answerCmd(e), checkCmd(e), changeCmd(e), proposalsCmd(e), promoteCmd(e), approveCmd(e), undoCmd(e), agentsCmd(e), sourcesCmd(e), designCmd(e), syncCmd(e), snapshotCmd(e), artifactCmd(e), releaseCmd(e), sonarCmd(e), ideaCmd(e), inboxCmd(e), adrCmd(e),
 	)
 	return root
 }
@@ -152,6 +153,26 @@ func (e *env) staleNotice(cmd *cobra.Command) {
 		return
 	}
 	fmt.Fprintf(cmd.ErrOrStderr(),
-		"⚠ This gtt (%s) was built %d days ago; newer releases carry a more complete Bootstrap. Update: npm i -g @gtt-community/gtt-cli  |  Esta versión de gtt tiene %d días: actualiza con el mismo comando.\n",
+		"⚠ This gtt (%s) was built %d days ago; newer releases carry a more complete Bootstrap. Update: gtt upgrade (older gtt: npm i -g @gtt-community/gtt-cli)  |  Esta versión de gtt tiene %d días: actualiza con gtt upgrade.\n",
 		core.Version, days, days)
+}
+
+// autoUpgrade looks for a newer gtt (cached, at most every few hours; see app.AutoUpgrade) and, inside a
+// project, says when its Bootstrap is older than the one this gtt ships. One line on stderr each, never in
+// --json, never a failure, nothing at all for `upgrade`, `update` and `init`, which are the acts themselves.
+func (e *env) autoUpgrade(cmd *cobra.Command) {
+	if e.opts.JSON || e.app == nil {
+		return
+	}
+	switch cmd.Name() {
+	case "upgrade", "update", "init", "help", "completion":
+		return
+	}
+	now := time.Now()
+	if line := e.app.AutoUpgrade(cmd.Context(), now); line != "" {
+		fmt.Fprintln(cmd.ErrOrStderr(), line)
+	}
+	if line := e.app.ProjectBootstrapNotice(cmd.Context(), now); line != "" {
+		fmt.Fprintln(cmd.ErrOrStderr(), line)
+	}
 }

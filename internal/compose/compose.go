@@ -16,6 +16,7 @@ import (
 	"github.com/GTT-Community/gtt-cli/internal/ports"
 	"github.com/GTT-Community/gtt-cli/internal/project"
 	"github.com/GTT-Community/gtt-cli/internal/ui"
+	"github.com/GTT-Community/gtt-cli/internal/upgrade"
 )
 
 // Home is the user-level GTT home: cache and snapshots, outside any project.
@@ -78,6 +79,7 @@ func Wire(s Streams) cli.Wire {
 			Runner:    runner,
 			Git:       project.Git{Runner: runner},
 			Prompt:    prompter,
+			Upgrader:  &upgrade.Upgrader{Runner: runner, Base: os.Getenv("GTT_DOWNLOAD_BASE")},
 			Report:    out,
 			Home:      Home(),
 			Cwd:       cwd,

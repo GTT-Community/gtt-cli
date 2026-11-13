@@ -17,7 +17,7 @@ const module = "github.com/GTT-Community/gtt-cli/internal/"
 var (
 	kernel   = []string{"core", "fsx", "ports"}
 	services = []string{"ade", "project", "methodology", "tracking", "agents", "lifecycle", "snapshot", "export", "conformance"}
-	adapters = []string{"bootstrap", "execution", "ui"}
+	adapters = []string{"bootstrap", "execution", "ui", "upgrade"}
 )
 
 // allowed lists, per package, the internal packages it may import.

@@ -278,6 +278,8 @@ type UpdateResult struct {
 	// Overwritten are locally modified files the human confirmed replacing.
 	Overwritten []string `json:"replaced_modified,omitempty"`
 	Snapshot    string   `json:"snapshot,omitempty"`
+	// Inbox is the migration of a 1.22 project to the inbox, when the new Bootstrap offers it.
+	Inbox *InboxMigration `json:"inbox,omitempty"`
 }
 
 // Update replaces the Bootstrap package content of a project with another
@@ -415,7 +417,10 @@ func (a *App) Update(ctx context.Context, o UpdateOptions) (UpdateResult, error)
 		if err != nil {
 			return res, err
 		}
-		if !dry.OK() {
+		// The check above is made by the Bootstrap the project has now, which may predate the rule that a file edited
+		// by the project is kept (the catalog's version saved beside it as .gtt-new). The real step below runs with the
+		// updated Bootstrap, so a conflict that is only a local edit does not stop the update; any other one still does.
+		if !dry.OK() && !onlyLocalEdits(dry.Stdout) {
 			return res, &core.Error{Code: core.ExitConflict, Unmodified: true, What: "The ADE integrations cannot be updated without a conflict.",
 				Why: strings.TrimSpace(dry.Stdout), Next: "Resolve the listed files; GTT does not overwrite local changes."}
 		}
@@ -512,6 +517,14 @@ func (a *App) Update(ctx context.Context, o UpdateOptions) (UpdateResult, error)
 	}
 	a.log(p.Root, "update", "success", map[string]any{"from": res.From, "to": res.To})
 	res.Outcome = "updated"
+	// The update is done and stays done: a migration that cannot run is said, never a failure of the update.
+	if m, merr := a.migrateInbox(ctx, updated, p.Root); m.Offered {
+		res.Inbox = &m
+		if merr != nil {
+			res.Inbox.Pending = true
+			res.Inbox.Report = merr.Error()
+		}
+	}
 	return res, nil
 }
 
@@ -718,4 +731,23 @@ func (a *App) ReleaseSign(ctx context.Context, root, keyFile string) (ports.Sign
 		return ports.SignResult{}, err
 	}
 	return a.Signer.Sign(ctx, abs, keyFile)
+}
+
+// onlyLocalEdits is true when a failed `ade.update` check lists conflicts that are all "modified locally and
+// changed in the catalog" and nothing else (no PROBLEM line, no file GTT did not install).
+func onlyLocalEdits(out string) bool {
+	conflicts := 0
+	for _, line := range strings.Split(out, "\n") {
+		t := strings.TrimSpace(line)
+		switch {
+		case strings.HasPrefix(t, "PROBLEM"):
+			return false
+		case strings.HasPrefix(t, "CONFLICT"):
+			if !strings.Contains(t, "modified locally and changed in the catalog") {
+				return false
+			}
+			conflicts++
+		}
+	}
+	return conflicts > 0
 }

@@ -31,6 +31,14 @@ func updateCmd(e *env) *cobra.Command {
 					if len(res.Overwritten) > 0 {
 						p.Line("  replaced on your confirmation (changed locally): %s", strings.Join(res.Overwritten, ", "))
 					}
+					if m := res.Inbox; m != nil {
+						switch {
+						case m.Applied:
+							p.Line("\n%s", m.Report)
+						case m.Pending:
+							p.Line("\nThe inbox has something to migrate and it was not confirmed: gtt inbox migrate")
+						}
+					}
 					if e.opts.Verbose {
 						p.Line("\nPreserved:\n  %s", strings.Join(res.Preserved, "\n  "))
 					}

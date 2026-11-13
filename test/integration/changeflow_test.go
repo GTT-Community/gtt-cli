@@ -24,6 +24,9 @@ func answer(t *testing.T, root, id string) {
 }
 
 func TestAChangeRequestIsRecordedAndTheAgentIsToldToProcessIt(t *testing.T) {
+	if exists(pristine, ".gtt/contract/inbox.json") {
+		t.Skip("in the inbox a request is an IDEA, not the 1.22 desk: see inbox_test.go")
+	}
 	root := project(t, nil)
 	initProject(t, root, pristine, defaults...)
 	if r := gtt(t, root, "change", "Sessions in Redis").must(t, 3); !strings.Contains(r.err, "what to change and why") {
@@ -66,6 +69,12 @@ func TestInteractiveChangeAsksWhatAndWhy(t *testing.T) {
 	r := gttIn(t, root, "Sessions in Redis\nScale out\n\n\n\n\n2\ny\nn\n", "change").must(t, 0)
 	if !strings.Contains(r.err, "What needs to change?") || !strings.Contains(r.err, "Record this change request?") {
 		t.Errorf("the request is asked, then confirmed:\n%s", r.err)
+	}
+	if exists(pristine, ".gtt/contract/inbox.json") {
+		if body := read(t, root, "docs/ideas/IDEA-001.md"); !strings.Contains(body, "Change: Sessions in Redis") || !strings.Contains(body, "Reason: Scale out") || !strings.Contains(body, "Priority: high") {
+			t.Errorf("the answers are recorded as given in the IDEA:\n%s", body)
+		}
+		return
 	}
 	st := gtt(t, root, "change", "show", "--json").must(t, 0).json(t)
 	fields := st["fields"].(map[string]any)
@@ -134,6 +143,9 @@ func TestAWithdrawnProposalIsArchived(t *testing.T) {
 	}
 	if data, _ := os.ReadFile(matches[0]); !strings.Contains(string(data), "Withdrawn:") {
 		t.Error("the archive says it was withdrawn")
+	}
+	if exists(pristine, ".gtt/contract/inbox.json") {
+		return // in the inbox the request is an IDEA and there is no desk to reopen
 	}
 	if st := gtt(t, root, "change", "show", "--json").must(t, 0).json(t); st["state"] != "pending" {
 		t.Errorf("the request it answered is open again: %v", st["state"])

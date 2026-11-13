@@ -38,7 +38,7 @@ func downgrade(t *testing.T, root string) {
 		}
 		if ops, ok := doc["operations"].(map[string]any); ok {
 			for k := range ops {
-				if strings.HasPrefix(k, "sonar.") || strings.HasPrefix(k, "idea.") {
+				if strings.HasPrefix(k, "sonar.") || strings.HasPrefix(k, "idea.") || strings.HasPrefix(k, "inbox.") || strings.HasPrefix(k, "adr.") {
 					delete(ops, k)
 				}
 			}
@@ -46,7 +46,7 @@ func downgrade(t *testing.T, root string) {
 		if caps, ok := doc["capabilities"].([]any); ok {
 			kept := caps[:0]
 			for _, c := range caps {
-				if id := c.(map[string]any)["id"]; id != "sonar.v1" && id != "ideas" {
+				if id := c.(map[string]any)["id"]; id != "sonar.v1" && id != "ideas" && id != "inbox.v1" {
 					kept = append(kept, c)
 				}
 			}
@@ -125,7 +125,7 @@ func TestPortfolioShowsTheOldRepoAsUpdateAndTheOtherComplete(t *testing.T) {
 	if len(repos) != 2 || repos[0].(map[string]any)["state"] != "ok" || repos[1].(map[string]any)["state"] != "update" {
 		t.Fatalf("the list says which repo needs an update: %v", repos)
 	}
-	res := gtt(t, a, "sonar", "--all", "--no-open", "--json").must(t, 0).json(t)
+	res := gtt(t, a, "sonar", "--all", "--no-open", "--bootstrap", pristine, "--json").must(t, 0).json(t)
 	page := filepath.Join(home, "gtt-home", "sonar", "index.html")
 	if res["page"] != page {
 		t.Fatalf("the portfolio page is in the GTT home: %v", res["page"])
@@ -145,10 +145,16 @@ func TestPortfolioShowsTheOldRepoAsUpdateAndTheOtherComplete(t *testing.T) {
 	if err := json.Unmarshal([]byte(data[1]), &payload); err != nil || len(payload.Repos) != 2 {
 		t.Fatalf("two entries in the page: %v %d", err, len(payload.Repos))
 	}
+	// An older repo is read with the newer Bootstrap: it gets a complete snapshot that says who read it and what to
+	// run there (compat), not a bare "update" row. `sonar list` above still reports it as needing an update.
 	snap, _ := payload.Repos[0]["snapshot"].(map[string]any)
-	stale, _ := payload.Repos[1]["stale"].(map[string]any)
-	if snap == nil || snap["schema"] != "sonar.v1" || stale == nil || !strings.Contains(stale["reason"].(string), "has no sonar.v1") {
-		t.Errorf("the repo with Sonar is complete and the other is a row that says to update GTT there: %v", payload.Repos)
+	older, _ := payload.Repos[1]["snapshot"].(map[string]any)
+	compat, _ := older["compat"].(map[string]any)
+	if snap == nil || snap["schema"] != "sonar.v1" || snap["compat"] != nil {
+		t.Errorf("the repo with Sonar is complete and carries no compat note: %v", payload.Repos[0])
+	}
+	if older == nil || older["schema"] != "sonar.v1" || compat == nil || !strings.Contains(compat["command"].(string), "gtt update") {
+		t.Errorf("the older repo is read with the newer Bootstrap and says to run gtt update there: %v", payload.Repos[1])
 	}
 	if _, err := os.Stat(filepath.Join(home, "gtt-home", "sonar", "fonts", "Geist-Variable.woff2")); err != nil {
 		t.Error("the portfolio page carries its fonts next to it")
@@ -168,7 +174,7 @@ func TestPortfolioShowsTheOldRepoAsUpdateAndTheOtherComplete(t *testing.T) {
 func TestIdeaAddKeepsTheTextExactlyAndRefreshesThePage(t *testing.T) {
 	root := sonarProject(t)
 	text := "Sincronizar parcelas\nsin señal con 'comillas', $HOME y `date` ✓"
-	gtt(t, root, "idea", "add", text).must(t, 0)
+	gtt(t, root, "idea", "add", text, "--yes").must(t, 0)
 	body := read(t, root, "docs/ideas/IDEA-001.md")
 	if !strings.HasSuffix(body, "\n\n"+text+"\n") || !strings.HasPrefix(body, "# IDEA-001 · Sincronizar parcelas") {
 		t.Errorf("the idea is stored exactly as written:\n%s", body)
@@ -180,12 +186,12 @@ func TestIdeaAddKeepsTheTextExactlyAndRefreshesThePage(t *testing.T) {
 	if list["new"] != float64(1) {
 		t.Errorf("one new idea: %v", list)
 	}
-	gtt(t, root, "idea", "park", "IDEA-001").must(t, 0)
-	gtt(t, root, "idea", "drop", "IDEA-001").must(t, 0)
-	if gtt(t, root, "idea", "park", "IDEA-001").code == 0 {
+	gtt(t, root, "idea", "park", "IDEA-001", "--yes").must(t, 0)
+	gtt(t, root, "idea", "drop", "IDEA-001", "--yes").must(t, 0)
+	if gtt(t, root, "idea", "park", "IDEA-001", "--yes").code == 0 {
 		t.Error("a dropped idea is closed")
 	}
-	if gtt(t, root, "idea", "add", "   ").code == 0 {
+	if gtt(t, root, "idea", "add", "   ", "--yes").code == 0 {
 		t.Error("an empty idea is refused")
 	}
 }
@@ -193,9 +199,9 @@ func TestIdeaAddKeepsTheTextExactlyAndRefreshesThePage(t *testing.T) {
 func TestIdeaWithABootstrapWithoutItAsksForAnUpdate(t *testing.T) {
 	root := sonarProject(t)
 	downgrade(t, root)
-	r := gtt(t, root, "idea", "add", "x")
-	if r.code == 0 || !strings.Contains(r.err, "gtt update") || exists(root, "docs/ideas") {
-		t.Errorf("one clear line and nothing written: code %d\n%s", r.code, r.err)
+	r := gtt(t, root, "idea", "add", "x", "--yes")
+	if r.code != 0 || !strings.Contains(r.out, "gtt update") || strings.Count(strings.TrimSpace(r.out), "\n") != 0 || exists(root, "docs/ideas") {
+		t.Errorf("one line, the command ends well and nothing is written: code %d\n%s%s", r.code, r.out, r.err)
 	}
 }
 

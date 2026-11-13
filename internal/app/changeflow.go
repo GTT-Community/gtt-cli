@@ -30,6 +30,8 @@ type ChangeState struct {
 	Proposals []string          `json:"proposals"`
 	// Primary is the ADE that will be told to process it (via the session's next action).
 	Primary string `json:"primary,omitempty"`
+	// Output is what the Bootstrap said when it recorded the request.
+	Output string `json:"output,omitempty"`
 }
 
 // Proposal is one draft under gtt-domain/proposals/.
@@ -48,6 +50,8 @@ type ProposalsResult struct {
 	Schema    int         `json:"schema"`
 	Request   ChangeState `json:"request"`
 	Proposals []Proposal  `json:"proposals"`
+	// Inbox is the agent's side of the inbox (the proposals as PROP-NNN, by stage), when the Bootstrap has it.
+	Inbox *InboxList `json:"inbox,omitempty"`
 }
 
 // ProposalView is `gtt proposals show`.
@@ -111,7 +115,7 @@ func (a *App) human(ctx context.Context, b ports.Bootstrap, op string, args map[
 		return res, &core.Error{Code: core.ExitConflict, Unmodified: true, What: "The Bootstrap refused " + op + ".",
 			Why: strings.TrimSpace(dry.Stdout + "\n" + dry.Stderr)}
 	}
-	a.Report.Info("%s", strings.TrimRight(dry.Stdout, "\n"))
+	a.Report.Info("%s", previewOf(dry.Stdout))
 	ok, err := a.confirm(question, false)
 	if err != nil {
 		return res, err
@@ -129,6 +133,17 @@ func (a *App) human(ctx context.Context, b ports.Bootstrap, op string, args map[
 	}
 	res.Applied = true
 	return res, nil
+}
+
+// previewOf is what a dry run says it would do, without the line that tells a script how to apply it.
+func previewOf(dry string) string {
+	var keep []string
+	for _, l := range strings.Split(strings.TrimRight(dry, "\n"), "\n") {
+		if !strings.HasPrefix(l, "(nothing written") {
+			keep = append(keep, l)
+		}
+	}
+	return strings.Join(keep, "\n")
 }
 
 // ChangeRequest records the human's change request through the Bootstrap.
@@ -180,15 +195,20 @@ func (a *App) ChangeRequest(ctx context.Context, o ChangeOptions) (ChangeState, 
 			args[k] = v
 		}
 	}
-	if o.Replace {
-		args["replace"] = "true"
+	if ops, _ := p.B.Operations(ctx); o.Replace && ops["change.request"].HasArg("replace") {
+		args["replace"] = "true" // the inbox has no single desk to replace: its Bootstrap does not declare it
 	}
-	if _, err := a.human(ctx, p.B, "change.request", args, "Record this change request?"); err != nil {
+	step, err := a.human(ctx, p.B, "change.request", args, "Record this change request?")
+	if err != nil {
 		return ChangeState{}, err
 	}
 	st, err := a.changeState(ctx, p.B)
 	if err != nil {
 		return st, err
+	}
+	st.Output = step.Output
+	if ref := firstRef(step.Output); ref != "" && supportsInbox(ctx, p.B) {
+		st.State, st.ID = "pending", ref // in the inbox the request is an IDEA; the 1.22 desk is gone
 	}
 	var ade adeState
 	if _, err := a.query(ctx, p.B, "ade.state", nil, &ade); err == nil {
@@ -224,12 +244,27 @@ func (a *App) Proposals(ctx context.Context) (ProposalsResult, error) {
 	}
 	_, err = a.query(ctx, p.B, "proposal.list", nil, &res)
 	res.Schema = core.OutputSchema
+	if err == nil && supportsInbox(ctx, p.B) {
+		in, ierr := a.Inbox(ctx, InboxQuery{Origin: "agent"})
+		if ierr != nil {
+			return res, ierr
+		}
+		res.Inbox = &in
+	}
 	return res, err
 }
 
 // ProposalShow is `gtt proposals show <name>`.
 func (a *App) ProposalShow(ctx context.Context, name string) (ProposalView, error) {
 	res := ProposalView{Schema: core.OutputSchema}
+	if refRE.MatchString(strings.ToUpper(strings.TrimSpace(name))) {
+		if _, ok, err := a.openInbox(ctx); err == nil && ok {
+			v, err := a.InboxShow(ctx, name)
+			res.Proposal = Proposal{Name: v.Entry.Ref, Path: v.Entry.Path, Kind: v.Entry.Type, Title: v.Entry.Title, State: v.Entry.Stage}
+			res.Content = v.Entry.Text
+			return res, err
+		}
+	}
 	p, err := a.openFlow(ctx)
 	if err != nil {
 		return res, err
@@ -250,6 +285,12 @@ func (a *App) ProposalShow(ctx context.Context, name string) (ProposalView, erro
 
 // ProposalWithdraw archives a draft nobody will promote (a human act).
 func (a *App) ProposalWithdraw(ctx context.Context, name, by string) (StepResult, error) {
+	if refRE.MatchString(strings.ToUpper(strings.TrimSpace(name))) {
+		if _, ok, err := a.openInbox(ctx); err == nil && ok {
+			r, err := a.InboxReject(ctx, name, "")
+			return StepResult{Schema: core.OutputSchema, Action: r.Action, Target: r.Target, Applied: r.Applied, Output: r.Output}, err
+		}
+	}
 	p, err := a.openFlow(ctx)
 	if err != nil {
 		return StepResult{}, err
