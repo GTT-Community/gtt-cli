@@ -93,11 +93,12 @@ jobs:
     needs: release
     if: github.repository == 'GTT-Community/gtt-cli'
     runs-on: ubuntu-latest
+    # Trusted Publishing (OIDC): npm trusts this repository and workflow, so no token is stored.
+    # Configure it once at npmjs.com -> package settings -> Trusted Publisher (GitHub Actions:
+    # GTT-Community/gtt-cli, workflow release.yml).
     permissions:
       contents: read
-
-    env:
-      NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
+      id-token: write
 
     steps:
       - name: Checkout repository
@@ -123,13 +124,6 @@ jobs:
             echo "gtt-cli@${version} is already published."
             exit 0
           fi
-
-          if [ -z "${NPM_TOKEN:-}" ]; then
-            echo "::error::NPM_TOKEN is not configured."
-            exit 1
-          fi
-
-          export NODE_AUTH_TOKEN="${NPM_TOKEN}"
 
           npm pkg set version="${version}"
           npm publish --access public
