@@ -61,7 +61,7 @@ var generatedAt = regexp.MustCompile(`"generated_at":\s*"[^"]*"`)
 
 func TestSonarGeneratesTheDerivedPage(t *testing.T) {
 	root := sonarProject(t)
-	res := gtt(t, root, "sonar", "--no-open", "--json").must(t, 0).json(t)
+	res := gtt(t, root, "sonar", "--static", "--no-open", "--json").must(t, 0).json(t)
 	page := filepath.Join(root, ".gtt", "local", "sonar.html")
 	if res["supported"] != true || res["page"] != page {
 		t.Fatalf("the page is generated and its path given: %v", res)
@@ -74,7 +74,7 @@ func TestSonarGeneratesTheDerivedPage(t *testing.T) {
 	for _, f := range []string{"sonar.html", "sonar.json"} {
 		os.Remove(filepath.Join(root, ".gtt", "local", f))
 	}
-	gtt(t, root, "sonar", "--no-open").must(t, 0)
+	gtt(t, root, "sonar", "--static", "--no-open").must(t, 0)
 	if after := generatedAt.ReplaceAllString(read(t, root, ".gtt/local/sonar.json"), ""); after != before {
 		t.Errorf("deleting the derived files loses nothing: they come back the same")
 	}
@@ -83,7 +83,7 @@ func TestSonarGeneratesTheDerivedPage(t *testing.T) {
 func TestSonarWithABootstrapWithoutItSaysToUpdateWhenTheNewerOneIsNotAvailable(t *testing.T) {
 	root := sonarProject(t)
 	downgrade(t, root)
-	r := gtt(t, root, "sonar", "--no-open", "--offline").must(t, 0)
+	r := gtt(t, root, "sonar", "--static", "--no-open", "--offline").must(t, 0)
 	if !strings.Contains(r.out, "gtt update") {
 		t.Errorf("it says what to do:\n%s", r.out)
 	}
@@ -97,7 +97,7 @@ func TestSonarReadsAnOlderProjectWithTheNewerBootstrapWithoutTouchingIt(t *testi
 	downgrade(t, root)
 	t.Setenv("GTT_HOME", filepath.Join(t.TempDir(), "gtt-home"))
 	before := treeHash(t, root)
-	res := gtt(t, root, "sonar", "--no-open", "--bootstrap", pristine, "--json").must(t, 0).json(t)
+	res := gtt(t, root, "sonar", "--static", "--no-open", "--bootstrap", pristine, "--json").must(t, 0).json(t)
 	if after := treeHash(t, root); after != before {
 		t.Error("reading an older project changes nothing in it")
 	}
@@ -125,7 +125,7 @@ func TestPortfolioShowsTheOldRepoAsUpdateAndTheOtherComplete(t *testing.T) {
 	if len(repos) != 2 || repos[0].(map[string]any)["state"] != "ok" || repos[1].(map[string]any)["state"] != "update" {
 		t.Fatalf("the list says which repo needs an update: %v", repos)
 	}
-	res := gtt(t, a, "sonar", "--all", "--no-open", "--bootstrap", pristine, "--json").must(t, 0).json(t)
+	res := gtt(t, a, "sonar", "--all", "--static", "--no-open", "--bootstrap", pristine, "--json").must(t, 0).json(t)
 	page := filepath.Join(home, "gtt-home", "sonar", "index.html")
 	if res["page"] != page {
 		t.Fatalf("the portfolio page is in the GTT home: %v", res["page"])
@@ -222,7 +222,7 @@ func TestSonarInAFolderOfProjectsShowsThemAllWithoutAList(t *testing.T) {
 		}
 	}
 	os.MkdirAll(filepath.Join(parent, "node_modules", "pkg"), 0o755)
-	res := gtt(t, parent, "sonar", "--no-open", "--json").must(t, 0).json(t)
+	res := gtt(t, parent, "sonar", "--static", "--no-open", "--json").must(t, 0).json(t)
 	repos, _ := res["repos"].([]any)
 	if res["page"] != filepath.Join(home, "gtt-home", "sonar", "index.html") || len(repos) != 2 {
 		t.Fatalf("both projects are found under the folder, to two levels: %v", res)
@@ -233,12 +233,12 @@ func TestSonarInAFolderOfProjectsShowsThemAllWithoutAList(t *testing.T) {
 		t.Errorf("the project with Sonar is complete and the old one says how to update it")
 	}
 	// inside a project it is that project, not a scan
-	res = gtt(t, filepath.Join(parent, "alpha"), "sonar", "--no-open", "--json").must(t, 0).json(t)
+	res = gtt(t, filepath.Join(parent, "alpha"), "sonar", "--static", "--no-open", "--json").must(t, 0).json(t)
 	if res["page"] != filepath.Join(parent, "alpha", ".gtt", "local", "sonar.html") {
 		t.Errorf("inside a project it shows that project: %v", res["page"])
 	}
 	// a folder with nothing
-	empty := gtt(t, t.TempDir(), "sonar", "--no-open").must(t, 0)
+	empty := gtt(t, t.TempDir(), "sonar", "--static", "--no-open").must(t, 0)
 	if !strings.Contains(empty.out, "No GTT project") {
 		t.Errorf("one line when there is nothing to show:\n%s", empty.out)
 	}

@@ -77,6 +77,7 @@ func Wire(s Streams) cli.Wire {
 			Signer:    bootstrap.Signer{Factory: factory},
 			Installer: bootstrap.Installer{},
 			Runner:    runner,
+			Spawner:   runner,
 			Git:       project.Git{Runner: runner},
 			Prompt:    prompter,
 			Upgrader:  &upgrade.Upgrader{Runner: runner, Base: os.Getenv("GTT_DOWNLOAD_BASE")},

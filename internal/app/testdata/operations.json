@@ -1,0 +1,472 @@
+{
+ "operations": {
+  "project.detect": {
+   "mutates": false,
+   "human_authority": false
+  },
+  "ade.registry": {
+   "mutates": false,
+   "human_authority": false
+  },
+  "ade.detect": {
+   "mutates": false,
+   "human_authority": false
+  },
+  "ade.state": {
+   "mutates": false,
+   "human_authority": false
+  },
+  "ade.owned": {
+   "mutates": false,
+   "human_authority": false
+  },
+  "ade.validate": {
+   "mutates": false,
+   "human_authority": false
+  },
+  "ade.install": {
+   "mutates": true,
+   "human_authority": false
+  },
+  "ade.adopt": {
+   "mutates": true,
+   "human_authority": false
+  },
+  "ade.set-primary": {
+   "mutates": true,
+   "human_authority": false
+  },
+  "ade.update": {
+   "mutates": true,
+   "human_authority": false
+  },
+  "ade.remove": {
+   "mutates": true,
+   "human_authority": false
+  },
+  "ade.record": {
+   "mutates": true,
+   "human_authority": false
+  },
+  "template.list": {
+   "mutates": false,
+   "human_authority": false
+  },
+  "template.show": {
+   "mutates": false,
+   "human_authority": false
+  },
+  "template.materialize": {
+   "mutates": true,
+   "human_authority": false
+  },
+  "artifact.next-id": {
+   "mutates": false,
+   "human_authority": false
+  },
+  "maintain": {
+   "mutates": true,
+   "human_authority": false
+  },
+  "methodology.profile.get": {
+   "mutates": false,
+   "human_authority": false
+  },
+  "methodology.profile.set": {
+   "mutates": true,
+   "human_authority": false
+  },
+  "method.list": {
+   "mutates": false,
+   "human_authority": false
+  },
+  "method.show": {
+   "mutates": false,
+   "human_authority": false
+  },
+  "method.select": {
+   "mutates": true,
+   "human_authority": false
+  },
+  "method.get": {
+   "mutates": false,
+   "human_authority": false
+  },
+  "method.lock": {
+   "mutates": false,
+   "human_authority": false
+  },
+  "method.check": {
+   "mutates": false,
+   "human_authority": false
+  },
+  "method.rules": {
+   "mutates": false,
+   "human_authority": false
+  },
+  "method.catalog": {
+   "mutates": false,
+   "human_authority": false
+  },
+  "delivery.questions": {
+   "mutates": false,
+   "human_authority": false
+  },
+  "delivery.get": {
+   "mutates": false,
+   "human_authority": false
+  },
+  "delivery.select": {
+   "mutates": true,
+   "human_authority": false
+  },
+  "delivery.plan": {
+   "mutates": false,
+   "human_authority": false
+  },
+  "delivery.size": {
+   "mutates": false,
+   "human_authority": false
+  },
+  "delivery.report": {
+   "mutates": false,
+   "human_authority": false
+  },
+  "delivery.check": {
+   "mutates": false,
+   "human_authority": false
+  },
+  "idea.add": {
+   "mutates": true,
+   "human_authority": true
+  },
+  "idea.triage": {
+   "mutates": true,
+   "human_authority": false
+  },
+  "idea.park": {
+   "mutates": true,
+   "human_authority": true
+  },
+  "idea.drop": {
+   "mutates": true,
+   "human_authority": true
+  },
+  "idea.list": {
+   "mutates": false,
+   "human_authority": false
+  },
+  "inbox.add": {
+   "mutates": true,
+   "human_authority": true
+  },
+  "inbox.propose": {
+   "mutates": true,
+   "human_authority": false
+  },
+  "inbox.triage": {
+   "mutates": true,
+   "human_authority": false
+  },
+  "inbox.supersede": {
+   "mutates": true,
+   "human_authority": false
+  },
+  "inbox.park": {
+   "mutates": true,
+   "human_authority": true
+  },
+  "inbox.reopen": {
+   "mutates": true,
+   "human_authority": true
+  },
+  "inbox.reject": {
+   "mutates": true,
+   "human_authority": true
+  },
+  "inbox.drop": {
+   "mutates": true,
+   "human_authority": true
+  },
+  "inbox.priority": {
+   "mutates": true,
+   "human_authority": true
+  },
+  "inbox.list": {
+   "mutates": false,
+   "human_authority": false
+  },
+  "inbox.show": {
+   "mutates": false,
+   "human_authority": false
+  },
+  "adr.new": {
+   "mutates": true,
+   "human_authority": true
+  },
+  "adr.adopt": {
+   "mutates": true,
+   "human_authority": true
+  },
+  "inbox.reconcile": {
+   "mutates": true,
+   "human_authority": false
+  },
+  "inbox.adr-hand": {
+   "mutates": false,
+   "human_authority": false
+  },
+  "inbox.migrate": {
+   "mutates": true,
+   "human_authority": true
+  },
+  "sonar.render": {
+   "mutates": false,
+   "human_authority": false
+  },
+  "sonar.snapshot": {
+   "mutates": false,
+   "human_authority": false
+  },
+  "sonar.prefs": {
+   "mutates": true,
+   "human_authority": false
+  },
+  "findings.list": {
+   "mutates": false,
+   "human_authority": false
+  },
+  "code.map": {
+   "mutates": false,
+   "human_authority": false
+  },
+  "backlog.set": {
+   "mutates": true,
+   "human_authority": true
+  },
+  "delivery.summary": {
+   "mutates": false,
+   "human_authority": false
+  },
+  "run.list": {
+   "mutates": false,
+   "human_authority": false
+  },
+  "run.check": {
+   "mutates": false,
+   "human_authority": false
+  },
+  "run.new": {
+   "mutates": true,
+   "human_authority": false
+  },
+  "run.generate": {
+   "mutates": true,
+   "human_authority": false
+  },
+  "run.execute": {
+   "mutates": true,
+   "human_authority": true
+  },
+  "pending.list": {
+   "mutates": false,
+   "human_authority": false
+  },
+  "pending.check": {
+   "mutates": false,
+   "human_authority": false
+  },
+  "pending.answer": {
+   "mutates": true,
+   "human_authority": true
+  },
+  "change.request": {
+   "mutates": true,
+   "human_authority": true
+  },
+  "change.state": {
+   "mutates": false,
+   "human_authority": false
+  },
+  "proposal.list": {
+   "mutates": false,
+   "human_authority": false
+  },
+  "proposal.show": {
+   "mutates": false,
+   "human_authority": false
+  },
+  "proposal.withdraw": {
+   "mutates": true,
+   "human_authority": true
+  },
+  "epic.approve": {
+   "mutates": true,
+   "human_authority": true
+  },
+  "promotion.apply": {
+   "mutates": true,
+   "human_authority": true
+  },
+  "promotion.last": {
+   "mutates": false,
+   "human_authority": false
+  },
+  "promotion.undo": {
+   "mutates": true,
+   "human_authority": true
+  },
+  "session.next-action": {
+   "mutates": false,
+   "human_authority": false
+  },
+  "source.select": {
+   "mutates": true,
+   "human_authority": false
+  },
+  "source.add": {
+   "mutates": true,
+   "human_authority": false
+  },
+  "source.adopt": {
+   "mutates": true,
+   "human_authority": false
+  },
+  "source.verify": {
+   "mutates": false,
+   "human_authority": false
+  },
+  "source.registry": {
+   "mutates": false,
+   "human_authority": false
+  },
+  "design.scaffold": {
+   "mutates": true,
+   "human_authority": false
+  },
+  "design.check": {
+   "mutates": false,
+   "human_authority": false
+  },
+  "design.coverage": {
+   "mutates": false,
+   "human_authority": false
+  },
+  "source.list": {
+   "mutates": false,
+   "human_authority": false
+  },
+  "validation.run": {
+   "mutates": false,
+   "human_authority": false
+  },
+  "contract.check": {
+   "mutates": false,
+   "human_authority": false
+  },
+  "status": {
+   "mutates": false,
+   "human_authority": false
+  },
+  "freeze": {
+   "mutates": true,
+   "human_authority": true
+  },
+  "observe": {
+   "mutates": false,
+   "human_authority": false
+  },
+  "observe.check": {
+   "mutates": false,
+   "human_authority": false
+  },
+  "governance.backlog": {
+   "mutates": false,
+   "human_authority": false
+  },
+  "governance.boundaries": {
+   "mutates": false,
+   "human_authority": false
+  },
+  "governance.baseline": {
+   "mutates": false,
+   "human_authority": false
+  },
+  "governance.accept": {
+   "mutates": true,
+   "human_authority": true
+  },
+  "governance.reject": {
+   "mutates": true,
+   "human_authority": true
+  },
+  "governance.defer": {
+   "mutates": true,
+   "human_authority": true
+  },
+  "workflow.get": {
+   "mutates": false,
+   "human_authority": false
+  },
+  "review": {
+   "mutates": false,
+   "human_authority": false
+  },
+  "review.text": {
+   "mutates": false,
+   "human_authority": false
+  },
+  "checkpoint": {
+   "mutates": false,
+   "human_authority": false
+  },
+  "session-context": {
+   "mutates": false,
+   "human_authority": false
+  },
+  "session-context.text": {
+   "mutates": false,
+   "human_authority": false
+  },
+  "export-policy": {
+   "mutates": false,
+   "human_authority": false
+  },
+  "clean.plan": {
+   "mutates": false,
+   "human_authority": false
+  },
+  "recovery.snapshot": {
+   "mutates": false,
+   "human_authority": false
+  },
+  "recovery.restore": {
+   "mutates": true,
+   "human_authority": false
+  },
+  "guard.validate": {
+   "mutates": false,
+   "human_authority": false
+  },
+  "guard.sync": {
+   "mutates": true,
+   "human_authority": false
+  },
+  "index": {
+   "mutates": true,
+   "human_authority": false
+  },
+  "reconcile": {
+   "mutates": true,
+   "human_authority": false
+  },
+  "query": {
+   "mutates": false,
+   "human_authority": false
+  },
+  "query.governance": {
+   "mutates": false,
+   "human_authority": false
+  }
+ }
+}

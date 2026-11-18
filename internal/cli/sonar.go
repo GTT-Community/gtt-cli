@@ -14,13 +14,18 @@ import (
 // sonarCmd is `gtt sonar`: the read-only page of everything GTT knows about the project (or the portfolio).
 // It generates a derived file and opens it; it never runs, writes or decides anything in a project.
 func sonarCmd(e *env) *cobra.Command {
-	var all, log, noOpen bool
+	var all, log, noOpen, static bool
 	var ro app.ResolveOptions
 	cmd := &cobra.Command{
 		Use:   "sonar [folder]",
-		Short: "See what is being done and what comes next, in one page (read only)",
-		Long: "gtt sonar generates the page of this repo from its own state and opens it. The page changes nothing: every act\n" +
-			"that needs you is a command to copy and run here.\n\n" +
+		Short: "See what is being done and what comes next, and fill in what is missing, in one page",
+		Long: "gtt sonar starts (or reuses) a local server on 127.0.0.1, separate from this terminal, and opens the page of this repo.\n" +
+			"In the page you can fill a story or a proposed Epic, answer a question, write an idea or an input: only what you could\n" +
+			"write by hand, through the same operations. Approving, promoting, running, undoing and freezing stay here, as commands.\n" +
+			"The page opens with a one-time code (60 seconds) that becomes your cookie; without it the page is read only.\n" +
+			"The server keeps the repo's watcher alive and closes after 8 hours without use (or: gtt sonar stop).\n" +
+			"A repo whose Bootstrap is older than 1.24 is shown read only, and the page says which release it needs.\n\n" +
+			"gtt sonar --static the file of today: read only, no server, every act is a command to copy and run here.\n\n" +
 			"Inside a project it shows that project. In a folder that holds projects (gtt sonar ~/dev) it finds every GTT project\n" +
 			"under it, to two levels, and shows them all: go to the folder, run it, and move between them in the page.\n\n" +
 			"gtt sonar --all    the repos of `gtt sonar list` when you keep one, else the projects found under this folder\n" +
@@ -33,6 +38,20 @@ func sonarCmd(e *env) *cobra.Command {
 					return aerr
 				}
 				e.app.Cwd = abs
+			}
+			if !static {
+				res, err := e.app.SonarOpen(cmd.Context(), app.SonarOpenOptions{All: all, Log: log, NoOpen: noOpen || e.opts.JSON})
+				return e.emit(res, err, func(p output.Printer) {
+					if res.Message != "" {
+						p.Line("%s", res.Message)
+					}
+					for _, n := range res.Notes {
+						p.Line("%s", n)
+					}
+					if res.URL != "" {
+						p.Line("Open (valid 60 seconds, once): %s", res.URL)
+					}
+				})
 			}
 			var res app.SonarResult
 			var err error
@@ -72,11 +91,12 @@ func sonarCmd(e *env) *cobra.Command {
 			})
 		},
 	}
+	cmd.Flags().BoolVar(&static, "static", false, "the read-only file of today: no server (this is the one an agent may run)")
 	cmd.Flags().BoolVar(&all, "all", false, "the portfolio of every repo in `gtt sonar list`")
 	cmd.Flags().BoolVar(&log, "log", false, "open the page on the latest activity")
 	cmd.Flags().BoolVar(&noOpen, "no-open", false, "generate the page and print its path without opening a browser")
 	addResolveFlags(cmd, &ro)
-	cmd.AddCommand(sonarAddCmd(e), sonarListCmd(e), sonarRemoveCmd(e))
+	cmd.AddCommand(sonarAddCmd(e), sonarListCmd(e), sonarRemoveCmd(e), sonarStopCmd(e), sonarDaemonCmd(e))
 	return cmd
 }
 
@@ -162,6 +182,7 @@ func ideaCmd(e *env) *cobra.Command {
 	f.StringVar(&o.Risk, "risk", "", "solicitud: the risk")
 	f.StringVar(&o.Priority, "priority", "", "solicitud: priority")
 	f.StringVar(&o.By, "by", "", "who writes it")
+	f.StringVar(&o.About, "about", "", "the reference it is about (EPIC-001, STORY-003, GAP-2): it goes in the Inbox as a contribution about it")
 	list := &cobra.Command{
 		Use:   "list",
 		Short: "List the ideas and where each stands",
@@ -208,4 +229,29 @@ func renderIdea(p output.Printer, r app.IdeaResult) {
 		return
 	}
 	p.Line("%s", r.Output)
+}
+
+func sonarStopCmd(e *env) *cobra.Command {
+	return &cobra.Command{
+		Use:   "stop",
+		Short: "Close the Sonar server (it also closes after 8 hours without use)",
+		Args:  cobra.NoArgs,
+		RunE: func(cmd *cobra.Command, _ []string) error {
+			res, err := e.app.SonarStop(cmd.Context())
+			return e.emit(res, err, func(p output.Printer) { p.Line("%s", res.Message) })
+		},
+	}
+}
+
+// sonarDaemonCmd is the server itself: `gtt sonar` starts it detached from the terminal. Not for typing.
+func sonarDaemonCmd(e *env) *cobra.Command {
+	return &cobra.Command{
+		Use:    "serve-daemon",
+		Short:  "The Sonar server process (started by gtt sonar)",
+		Hidden: true,
+		Args:   cobra.NoArgs,
+		RunE: func(cmd *cobra.Command, _ []string) error {
+			return e.app.SonarServe(cmd.Context())
+		},
+	}
 }

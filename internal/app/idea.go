@@ -41,7 +41,9 @@ type IdeaResult struct {
 // IdeaAddOptions are the flags of `gtt idea add`.
 type IdeaAddOptions struct {
 	Text, File, By string
-	Now            bool
+	// About is the ref (EPIC-n, STORY-n, GAP-n, a design item) the idea is about; the Bootstrap writes `About:` in its header.
+	About string
+	Now   bool
 	// Type is idea (the default) or solicitud; a request carries its fields instead of free text.
 	Type                                                   string
 	Change, Reason, Trigger, Scope, Impact, Risk, Priority string
@@ -119,6 +121,14 @@ func (a *App) IdeaAdd(ctx context.Context, o IdeaAddOptions) (IdeaResult, error)
 	}
 	if o.By != "" {
 		args["by"] = o.By
+	}
+	if o.About != "" {
+		ops, _ := p.B.Operations(ctx)
+		if !ops["inbox.add"].HasArg("about") {
+			res.Message = "The installed GTT Bootstrap " + p.Release.Bootstrap.Version + " cannot attach an idea to a reference (--about): run `gtt update` (needs " + SonarServeNeeds + " or newer)."
+			return res, nil
+		}
+		args["about"] = o.About
 	}
 	r, err := a.inboxWrite(ctx, p, "inbox.add", args, "Write this idea down?")
 	return fromInbox(r), err

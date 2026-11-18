@@ -24,6 +24,7 @@ type App struct {
 	Prompt    ports.Prompter
 	Report    ports.Reporter
 	Upgrader  ports.SelfUpgrader
+	Spawner   ports.Spawner // detached processes (the Sonar server and its watchers); nil where unavailable
 
 	Home      string // user-level GTT home
 	Cwd       string
@@ -165,7 +166,7 @@ func (a *App) log(root, operation, result string, extra map[string]any) {
 // humanActs are the CLI acts after which the Sonar page is refreshed.
 var humanActs = map[string]bool{"answer": true, "approve": true, "promote": true, "undo": true, "freeze": true, "run": true,
 	"change.request": true, "proposal.withdraw": true, "idea.add": true, "idea.park": true, "idea.drop": true,
-	"inbox.add": true, "inbox.park": true, "inbox.reject": true, "inbox.reopen": true, "inbox.drop": true, "inbox.priority": true,
+	"inbox.add": true, "sonar.act": true, "inbox.park": true, "inbox.reject": true, "inbox.reopen": true, "inbox.drop": true, "inbox.priority": true,
 	"adr.new": true, "adr.adopt": true, "inbox.migrate": true}
 
 // validation is the Bootstrap's validation result.

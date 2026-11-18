@@ -36,6 +36,11 @@ type SonarResult struct {
 	Page      string      `json:"page,omitempty"`
 	Message   string      `json:"message,omitempty"`
 	Repos     []SonarRepo `json:"repos,omitempty"`
+	// Served: `gtt sonar` started or found the server. URL is the address with the one-time code (only with --no-open).
+	Served bool     `json:"served,omitempty"`
+	Port   int      `json:"port,omitempty"`
+	URL    string   `json:"url,omitempty"`
+	Notes  []string `json:"notes,omitempty"` // repos shown read only, and the release each one needs
 }
 
 // SonarList is `gtt sonar list`.

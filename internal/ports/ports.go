@@ -33,6 +33,12 @@ type Runner interface {
 	LookPath(name string) (string, error)
 }
 
+// Spawner starts a process that outlives the caller: detached from the terminal, no input, no output. It
+// returns the pid and does not wait. It is how the Sonar server separates itself and keeps a watcher alive.
+type Spawner interface {
+	Start(c Command) (int, error)
+}
+
 // -------------------------------------------------------------- bootstrap
 
 // Release is the Bootstrap release descriptor.
