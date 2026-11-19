@@ -28,7 +28,7 @@ func (f pathFactory) At(p string) ports.Bootstrap {
 }
 func (f pathFactory) Installed(p string) bool { _, ok := f[p]; return ok }
 
-const mcpSnapshotJSON = `{"schema":"sonar.v1","lang":"%s","repo":{"path":"%s","name":"%s","key":"K"},
+const mcpSnapshotJSON = `{"schema":"sonar.v1","lang":"%s","repo":{"path":%s,"name":"%s","key":"K"},
 "project":{"phase":"DEV"},"suite_version":"1.26.0","readiness":{"counts":{"blocked":1,"mine":2,"ready":3}},
 "summary":{"epics":{"total":1,"done":0},"stories_done":1,"stories_total":2,"stories_blocked":0,"in_progress":1,"progress_pct":50},
 "epics":[{"ref":"EPIC-001","title":"Base","raw_status":"In Progress","derived":"in_progress","pct":50,"estimate_h":8.0,"active_h":2.0,"real_h":4.0,"start":"2026-11-17","end":null,"eta":"2026-11-19","eta_range":["2026-11-19","2026-11-21"]}],
@@ -59,7 +59,8 @@ func mcpFake(t *testing.T, name, lang string, newer bool) (*fakeBootstrap, strin
 	b := &fakeBootstrap{root: root, compatible: true, version: "1.26.0", results: map[string]ports.OperationResult{}}
 	b.ops = opsNamed("sonar.snapshot", "sonar.render")
 	b.caps = []ports.Capability{{ID: "sonar.v1", Version: 1}}
-	b.results["sonar.snapshot"] = ports.OperationResult{Stdout: fmt.Sprintf(mcpSnapshotJSON, lang, root, name)}
+	rootJSON, _ := json.Marshal(root) // a Windows path has backslashes: it must be JSON-escaped, never pasted raw
+	b.results["sonar.snapshot"] = ports.OperationResult{Stdout: fmt.Sprintf(mcpSnapshotJSON, lang, rootJSON, name)}
 	if newer {
 		for k, v := range opsNamed("findings.list", "code.map") {
 			b.ops[k] = v
@@ -123,7 +124,9 @@ func TestMCPToolsReturnTheSnapshotData(t *testing.T) {
 	b, _ := mcpFake(t, "demo", "es", true)
 	a := mcpApp(t, b)
 	var snap map[string]any
-	_ = json.Unmarshal([]byte(b.results["sonar.snapshot"].Stdout), &snap)
+	if err := json.Unmarshal([]byte(b.results["sonar.snapshot"].Stdout), &snap); err != nil {
+		t.Fatalf("the test snapshot is not valid JSON: %v", err)
+	}
 
 	ans, d := call(t, a, ToolProjects, MCPArgs{})
 	row := d["projects"].([]any)[0].(map[string]any)

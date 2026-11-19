@@ -10,6 +10,7 @@ import (
 	"net/http/httptest"
 	"os"
 	"path/filepath"
+	"runtime"
 	"strings"
 	"sync"
 	"testing"
@@ -45,6 +46,9 @@ type served struct {
 	rendered []bool
 }
 
+// js is a JSON string literal: a Windows path has backslashes, so it must be escaped, never pasted raw into JSON.
+func js(s string) string { b, _ := json.Marshal(s); return string(b) }
+
 func opsNamed(names ...string) map[string]ports.Operation {
 	m := map[string]ports.Operation{}
 	for _, n := range names {
@@ -66,7 +70,7 @@ func serveFixture(t *testing.T, withServe bool) *served {
 	a, _ := newApp(t, b)
 	root := b.root
 	s := &served{t: t, b: b, root: root, clk: &clock{t: time.Date(2026, 11, 18, 10, 0, 0, 0, time.UTC)}}
-	s.snap = `{"schema":"sonar.v1","generated_at":"2026-11-18T10:00:00Z","repo":{"path":"` + root + `","name":"demo"},"readiness":{},"v":1}`
+	s.snap = `{"schema":"sonar.v1","generated_at":"2026-11-18T10:00:00Z","repo":{"path":` + js(root) + `,"name":"demo"},"readiness":{},"v":1}`
 	b.results["sonar.snapshot"] = ports.OperationResult{Stdout: s.snap}
 	dir := filepath.Join(t.TempDir(), "sonar")
 	secret, err := LoadSonarSecret(dir)
@@ -208,7 +212,7 @@ func TestCodeExpiresAfterSixtySeconds(t *testing.T) {
 func TestEveryPostWithoutTheCookieIs403(t *testing.T) {
 	s := serveFixture(t, true)
 	for _, path := range []string{"/api/act", "/api/anything", "/", "/enter", "/api/snapshot"} {
-		for _, body := range []string{`{"repo":"` + s.root + `","op":"backlog.set","args":{}}`, "", "not json"} {
+		for _, body := range []string{`{"repo":` + js(s.root) + `,"op":"backlog.set","args":{}}`, "", "not json"} {
 			if resp, _ := s.do("POST", path, body, nil); resp.StatusCode != 403 {
 				t.Errorf("POST %s without the cookie: %d, want 403", path, resp.StatusCode)
 			}
@@ -227,7 +231,7 @@ func TestEveryPostWithoutTheCookieIs403(t *testing.T) {
 func TestPostNeedsHeaderOriginAndJSON(t *testing.T) {
 	s := serveFixture(t, true)
 	s.login()
-	body := `{"repo":"` + s.root + `","op":"sonar.prefs","args":{"set":{"view":"plan"}}}`
+	body := `{"repo":` + js(s.root) + `,"op":"sonar.prefs","args":{"set":{"view":"plan"}}}`
 	for name, hdr := range map[string]map[string]string{
 		"no X-GTT-Sonar":     {"-X-GTT-Sonar": ""},
 		"another Origin":     {"Origin": "http://evil.example"},
@@ -498,11 +502,13 @@ func TestTheSecretIsNeverServedNorWorldReadable(t *testing.T) {
 	if _, body := s.do("GET", "/api/snapshot", "", nil); strings.Contains(body, secret) {
 		t.Error("the snapshot never carries the secret")
 	}
-	if info, err := os.Stat(filepath.Join(s.srv.Dir, "secret")); err != nil || info.Mode().Perm() != 0o600 {
-		t.Errorf("the secret file is 0600: %v %v", info, err)
-	}
-	if info, _ := os.Stat(s.srv.Dir); info.Mode().Perm() != 0o700 {
-		t.Errorf("its folder is 0700: %v", info.Mode())
+	if runtime.GOOS != "windows" { // Windows has no Unix permission bits (Go reports 0666/0777): access there follows the ACL of the user's profile
+		if info, err := os.Stat(filepath.Join(s.srv.Dir, "secret")); err != nil || info.Mode().Perm() != 0o600 {
+			t.Errorf("the secret file is 0600: %v %v", info, err)
+		}
+		if info, _ := os.Stat(s.srv.Dir); info.Mode().Perm() != 0o700 {
+			t.Errorf("its folder is 0700: %v", info.Mode())
+		}
 	}
 	if resp, _ := s.do("POST", "/_admin/open", "{}", map[string]string{"Authorization": "Bearer " + s.srv.sessionToken(), "-Origin": ""}); resp.StatusCode != 403 {
 		t.Errorf("the cookie is not the admin token: %d", resp.StatusCode)
