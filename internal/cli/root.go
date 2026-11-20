@@ -78,6 +78,10 @@ func Execute(ctx context.Context, wire Wire, args []string, stdout, stderr io.Wr
 	if err == nil {
 		return int(core.ExitOK)
 	}
+	var ran *reran
+	if errors.As(err, &ran) {
+		return ran.code // the upgraded gtt already said everything, including any failure
+	}
 	var ce *core.Error
 	if !errors.As(err, &ce) {
 		// Anything Cobra reports is an invalid invocation.

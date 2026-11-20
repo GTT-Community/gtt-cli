@@ -387,4 +387,9 @@ var spanish = map[string]string{
 	"The Bootstrap did not produce a recovery snapshot.":                          "El Bootstrap no produjo un snapshot de recuperación.",
 	"✓ Recovery snapshot: %s":                                                     "✓ Snapshot de recuperación: %s",
 	"No recovery snapshots.":                                                      "No hay snapshots de recuperación.",
+	// gtt update: the domain and the findings.
+	"  gtt-domain backed up outside the project: %s": "  gtt-domain respaldado fuera del proyecto: %s",
+	"\nYour gtt-domain must be brought to the format of this Bootstrap. Your agent does it (a zip is made first; Epics and anything governed are never touched): open your agent and write anything. Keep a copy of the zip somewhere else too.": "\nTu gtt-domain debe llevarse al formato de este Bootstrap. Lo hace tu agente (primero se hace un zip; los Epics y todo lo gobernado nunca se tocan): abre tu agente y escribe cualquier cosa. Guarda también una copia del zip en otro lugar.",
+	"\nThe new validators report %d finding(s) on this project's own content. The update stands; they are work to do:":                                                                                                                           "\nLos validadores nuevos reportan %d hallazgo(s) en el contenido de este proyecto. El update queda hecho; son trabajo por hacer:",
+	"  (see all: gtt validate)": "  (ver todos: gtt validate)",
 }

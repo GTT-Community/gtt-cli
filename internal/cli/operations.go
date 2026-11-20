@@ -2,6 +2,7 @@ package cli
 
 import (
 	"fmt"
+	"os"
 	"strings"
 
 	"github.com/spf13/cobra"
@@ -13,11 +14,33 @@ import (
 
 func updateCmd(e *env) *cobra.Command {
 	var o app.UpdateOptions
+	var noCLI bool
 	cmd := &cobra.Command{
 		Use:   "update",
-		Short: "Update the installed Bootstrap transactionally",
-		Args:  cobra.NoArgs,
+		Short: "Update the whole suite: gtt itself, then this project's Bootstrap",
+		Long: "One command for everything. If a newer gtt exists it replaces itself first (verified, the previous binary kept as gtt.old) and\n" +
+			"continues with the Bootstrap that release ships; then it brings the project's Bootstrap up transactionally.\n" +
+			"A project without an install ledger (cloned, moved, shared) gets it rebuilt from the published release; files that were\n" +
+			"deleted come back; moved ones are followed. What the new validators find in the project's own content is reported as work:\n" +
+			"the update stands. Your own edits to package files are kept (the release's version is saved beside as .gtt-new).\n" +
+			"--no-cli skips the first step; so do CI, --json, --bootstrap and GTT_NO_UPDATE_CHECK.",
+		Args: cobra.NoArgs,
 		RunE: func(cmd *cobra.Command, _ []string) error {
+			// One command for the whole suite: gtt first (when a newer release exists), then this project's
+			// Bootstrap, which is the one the newer gtt ships. A gtt that was just replaced runs the rest itself.
+			if !noCLI && !o.Rollback && o.Resolve.Path == "" && o.Resolve.Version == "" && !e.opts.JSON && os.Getenv("GTT_SELF_UPDATED") == "" {
+				upgraded, note := e.app.SelfUpgrade(cmd.Context())
+				if note != "" {
+					fmt.Fprintln(cmd.ErrOrStderr(), note)
+				}
+				if upgraded != "" {
+					if code, ok := e.app.ContinueAs(cmd.Context(), os.Args[1:]); ok {
+						return &reran{code: code}
+					}
+					fmt.Fprintln(cmd.ErrOrStderr(), "gtt was upgraded; run: gtt update  |  gtt se actualizó: vuelve a ejecutar gtt update")
+					return nil
+				}
+			}
 			res, err := e.app.Update(cmd.Context(), o)
 			return e.emit(res, err, func(p output.Printer) {
 				switch res.Outcome {
@@ -30,6 +53,19 @@ func updateCmd(e *env) *cobra.Command {
 					p.Line("  replaced %d, added %d, removed %d, preserved (changed locally) %d", len(res.Replaced), len(res.Added), len(res.Removed), len(res.Preserved))
 					if len(res.Overwritten) > 0 {
 						p.Line("  replaced on your confirmation (changed locally): %s", strings.Join(res.Overwritten, ", "))
+					}
+					if res.DomainBackup != "" {
+						p.Line("  gtt-domain backed up outside the project: %s", res.DomainBackup)
+					}
+					if d := res.Domain; d != nil {
+						p.Line("\nYour gtt-domain must be brought to the format of this Bootstrap. Your agent does it (a zip is made first; Epics and anything governed are never touched): open your agent and write anything. Keep a copy of the zip somewhere else too.")
+					}
+					if n := len(res.Findings); n > 0 {
+						p.Line("\nThe new validators report %d finding(s) on this project's own content. The update stands; they are work to do:", n)
+						for _, f := range res.Findings {
+							p.Line("  - %s", f)
+						}
+						p.Line("  (see all: gtt validate)")
 					}
 					if m := res.Inbox; m != nil {
 						switch {
@@ -49,6 +85,7 @@ func updateCmd(e *env) *cobra.Command {
 	addResolveFlags(cmd, &o.Resolve)
 	cmd.Flags().StringVar(&o.Base, "base", "", "catalog of the installed Bootstrap version (projects not installed by the gtt CLI)")
 	cmd.Flags().BoolVar(&o.Rollback, "rollback", false, "roll back an interrupted update")
+	cmd.Flags().BoolVar(&noCLI, "no-cli", false, "update only the project's Bootstrap; do not upgrade gtt itself first")
 	return cmd
 }
 
@@ -560,3 +597,9 @@ func sorted(s []string) []string {
 }
 
 var _ = fmt.Sprintf
+
+// reran is the end of a command that handed itself to the gtt it had just upgraded: that process already
+// reported, so Execute only returns its exit code.
+type reran struct{ code int }
+
+func (r *reran) Error() string { return "continued by the upgraded gtt" }

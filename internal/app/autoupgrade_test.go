@@ -152,3 +152,53 @@ func TestOnlyLocalEditsConflictsDoNotStopAnUpdate(t *testing.T) {
 		t.Fatal("no conflict at all is not this case")
 	}
 }
+
+func TestSelfUpgradeBeforeUpdate(t *testing.T) {
+	ctx := context.Background()
+	t.Run("a newer release replaces gtt", func(t *testing.T) {
+		s := &seeker{latest: "99.0.0"}
+		a := autoApp(t, false, s) // not a terminal: `gtt update` is itself the human's explicit act
+		up, note := a.SelfUpgrade(ctx)
+		if up != "99.0.0" || s.applied != 1 || !strings.Contains(note, "99.0.0") {
+			t.Fatalf("got %q %q applied %d", up, note, s.applied)
+		}
+	})
+	t.Run("already current changes nothing", func(t *testing.T) {
+		s := &seeker{latest: core.Version}
+		a := autoApp(t, false, s)
+		if up, note := a.SelfUpgrade(ctx); up != "" || note != "" || s.applied != 0 {
+			t.Fatalf("got %q %q applied %d", up, note, s.applied)
+		}
+	})
+	t.Run("no network never stops the update", func(t *testing.T) {
+		s := &seeker{err: errors.New("offline")}
+		a := autoApp(t, false, s)
+		up, note := a.SelfUpgrade(ctx)
+		if up != "" || !strings.Contains(note, "offline") || s.applied != 0 {
+			t.Fatalf("got %q %q applied %d", up, note, s.applied)
+		}
+	})
+	t.Run("a channel it cannot replace itself in is said, not failed", func(t *testing.T) {
+		s := &seeker{latest: "99.0.0", manual: true}
+		a := autoApp(t, false, s)
+		up, note := a.SelfUpgrade(ctx)
+		if up != "" || !strings.Contains(note, "reinstall") || s.applied != 0 {
+			t.Fatalf("got %q %q applied %d", up, note, s.applied)
+		}
+	})
+	t.Run("a failed replacement leaves the previous gtt and the update goes on", func(t *testing.T) {
+		s := &seeker{latest: "99.0.0", applyEr: errors.New("disk full")}
+		a := autoApp(t, false, s)
+		if up, note := a.SelfUpgrade(ctx); up != "" || !strings.Contains(note, "disk full") {
+			t.Fatalf("got %q %q", up, note)
+		}
+	})
+	t.Run("CI and the opt-out never look", func(t *testing.T) {
+		s := &seeker{latest: "99.0.0"}
+		a := autoApp(t, false, s)
+		t.Setenv("GTT_NO_UPDATE_CHECK", "1")
+		if up, note := a.SelfUpgrade(ctx); up != "" || note != "" || s.asked != 0 {
+			t.Fatalf("got %q %q asked %d", up, note, s.asked)
+		}
+	})
+}

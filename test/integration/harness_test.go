@@ -86,6 +86,8 @@ func catalogCopy(t *testing.T) string {
 func project(t *testing.T, files map[string]string) string {
 	t.Helper()
 	t.Setenv("GTT_HOME", filepath.Join(t.TempDir(), "gtt-home"))
+	// No test looks for, or installs, a newer gtt: that would reach the network and replace the binary under test.
+	t.Setenv("GTT_NO_UPDATE_CHECK", "1")
 	// Keep ADE detection independent of what is installed on this machine.
 	t.Setenv("PATH", minimalPath(t))
 	root := filepath.Join(t.TempDir(), "payments-api")

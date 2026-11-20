@@ -2,7 +2,9 @@ package app
 
 import (
 	"context"
+	"os"
 	"strings"
+	"time"
 
 	"github.com/GTT-Community/gtt-cli/internal/core"
 	"github.com/GTT-Community/gtt-cli/internal/ports"
@@ -88,3 +90,53 @@ func (a *App) Upgrade(ctx context.Context, check bool, to string) (UpgradeResult
 }
 
 func mustSemver(s string) [3]int { v, _ := core.ParseSemver(s); return v }
+
+// selfUpgradeLook bounds the look for a newer release made by `gtt update`.
+const selfUpgradeLook = 5 * time.Second
+
+// SelfUpgrade is the first half of `gtt update`: the Bootstrap a gtt installs is the one it ships with, so one
+// command that brings the whole suite up starts by bringing gtt itself up. It returns the release gtt was
+// replaced by ("" when it did not change) and one line to say, "" when there is nothing to say. It never fails
+// an update: not reaching the network, or a channel gtt cannot replace itself in, is said in a line and the
+// update goes on with the Bootstrap this gtt ships. It runs the same verified path as `gtt upgrade`.
+func (a *App) SelfUpgrade(ctx context.Context) (upgraded, note string) {
+	if a.Upgrader == nil || os.Getenv("GTT_NO_UPDATE_CHECK") != "" || os.Getenv("GTT_NO_AUTO_UPGRADE") != "" || os.Getenv("CI") != "" {
+		return "", ""
+	}
+	// One short question: with no network `gtt update` must not wait on it.
+	lctx, cancel := context.WithTimeout(ctx, selfUpgradeLook)
+	latest, err := a.Upgrader.Latest(lctx)
+	cancel()
+	if err != nil {
+		return "", "gtt could not look for a newer release (" + err.Error() + "); updating the Bootstrap with this gtt " + core.Version +
+			"  |  no se pudo buscar un gtt más nuevo; se actualiza el Bootstrap con este gtt"
+	}
+	cur, ok1 := core.ParseSemver(core.Version)
+	lv, ok2 := core.ParseSemver(latest)
+	if !ok1 || !ok2 || core.CompareSemver(cur, lv) >= 0 {
+		return "", ""
+	}
+	plan := a.Upgrader.Plan(latest)
+	if plan.Manual {
+		return "", "gtt " + latest + " is available but gtt cannot replace itself here (" + plan.Reason + "). Run: " + plan.Hint +
+			" and then gtt update again. Meanwhile the Bootstrap is updated with this gtt  |  hay un gtt más nuevo; no puede cambiarse solo aquí"
+	}
+	if err := a.Upgrader.Apply(ctx, plan); err != nil {
+		return "", "gtt " + core.Version + " -> " + latest + " could not be applied (" + err.Error() + "); the previous gtt stays. Run: gtt upgrade"
+	}
+	return latest, "✓ gtt " + core.Version + " -> " + latest
+}
+
+// ContinueAs runs the same command with the gtt that has just replaced this one, on the same terminal. GTT_SELF_UPDATED
+// keeps it from looking again. ok is false when the new binary could not be started: the caller then says to run it again.
+func (a *App) ContinueAs(ctx context.Context, args []string) (code int, ok bool) {
+	exe, err := os.Executable()
+	if err != nil || a.Runner == nil {
+		return 0, false
+	}
+	res, err := a.Runner.Run(ctx, ports.Command{Path: exe, Args: args, Env: []string{"GTT_SELF_UPDATED=1"}, Interactive: true})
+	if err != nil {
+		return 0, false
+	}
+	return res.ExitCode, true
+}

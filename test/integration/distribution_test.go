@@ -219,9 +219,9 @@ func TestUpdateRefusalsAndRollbackLeaveTheProjectUnchanged(t *testing.T) {
 	gtt(t, root, "update", "--bootstrap", broken).must(t, 6)
 	same("failed integrity")
 
-	// A target whose validation fails after being applied is rolled back.
+	// A target whose mechanics fail after being applied (here the index cannot be rebuilt) is rolled back.
 	failing := newer(t, to)
-	os.WriteFile(filepath.Join(failing, ".gtt/scripts/gtt-check-backlog.sh"), []byte("#!/usr/bin/env bash\necho 'FAIL  injected' >&2\nexit 1\n"), 0o755)
+	os.WriteFile(filepath.Join(failing, ".gtt/scripts/gtt-index.sh"), []byte("#!/usr/bin/env bash\necho 'FAIL  injected' >&2\nexit 1\n"), 0o755)
 	r = gtt(t, root, "update", "--bootstrap", failing).must(t, 1)
 	if !strings.Contains(r.err, "rolled back") {
 		t.Errorf("got:\n%s", r.err)
@@ -232,8 +232,99 @@ func TestUpdateRefusalsAndRollbackLeaveTheProjectUnchanged(t *testing.T) {
 	if v := gtt(t, root, "version", "--json").must(t, 0).json(t)["bootstrap"].(map[string]any); v["version"] != catalogVersion(t) {
 		t.Errorf("still on the previous release: %v", v)
 	}
-	if read(t, root, ".gtt/scripts/gtt-check-backlog.sh") != read(t, pristine, ".gtt/scripts/gtt-check-backlog.sh") {
+	if read(t, root, ".gtt/scripts/gtt-index.sh") != read(t, pristine, ".gtt/scripts/gtt-index.sh") {
 		t.Error("the replaced script must be restored")
 	}
 	gtt(t, root, "validate").must(t, 0)
+}
+
+// What the new validators say about the project's own content is work to do, not a reason to stay on the old release.
+func TestUpdateWithValidatorFindingsStillUpdatesAndReportsThem(t *testing.T) {
+	root := installed(t, nil)
+	to := next(t, catalogVersion(t), 1)
+	failing := newer(t, to)
+	os.WriteFile(filepath.Join(failing, ".gtt/scripts/gtt-check-backlog.sh"), []byte("#!/usr/bin/env bash\necho 'FAIL  injected finding' >&2\nexit 1\n"), 0o755)
+	doc := gtt(t, root, "update", "--bootstrap", failing, "--json").must(t, 0).json(t)
+	if doc["outcome"] != "updated" || doc["to"] != to {
+		t.Fatalf("the update must stand: %v", doc)
+	}
+	if f, _ := doc["findings"].([]any); len(f) == 0 {
+		t.Errorf("the findings must be reported: %v", doc)
+	}
+	if v := gtt(t, root, "version", "--json").must(t, 0).json(t)["bootstrap"].(map[string]any); v["version"] != to {
+		t.Errorf("must be on the new release: %v", v)
+	}
+	if exists(root, ".gtt-update-backup") {
+		t.Error("no backup may be left behind")
+	}
+}
+
+// A project that was cloned, moved or shared has no install ledger and no copy of the catalog it came from.
+// `gtt update` rebuilds the ledger from the published release tag, with no --base, and brings back what is gone.
+func TestUpdateWithoutALedgerRebuildsItFromThePublishedRelease(t *testing.T) {
+	root := installed(t, nil)
+	from, to := catalogVersion(t), next(t, catalogVersion(t), 1)
+
+	// The "published" source: a git repository holding the installed release under its tag.
+	source := filepath.Join(t.TempDir(), "published")
+	if err := copyTree(pristine, source); err != nil {
+		t.Fatal(err)
+	}
+	git := func(args ...string) {
+		t.Helper()
+		c := exec.Command("git", append([]string{"-c", "user.name=t", "-c", "user.email=t@example.org", "-c", "commit.gpgsign=false", "-C", source}, args...)...)
+		if out, err := c.CombinedOutput(); err != nil {
+			t.Fatalf("git %v: %v\n%s", args, err, out)
+		}
+	}
+	git("init", "--quiet")
+	git("add", "-A")
+	git("commit", "--quiet", "-m", "release")
+	git("tag", core.BootstrapTag(from))
+	t.Setenv("GTT_BOOTSTRAP_SOURCE", source)
+
+	os.Remove(filepath.Join(root, ".gtt/cli/state.json")) // the ledger is gone
+	os.Remove(filepath.Join(root, ".gtt/docs/usage.md"))  // and so is a file of the package
+	target := newer(t, to)
+	doc := gtt(t, root, "update", "--bootstrap", target, "--json").must(t, 0).json(t)
+	if doc["outcome"] != "updated" || doc["from"] != from || doc["to"] != to {
+		t.Fatalf("got %v", doc)
+	}
+	if !strings.Contains(read(t, root, ".gtt/docs/usage.md"), "added in "+to) {
+		t.Error("the missing file must come back, in the new release")
+	}
+	gtt(t, root, "validate").must(t, 0)
+}
+
+// `gtt update` never touches gtt-domain/: it keeps a zip of it outside the project and says when the new Bootstrap asks more of it.
+func TestUpdateKeepsAZipOfTheDomainAndSaysWhenItMustBeMigrated(t *testing.T) {
+	root := installed(t, nil)
+	legacy := "# Project Backlog\n\n## Epics\n\n### EPIC-001 — Pagos\n\n**Status:** Planned\n**Goal:** Cobrar.\n**Approved:** ana - 2026-01-02\n\n" +
+		"#### Stories\n\n##### STORY-001 — Cobro\n\n- **Status:** In Progress\n- **Implements:** (none)\n"
+	write(t, root, "gtt-domain/backlog.md", legacy)
+	to := next(t, catalogVersion(t), 1)
+	doc := gtt(t, root, "update", "--bootstrap", newer(t, to), "--json").must(t, 0).json(t)
+	if doc["outcome"] != "updated" {
+		t.Fatalf("got %v", doc)
+	}
+	dom, _ := doc["domain"].(map[string]any)
+	if dom == nil || dom["needed"] != true {
+		t.Fatalf("the update must say the domain needs a migration: %v", doc)
+	}
+	zipped, _ := doc["domain_backup"].(string)
+	if zipped == "" || !exists("", zipped) {
+		t.Fatalf("a zip of the domain must be kept: %v", doc["domain_backup"])
+	}
+	if strings.HasPrefix(zipped, root) {
+		t.Errorf("the zip must live outside the project: %s", zipped)
+	}
+	if read(t, root, "gtt-domain/backlog.md") != legacy {
+		t.Error("an update never touches gtt-domain/")
+	}
+	// A project whose backlog already satisfies the Bootstrap is not told anything.
+	clean := installed(t, nil)
+	doc = gtt(t, clean, "update", "--bootstrap", newer(t, next(t, catalogVersion(t), 1)), "--json").must(t, 0).json(t)
+	if doc["domain"] != nil {
+		t.Errorf("nothing to migrate must say nothing: %v", doc["domain"])
+	}
 }

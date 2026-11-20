@@ -280,6 +280,23 @@ type UpdateResult struct {
 	Snapshot    string   `json:"snapshot,omitempty"`
 	// Inbox is the migration of a 1.22 project to the inbox, when the new Bootstrap offers it.
 	Inbox *InboxMigration `json:"inbox,omitempty"`
+	// Findings are what the new Bootstrap's validators report on the project's own content (a project
+	// older than the validators fails them). They are work to do, never a reason to leave the project on the old release.
+	Findings []string `json:"findings,omitempty"`
+	// DomainBackup is the zip of the project's gtt-domain/ kept outside the project before the update.
+	DomainBackup string `json:"domain_backup,omitempty"`
+	// Domain says whether the project's gtt-domain must be brought to the format of the new Bootstrap: that is the
+	// agent's work (it reads the content), and the order reaches it as the next action. The update never touches gtt-domain/.
+	Domain *DomainState `json:"domain,omitempty"`
+	// Reconciled says the identity of files moved or removed since the install was brought up to date.
+	Reconciled bool `json:"reconciled,omitempty"`
+}
+
+// DomainState is the Bootstrap's answer to `domain.status`.
+type DomainState struct {
+	Needed bool     `json:"needed"`
+	Why    []string `json:"why,omitempty"`
+	Epics  int      `json:"epics"`
 }
 
 // Update replaces the Bootstrap package content of a project with another
@@ -324,11 +341,6 @@ func (a *App) Update(ctx context.Context, o UpdateOptions) (UpdateResult, error)
 	cur, _ := core.ParseSemver(res.From)
 	tgt, _ := core.ParseSemver(res.To)
 	same := core.CompareSemver(tgt, cur) == 0
-	if same && len(st.CoreLedger) == 0 {
-		// Same release and no install ledger: nothing can be compared.
-		res.Outcome = "already-current"
-		return res, nil
-	}
 	if core.CompareSemver(tgt, cur) < 0 {
 		return res, &core.Error{Code: core.ExitIncompatible, Unmodified: true,
 			What: "Bootstrap " + res.To + " is older than the installed " + res.From + ".", Why: "Downgrading is not supported."}
@@ -347,10 +359,17 @@ func (a *App) Update(ctx context.Context, o UpdateOptions) (UpdateResult, error)
 		a.Report.Info("PASS\n")
 	}
 	ledger := st.CoreLedger
+	rebuilt := false
 	if len(ledger) == 0 {
 		if ledger, err = a.baseLedger(ctx, o.Base, res.From); err != nil {
+			if same {
+				// The same release and no way to compare: as before, nothing to do, and nothing to complain about.
+				res.Outcome = "already-current"
+				return res, nil
+			}
 			return res, err
 		}
+		rebuilt = true
 	}
 	layout, err := a.Installer.Layout(pkg)
 	if err != nil {
@@ -404,6 +423,11 @@ func (a *App) Update(ctx context.Context, o UpdateOptions) (UpdateResult, error)
 	}
 	if same && len(res.Added)+len(res.Replaced)+len(res.Removed) == 0 {
 		// The release is already here and complete; what differs was kept.
+		if rebuilt && len(st.CoreLedger) == 0 {
+			// The ledger rebuilt from the published release is kept, so the next update needs no network for it.
+			st.CoreLedger = ledger
+			_ = p.Store.Save(st)
+		}
 		res.Outcome = "already-current"
 		return res, nil
 	}
@@ -432,6 +456,13 @@ func (a *App) Update(ctx context.Context, o UpdateOptions) (UpdateResult, error)
 		return res, err
 	}
 	res.Snapshot = snap.Snapshot
+	// The domain is never touched by an update, but a zip of it kept outside the project is the one thing that survives a lost
+	// disk or a bad move, and the agent's migration that follows starts from a project that has one. Never a reason to stop.
+	if zipped, zerr := (snapshot.Store{Home: a.Home}).SaveDomain(p.Root); zerr != nil {
+		a.Report.Info("The gtt-domain backup could not be written (%v); the update goes on.", zerr)
+	} else {
+		res.DomainBackup = zipped
+	}
 	a.Report.Info("PASS\n\nStaging update...")
 	if err := makeBackup(ctx, a, p, backup, layout.Package); err != nil {
 		os.RemoveAll(backup)
@@ -484,15 +515,24 @@ func (a *App) Update(ctx context.Context, o UpdateOptions) (UpdateResult, error)
 			return fail(core.Errorf(core.ExitFailure, "ADE update failed: %s", strings.TrimSpace(out.Stdout+"\n"+out.Stderr)))
 		}
 	}
+	// Files the project moved or deleted since they were registered: the identity follows them (a move is
+	// recorded with its old path; nothing is retired). When it cannot, that is a finding, not a failure.
+	if _, rerr := a.mutate(ctx, updated, "reconcile", nil); rerr != nil {
+		res.Findings = append(res.Findings, "identity: "+strings.TrimSpace(rerr.Error())+" (run: bash .gtt/scripts/gtt-reconcile.sh)")
+	} else {
+		res.Reconciled = true
+	}
 	if out, err := updated.Execute(ctx, ports.OperationRequest{Operation: "index", Apply: true}); err != nil || !out.OK() {
 		return fail(core.Errorf(core.ExitFailure, "the index could not be rebuilt after the update"))
 	}
+	// The mechanics (copy, contracts, ADE files, index) are what a failed update rolls back. What the validators
+	// say about the project's own content is reported: the update is done and the findings are work.
 	v, err := a.validateProject(ctx, updated)
 	if err != nil {
 		return fail(err)
 	}
 	if v.Result != "pass" {
-		return fail(core.Errorf(core.ExitFailure, "Bootstrap validation failed after the update: %s", strings.Join(append(v.Failing, v.Messages...), "; ")))
+		res.Findings = append(res.Findings, append(v.Failing, v.Messages...)...)
 	}
 	// Commit: record the new release and drop the backup.
 	st, _ = p.Store.Load()
@@ -517,6 +557,11 @@ func (a *App) Update(ctx context.Context, o UpdateOptions) (UpdateResult, error)
 	}
 	a.log(p.Root, "update", "success", map[string]any{"from": res.From, "to": res.To})
 	res.Outcome = "updated"
+	// What the new Bootstrap asks of the project's own gtt-domain is told, never done here: it needs reading the content.
+	var dom DomainState
+	if _, derr := a.query(ctx, updated, "domain.status", nil, &dom); derr == nil && dom.Needed {
+		res.Domain = &dom
+	}
 	// The update is done and stays done: a migration that cannot run is said, never a failure of the update.
 	if m, merr := a.migrateInbox(ctx, updated, p.Root); m.Offered {
 		res.Inbox = &m
@@ -570,13 +615,23 @@ func (a *App) offerReplace(root string, pkg ports.Package, layout ports.CoreLayo
 // baseLedger rebuilds an install ledger from the catalog of the installed
 // version, for projects that were not installed by this CLI.
 func (a *App) baseLedger(ctx context.Context, base, version string) (map[string]string, error) {
-	if base == "" {
-		return nil, &core.Error{Code: core.ExitConflict, Unmodified: true,
-			What: "This project has no install ledger, so local changes to GTT files cannot be told apart from package content.",
-			Why:  "It was not installed by the gtt CLI.",
-			Next: "Pass --base /path/to/the/gtt-bootstrap-" + version + " catalog it was installed from."}
+	var pkg ports.Package
+	var err error
+	if base != "" {
+		pkg, err = a.Resolver.Resolve(ctx, ports.ResolveRequest{Path: base, Version: version})
+	} else {
+		// No ledger and no --base (a project that was cloned, moved, shared, or installed by an older CLI): the
+		// installed release is named by the project itself, so its catalog is the published tag, from the cache
+		// or the source. Nothing is asked of the human.
+		a.Report.Info("This project has no install ledger: rebuilding it from the published Bootstrap %s...", version)
+		pkg, err = a.resolve(ctx, ports.ResolveRequest{Version: version})
+		if err != nil {
+			return nil, &core.Error{Code: core.ExitConflict, Unmodified: true,
+				What: "This project has no install ledger and the Bootstrap " + version + " it runs could not be obtained to rebuild it.",
+				Why:  err.Error(),
+				Next: "Check the network, or pass --base /path/to/the/gtt-bootstrap-" + version + " catalog it was installed from."}
+		}
 	}
-	pkg, err := a.Resolver.Resolve(ctx, ports.ResolveRequest{Path: base, Version: version})
 	if err != nil {
 		return nil, err
 	}
