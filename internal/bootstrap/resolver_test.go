@@ -268,6 +268,7 @@ engine:
   - { path: .gtt/index/technical-index.json, kind: file, required: true, derived: true, role: derived, never a source of truth }
   - { path: .gtt/local/, kind: dir, required: false, state: true, role: local state }
   - { path: .gtt/contract/release.json, kind: file, required: true, role: not derived: true in prose only }
+  - { path: .gtt/docs/gtt-completion.md, kind: file, required: true, record: true, role: the project's own history, shipped as a template }
 domain:
   - { path: gtt-domain/session.md, kind: file, required: false, derived: true, role: session }
 `
@@ -278,7 +279,11 @@ domain:
 	if err != nil {
 		t.Fatal(err)
 	}
-	if got := strings.Join(l.Rewritten, ","); got != ".gtt/index/technical-index.json,.gtt/local/" {
-		t.Errorf("derived and state engine paths: %s", got)
+	if got := strings.Join(l.Rewritten, ","); got != ".gtt/index/technical-index.json,.gtt/local/,.gtt/docs/gtt-completion.md" {
+		t.Errorf("derived, state and record engine paths: %s", got)
+	}
+	// A record is shipped (a new project needs the file its docs link to); only `state` is never installed.
+	if got := strings.Join(l.State, ","); got != ".gtt/local/" {
+		t.Errorf("only per-project state is never shipped, got %s", got)
 	}
 }

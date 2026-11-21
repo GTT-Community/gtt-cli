@@ -219,9 +219,11 @@ func TestUpdateRefusalsAndRollbackLeaveTheProjectUnchanged(t *testing.T) {
 	gtt(t, root, "update", "--bootstrap", broken).must(t, 6)
 	same("failed integrity")
 
-	// A target whose mechanics fail after being applied (here the index cannot be rebuilt) is rolled back.
+	// A target whose mechanics fail after being applied (here the ADE step) is rolled back, and so are the ADE files it created.
 	failing := newer(t, to)
-	os.WriteFile(filepath.Join(failing, ".gtt/scripts/gtt-index.sh"), []byte("#!/usr/bin/env bash\necho 'FAIL  injected' >&2\nexit 1\n"), 0o755)
+	ade := filepath.Join(failing, ".gtt/scripts/gtt-ade.sh")
+	os.Rename(ade, filepath.Join(failing, ".gtt/scripts/gtt-ade-original.sh"))
+	os.WriteFile(ade, []byte("#!/usr/bin/env bash\ncase \" $* \" in *\" update \"*--apply*) echo 'FAIL  injected' >&2; exit 1;; esac\nexec bash \"$(dirname \"$0\")/gtt-ade-original.sh\" \"$@\"\n"), 0o755)
 	r = gtt(t, root, "update", "--bootstrap", failing).must(t, 1)
 	if !strings.Contains(r.err, "rolled back") {
 		t.Errorf("got:\n%s", r.err)
@@ -236,6 +238,24 @@ func TestUpdateRefusalsAndRollbackLeaveTheProjectUnchanged(t *testing.T) {
 		t.Error("the replaced script must be restored")
 	}
 	gtt(t, root, "validate").must(t, 0)
+
+	// An index that cannot be rebuilt after the update is a finding, not a rollback: it is derived from the project's own documents, and
+	// leaving a project on the old Bootstrap for it is what stranded real projects. The core is updated and the finding says what to run.
+	stale := newer(t, to)
+	os.WriteFile(filepath.Join(stale, ".gtt/scripts/gtt-index.sh"), []byte("#!/usr/bin/env bash\necho 'FAIL  injected' >&2\nexit 1\n"), 0o755)
+	idx := gtt(t, root, "update", "--bootstrap", stale, "--json").must(t, 0).json(t)
+	if idx["outcome"] != "updated" {
+		t.Fatalf("an index that cannot be rebuilt must not undo the update: %v", idx)
+	}
+	if found := fmt.Sprint(idx["findings"]); !strings.Contains(found, "index") || !strings.Contains(found, "gtt sync") {
+		t.Errorf("the finding must name the index and what to run: %v", idx["findings"])
+	}
+	if exists(root, ".gtt-update-backup") {
+		t.Error("no backup may be left behind")
+	}
+	if v := gtt(t, root, "version", "--json").must(t, 0).json(t)["bootstrap"].(map[string]any); v["version"] != to {
+		t.Errorf("the core must be on the new release: %v", v)
+	}
 }
 
 // What the new validators say about the project's own content is work to do, not a reason to stay on the old release.
@@ -303,13 +323,19 @@ func TestUpdateKeepsAZipOfTheDomainAndSaysWhenItMustBeMigrated(t *testing.T) {
 		"#### Stories\n\n##### STORY-001 — Cobro\n\n- **Status:** In Progress\n- **Implements:** (none)\n"
 	write(t, root, "gtt-domain/backlog.md", legacy)
 	to := next(t, catalogVersion(t), 1)
-	doc := gtt(t, root, "update", "--bootstrap", newer(t, to), "--json").must(t, 0).json(t)
+	target := newer(t, to)
+	// Only a release that DECLARES a change in what the backlog must carry asks anything of the domain (and then the agent evaluates and asks).
+	edit(t, filepath.Join(target, ".gtt/contract/domain.json"), func(d map[string]any) {
+		rows, _ := d["format_changes"].([]any)
+		d["format_changes"] = append(rows, map[string]any{"since": to, "en": "a Story carries executable evidence", "es": "una Story lleva evidencia ejecutable"})
+	})
+	doc := gtt(t, root, "update", "--bootstrap", target, "--json").must(t, 0).json(t)
 	if doc["outcome"] != "updated" {
 		t.Fatalf("got %v", doc)
 	}
 	dom, _ := doc["domain"].(map[string]any)
-	if dom == nil || dom["needed"] != true {
-		t.Fatalf("the update must say the domain needs a migration: %v", doc)
+	if dom == nil || dom["needed"] != true || dom["state"] != "pending" {
+		t.Fatalf("the update must say the domain needs an evaluation when a release declared a change: %v", doc)
 	}
 	zipped, _ := doc["domain_backup"].(string)
 	if zipped == "" || !exists("", zipped) {
@@ -320,6 +346,13 @@ func TestUpdateKeepsAZipOfTheDomainAndSaysWhenItMustBeMigrated(t *testing.T) {
 	}
 	if read(t, root, "gtt-domain/backlog.md") != legacy {
 		t.Error("an update never touches gtt-domain/")
+	}
+	// A backlog full of validator findings that no release declared a change for is work to do, never a migration: nothing is said.
+	quiet := installed(t, nil)
+	write(t, quiet, "gtt-domain/backlog.md", legacy)
+	doc = gtt(t, quiet, "update", "--bootstrap", newer(t, next(t, catalogVersion(t), 1)), "--json").must(t, 0).json(t)
+	if doc["domain"] != nil {
+		t.Errorf("findings without a declared change must say nothing: %v", doc["domain"])
 	}
 	// A project whose backlog already satisfies the Bootstrap is not told anything.
 	clean := installed(t, nil)
