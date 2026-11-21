@@ -26,6 +26,10 @@ type App struct {
 	Upgrader  ports.SelfUpgrader
 	Spawner   ports.Spawner // detached processes (the Sonar server and its watchers); nil where unavailable
 
+	// selfExe is the path gtt was running from before it replaced itself. Replacing renames the running binary to gtt.old,
+	// and from then on os.Executable() names that file: the old gtt, not the one just installed.
+	selfExe string
+
 	Home      string // user-level GTT home
 	Cwd       string
 	AssumeYes bool // the human pre-answered confirmations with --yes

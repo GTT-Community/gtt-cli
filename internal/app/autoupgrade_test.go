@@ -170,6 +170,38 @@ func TestLeftoversEqualToTheCatalogDoNotStopAnUpdate(t *testing.T) {
 	}
 }
 
+// A runner that only records what it was asked to run.
+type recordingRunner struct{ ran []ports.Command }
+
+func (r *recordingRunner) Run(_ context.Context, c ports.Command) (ports.Result, error) {
+	r.ran = append(r.ran, c)
+	return ports.Result{}, nil
+}
+func (r *recordingRunner) LookPath(string) (string, error) { return "", nil }
+
+// The upgrade renames the running binary to gtt.old, so os.Executable() afterwards names the OLD gtt: the continuation must run
+// the path taken before the replacement, or the update goes on with the old gtt and the old Bootstrap.
+func TestContinuationRunsTheInstalledPathNotTheRenamedOne(t *testing.T) {
+	var a *App
+	s := &seeker{latest: "99.0.0"}
+	a = autoApp(t, false, s)
+	a.Runner = &recordingRunner{}
+	if _, note := a.SelfUpgrade(context.Background()); !strings.Contains(note, "99.0.0") {
+		t.Fatalf("the upgrade should be reported, got %q", note)
+	}
+	if a.selfExe == "" {
+		t.Fatal("the installed path is taken before gtt replaces itself")
+	}
+	a.selfExe = "/home/u/.local/bin/gtt" // what the path was before Apply renamed that file to gtt.old
+	if _, ok := a.ContinueAs(context.Background(), []string{"update"}); !ok {
+		t.Fatal("the continuation should run")
+	}
+	ran := a.Runner.(*recordingRunner).ran
+	if len(ran) != 1 || ran[0].Path != "/home/u/.local/bin/gtt" || !strings.Contains(strings.Join(ran[0].Env, " "), "GTT_SELF_UPDATED=1") {
+		t.Fatalf("it runs the installed path with the guard variable, got %+v", ran)
+	}
+}
+
 func TestSelfUpgradeBeforeUpdate(t *testing.T) {
 	ctx := context.Background()
 	t.Run("a newer release replaces gtt", func(t *testing.T) {

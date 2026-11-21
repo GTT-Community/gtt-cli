@@ -121,6 +121,7 @@ func (a *App) SelfUpgrade(ctx context.Context) (upgraded, note string) {
 		return "", "gtt " + latest + " is available but gtt cannot replace itself here (" + plan.Reason + "). Run: " + plan.Hint +
 			" and then gtt update again. Meanwhile the Bootstrap is updated with this gtt  |  hay un gtt más nuevo; no puede cambiarse solo aquí"
 	}
+	a.selfExe, _ = os.Executable() // before Apply: afterwards it names gtt.old
 	if err := a.Upgrader.Apply(ctx, plan); err != nil {
 		return "", "gtt " + core.Version + " -> " + latest + " could not be applied (" + err.Error() + "); the previous gtt stays. Run: gtt upgrade"
 	}
@@ -130,8 +131,14 @@ func (a *App) SelfUpgrade(ctx context.Context) (upgraded, note string) {
 // ContinueAs runs the same command with the gtt that has just replaced this one, on the same terminal. GTT_SELF_UPDATED
 // keeps it from looking again. ok is false when the new binary could not be started: the caller then says to run it again.
 func (a *App) ContinueAs(ctx context.Context, args []string) (code int, ok bool) {
-	exe, err := os.Executable()
-	if err != nil || a.Runner == nil {
+	exe := a.selfExe // the installed path, taken before the replacement renamed this binary to gtt.old
+	if exe == "" {
+		var err error
+		if exe, err = os.Executable(); err != nil {
+			return 0, false
+		}
+	}
+	if a.Runner == nil {
 		return 0, false
 	}
 	res, err := a.Runner.Run(ctx, ports.Command{Path: exe, Args: args, Env: []string{"GTT_SELF_UPDATED=1"}, Interactive: true})
