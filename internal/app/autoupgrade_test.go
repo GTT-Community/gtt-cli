@@ -138,18 +138,35 @@ func TestProjectBootstrapNoticeOncePerDay(t *testing.T) {
 
 func TestOnlyLocalEditsConflictsDoNotStopAnUpdate(t *testing.T) {
 	edited := "GTT ADE update\n  CONFLICT   claude   .claude/CLAUDE.md   (modified locally and changed in the catalog)\n  UPDATE     claude   .claude/hooks/x.py\n"
-	if !onlyLocalEdits(edited) {
+	if !onlyLocalEdits(edited, nil) {
 		t.Fatal("a file the project edited is kept, not a reason to stop")
 	}
 	foreign := edited + "  CONFLICT   claude   .claude/other.md   (exists but was not installed by GTT)\n"
-	if onlyLocalEdits(foreign) {
+	if onlyLocalEdits(foreign, nil) {
 		t.Fatal("a file GTT did not install is still a conflict")
 	}
-	if onlyLocalEdits("  PROBLEM    claude: no longer in the catalog registry\n" + edited) {
+	if onlyLocalEdits("  PROBLEM    claude: no longer in the catalog registry\n"+edited, nil) {
 		t.Fatal("a problem still stops it")
 	}
-	if onlyLocalEdits("  UPDATE     claude   a\n") {
+	if onlyLocalEdits("  UPDATE     claude   a\n", nil) {
 		t.Fatal("no conflict at all is not this case")
+	}
+}
+
+func TestLeftoversEqualToTheCatalogDoNotStopAnUpdate(t *testing.T) {
+	leftover := "GTT ADE update\n  CONFLICT   claude   .claude/hooks/activity-log.py   (exists but was not installed by GTT)\n  UPDATE     claude   .claude/hooks/x.py\n"
+	if !onlyLocalEdits(leftover, func(rel string) bool { return true }) {
+		t.Fatal("a leftover that equals the catalog's file is the Bootstrap's to record, not a reason to stop")
+	}
+	if onlyLocalEdits(leftover, func(rel string) bool { return false }) {
+		t.Fatal("a file that differs from the catalog's and was not installed by GTT is still a conflict")
+	}
+	if onlyLocalEdits(leftover, nil) {
+		t.Fatal("with no way to compare it is a conflict")
+	}
+	got := adeCreated("GTT ADE update\n  ADD        claude   .claude/hooks/a.py\n  UPDATE     claude   .claude/hooks/b.py\n  RESTORE    claude   .claude/hooks/c.py   (x)\n")
+	if len(got) != 2 || got[0] != ".claude/hooks/a.py" || got[1] != ".claude/hooks/c.py" {
+		t.Fatalf("the files the ADE step creates are its ADD and RESTORE lines, got %v", got)
 	}
 }
 

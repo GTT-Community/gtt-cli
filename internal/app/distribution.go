@@ -444,7 +444,7 @@ func (a *App) Update(ctx context.Context, o UpdateOptions) (UpdateResult, error)
 		// The check above is made by the Bootstrap the project has now, which may predate the rule that a file edited
 		// by the project is kept (the catalog's version saved beside it as .gtt-new). The real step below runs with the
 		// updated Bootstrap, so a conflict that is only a local edit does not stop the update; any other one still does.
-		if !dry.OK() && !onlyLocalEdits(dry.Stdout) {
+		if !dry.OK() && !onlyLocalEdits(dry.Stdout, func(rel string) bool { return sameFile(pkg.Root, p.Root, rel) }) {
 			return res, &core.Error{Code: core.ExitConflict, Unmodified: true, What: "The ADE integrations cannot be updated without a conflict.",
 				Why: strings.TrimSpace(dry.Stdout), Next: "Resolve the listed files; GTT does not overwrite local changes."}
 		}
@@ -468,8 +468,15 @@ func (a *App) Update(ctx context.Context, o UpdateOptions) (UpdateResult, error)
 		os.RemoveAll(backup)
 		return res, err
 	}
+	var adeAdded []string // files the ADE step creates: a rollback removes them too
 	fail := func(err error) (UpdateResult, error) {
 		rb := restoreBackup(p.Root, backup)
+		for _, rel := range adeAdded {
+			if abs, serr := fsx.SafeJoin(p.Root, rel); serr == nil {
+				os.Remove(abs)
+			}
+		}
+		pruneEmptyParents(p.Root, adeAdded)
 		res.Outcome = "rolled-back"
 		e := &core.Error{Code: core.CodeOf(err), What: "The update failed and was rolled back.", Why: err.Error(), Unmodified: rb == nil, Err: err}
 		if rb != nil {
@@ -507,6 +514,9 @@ func (a *App) Update(ctx context.Context, o UpdateOptions) (UpdateResult, error)
 		return fail(err)
 	}
 	if ade.Configured {
+		if plan, perr := updated.Execute(ctx, ports.OperationRequest{Operation: "ade.update", Args: map[string]string{"from": pkg.Root}}); perr == nil {
+			adeAdded = adeCreated(plan.Stdout)
+		}
 		out, err := updated.Execute(ctx, ports.OperationRequest{Operation: "ade.update", Args: map[string]string{"from": pkg.Root}, Apply: true})
 		if err != nil {
 			return fail(err)
@@ -523,7 +533,16 @@ func (a *App) Update(ctx context.Context, o UpdateOptions) (UpdateResult, error)
 		res.Reconciled = true
 	}
 	if out, err := updated.Execute(ctx, ports.OperationRequest{Operation: "index", Apply: true}); err != nil || !out.OK() {
-		return fail(core.Errorf(core.ExitFailure, "the index could not be rebuilt after the update"))
+		// The index is derived from the project's own documents. When it cannot be rebuilt the cause is almost always their
+		// content (two staged files with one name, a registered file that is gone), not the mechanics: the core is updated,
+		// the finding says what to do, and the project is never left on the old Bootstrap because of it.
+		why := "the index could not be rebuilt"
+		if err == nil {
+			if first := strings.TrimSpace(strings.SplitN(strings.TrimSpace(out.Stderr+"\n"+out.Stdout), "\n", 2)[0]); first != "" {
+				why = first
+			}
+		}
+		res.Findings = append(res.Findings, "index: "+why+" (fix what it names, then run: gtt sync)")
 	}
 	// The mechanics (copy, contracts, ADE files, index) are what a failed update rolls back. What the validators
 	// say about the project's own content is reported: the update is done and the findings are work.
@@ -789,8 +808,10 @@ func (a *App) ReleaseSign(ctx context.Context, root, keyFile string) (ports.Sign
 }
 
 // onlyLocalEdits is true when a failed `ade.update` check lists conflicts that are all "modified locally and
-// changed in the catalog" and nothing else (no PROBLEM line, no file GTT did not install).
-func onlyLocalEdits(out string) bool {
+// changed in the catalog", or a file GTT did not record whose content is exactly the catalog's (`same` says so: a
+// leftover of an update that was interrupted, which the Bootstrap being installed records instead of refusing),
+// and nothing else (no PROBLEM line, no file that is foreign to GTT).
+func onlyLocalEdits(out string, same func(rel string) bool) bool {
 	conflicts := 0
 	for _, line := range strings.Split(out, "\n") {
 		t := strings.TrimSpace(line)
@@ -798,11 +819,37 @@ func onlyLocalEdits(out string) bool {
 		case strings.HasPrefix(t, "PROBLEM"):
 			return false
 		case strings.HasPrefix(t, "CONFLICT"):
-			if !strings.Contains(t, "modified locally and changed in the catalog") {
+			switch {
+			case strings.Contains(t, "modified locally and changed in the catalog"):
+			case strings.Contains(t, "exists but was not installed by GTT") && same != nil && len(strings.Fields(t)) > 2 && same(strings.Fields(t)[2]):
+			default:
 				return false
 			}
 			conflicts++
 		}
 	}
 	return conflicts > 0
+}
+
+// sameFile is true when the project's file and the package's have the same bytes.
+func sameFile(pkgRoot, projRoot, rel string) bool {
+	if _, err := fsx.SafeJoin(projRoot, rel); err != nil {
+		return false
+	}
+	a, errA := fsx.HashFile(filepath.Join(projRoot, filepath.FromSlash(rel)))
+	b, errB := fsx.HashFile(filepath.Join(pkgRoot, filepath.FromSlash(rel)))
+	return errA == nil && errB == nil && a == b
+}
+
+// adeCreated lists the files an `ade.update` plan will create (its ADD and RESTORE lines), so that an update that fails
+// afterwards can take them away again: the backup holds what existed, never what the new Bootstrap adds.
+func adeCreated(plan string) []string {
+	var out []string
+	for _, line := range strings.Split(plan, "\n") {
+		f := strings.Fields(line)
+		if len(f) >= 3 && (f[0] == "ADD" || f[0] == "RESTORE") {
+			out = append(out, f[2])
+		}
+	}
+	return out
 }
