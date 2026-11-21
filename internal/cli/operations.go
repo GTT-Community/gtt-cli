@@ -58,7 +58,11 @@ func updateCmd(e *env) *cobra.Command {
 						p.Line("  gtt-domain backed up outside the project: %s", res.DomainBackup)
 					}
 					if d := res.Domain; d != nil {
-						p.Line("\nYour gtt-domain must be brought to the format of this Bootstrap. Your agent does it (a zip is made first; Epics and anything governed are never touched): open your agent and write anything. Keep a copy of the zip somewhere else too.")
+						if d.State == "in-progress" {
+							p.Line("\nA migration of your gtt-domain was begun and not finished. Your agent will ask you whether to continue it or undo it: open your agent and write anything.")
+						} else {
+							p.Line("\nThe Bootstrap changed what the gtt-domain must carry since your version: %s. Your agent will evaluate whether this project needs it and will ask you before changing anything: open your agent and write anything. Keep a copy of the zip somewhere else too.", strings.Join(d.Why, "; "))
+						}
 					}
 					if n := len(res.Findings); n > 0 {
 						p.Line("\nThe new validators report %d finding(s) on this project's own content. The update stands; they are work to do:", n)

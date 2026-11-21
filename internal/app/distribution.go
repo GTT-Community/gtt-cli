@@ -294,6 +294,7 @@ type UpdateResult struct {
 
 // DomainState is the Bootstrap's answer to `domain.status`.
 type DomainState struct {
+	State  string   `json:"state,omitempty"` // "pending" (a release declared a change of structure) or "in-progress" (a migration was begun)
 	Needed bool     `json:"needed"`
 	Why    []string `json:"why,omitempty"`
 	Epics  int      `json:"epics"`
@@ -577,8 +578,17 @@ func (a *App) Update(ctx context.Context, o UpdateOptions) (UpdateResult, error)
 	a.log(p.Root, "update", "success", map[string]any{"from": res.From, "to": res.To})
 	res.Outcome = "updated"
 	// What the new Bootstrap asks of the project's own gtt-domain is told, never done here: it needs reading the content.
+	// Most updates ask nothing of it: only a release that DECLARED a change of structure after the version this project was on does.
+	// The Bootstrap decides from the version it is told; the CLI never looks at the content.
 	var dom DomainState
-	if _, derr := a.query(ctx, updated, "domain.status", nil, &dom); derr == nil && dom.Needed {
+	if supports(ctx, updated, "domain.check") {
+		if out, derr := updated.Execute(ctx, ports.OperationRequest{Operation: "domain.check", Args: map[string]string{"from": res.From}, Apply: true}); derr == nil && out.OK() && out.Stdout != "" {
+			_ = out.JSON(&dom)
+		}
+	} else if _, derr := a.query(ctx, updated, "domain.status", nil, &dom); derr != nil {
+		dom = DomainState{}
+	}
+	if dom.Needed {
 		res.Domain = &dom
 	}
 	// The update is done and stays done: a migration that cannot run is said, never a failure of the update.
