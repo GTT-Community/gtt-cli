@@ -152,6 +152,7 @@ func (a *App) AgentsSync(ctx context.Context, add []string, opts ResolveOptions)
 	if err != nil {
 		return AgentsSyncResult{}, err
 	}
+	defer beginHumanAct(p.Root, "agents")() // it writes hooks and scripts a running agent session's sentinel watches
 	return a.syncAgents(ctx, p, add, opts)
 }
 

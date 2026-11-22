@@ -152,6 +152,7 @@ func (a *App) Clean(ctx context.Context, noSnapshot bool) (CleanResult, error) {
 	if err != nil {
 		return res, err
 	}
+	defer beginHumanAct(p.Root, "clean")() // it removes hooks and scripts a running agent session's sentinel watches
 	var plan cleanPlan
 	if _, err := a.query(ctx, p.B, "clean.plan", nil, &plan); err != nil {
 		return res, err
@@ -309,6 +310,8 @@ type DomainState struct {
 func (a *App) Update(ctx context.Context, o UpdateOptions) (UpdateResult, error) {
 	res := UpdateResult{Schema: core.OutputSchema}
 	det := a.detect(ctx)
+	// The update, and its rollback, write scripts and hooks the sentinel of a running agent session watches: it is the human's act.
+	defer beginHumanAct(det.Root, "update")()
 	backup := filepath.Join(det.Root, updateBackup)
 	if o.Rollback {
 		if !fsx.Exists(backup) {
@@ -400,6 +403,10 @@ func (a *App) Update(ctx context.Context, o UpdateOptions) (UpdateResult, error)
 			res.Added = append(res.Added, rel)
 		case now == sum:
 		case ledger[rel] == now:
+			res.Replaced = append(res.Replaced, rel)
+		case ledger[rel] == sum && putBackBySentinel(p.Root, rel, sum):
+			// The ledger already holds the target's version and the file is something else, and the sentinel of an agent session archived
+			// the target's version of this very file as one it put back: an update that was cut short, not an edit of yours.
 			res.Replaced = append(res.Replaced, rel)
 		default:
 			res.Preserved = append(res.Preserved, rel)
@@ -523,7 +530,11 @@ func (a *App) Update(ctx context.Context, o UpdateOptions) (UpdateResult, error)
 			return fail(err)
 		}
 		if !out.OK() {
-			return fail(core.Errorf(core.ExitFailure, "ADE update failed: %s", strings.TrimSpace(out.Stdout+"\n"+out.Stderr)))
+			report := strings.TrimSpace(out.Stdout + "\n" + out.Stderr)
+			if text := a.adeFailureText(report); text != "" {
+				return fail(core.Errorf(core.ExitFailure, "%s", a.Lang.Sprintf("The agent layers (ADE) could not be updated:")+"\n"+text))
+			}
+			return fail(core.Errorf(core.ExitFailure, "ADE update failed: %s", report))
 		}
 	}
 	// Files the project moved or deleted since they were registered: the identity follows them (a move is
