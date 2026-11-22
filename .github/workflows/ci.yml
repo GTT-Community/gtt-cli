@@ -53,7 +53,9 @@ jobs:
   integration:
     name: Integration tests against GTT Bootstrap (${{ matrix.os }})
     runs-on: ${{ matrix.os }}
-    timeout-minutes: 60
+    # Windows needs more than an hour for this suite (every test starts the Bootstrap's Python and Git Bash scripts, several times): the
+    # old 55-minute limit cut it off in the middle of TestADEMatrix on every run. Ubuntu finishes in about thirty minutes.
+    timeout-minutes: ${{ matrix.os == 'windows-latest' && 150 || 60 }}
     # Windows: the Bootstrap resolves Git Bash itself since 1.5.1 (.gtt/scripts/gtt_bash.py).
     # Until a green Windows run confirms it, a Windows failure is reported without failing the run.
     continue-on-error: ${{ matrix.os == 'windows-latest' }}
@@ -102,7 +104,7 @@ jobs:
         run: |
           set -o pipefail
           status=0
-          go test -timeout 55m ./test/integration/ 2>&1 | tee test.log || status=$?
+          go test -timeout ${{ matrix.os == 'windows-latest' && '140m' || '55m' }} ./test/integration/ 2>&1 | tee test.log || status=$?
           # Failures as annotations: visible on the run page without logs access.
           # GitHub keeps 10 annotations per step: the first failure's full output goes first.
           first=$(grep -anE -m1 -- '_test\.go:[0-9]+:|^panic:' test.log | cut -d: -f1 || true)

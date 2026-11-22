@@ -124,7 +124,7 @@ func newRoot(e *env) *cobra.Command {
 	root.AddCommand(
 		initCmd(e), statusCmd(e), inspectCmd(e), validateCmd(e), resumeCmd(e), freezeCmd(e), doctorCmd(e), auditCmd(e),
 		updateCmd(e), upgradeCmd(e), exportCmd(e), cleanCmd(e), versionCmd(e),
-		configCmd(e), methodCmd(e), devMethodCmd(e), deliveryCmd(e), planCmd(e), reportCmd(e), runCmd(e), pendingCmd(e), answerCmd(e), checkCmd(e), changeCmd(e), proposalsCmd(e), promoteCmd(e), approveCmd(e), undoCmd(e), agentsCmd(e), sourcesCmd(e), designCmd(e), syncCmd(e), snapshotCmd(e), artifactCmd(e), releaseCmd(e), sonarCmd(e), mcpCmd(e), ideaCmd(e), inboxCmd(e), adrCmd(e),
+		configCmd(e), methodCmd(e), devMethodCmd(e), deliveryCmd(e), planCmd(e), reportCmd(e), runCmd(e), pendingCmd(e), answerCmd(e), checkCmd(e), changeCmd(e), proposalsCmd(e), promoteCmd(e), approveCmd(e), undoCmd(e), agentsCmd(e), sourcesCmd(e), designCmd(e), syncCmd(e), snapshotCmd(e), artifactCmd(e), releaseCmd(e), sonarCmd(e), mcpCmd(e), consultCmd(e), ideaCmd(e), inboxCmd(e), adrCmd(e),
 	)
 	return root
 }
