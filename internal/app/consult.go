@@ -51,3 +51,13 @@ func (a *App) Consult(ctx context.Context, op string, args map[string]string, ap
 	}
 	return res, nil
 }
+
+// ConsultNote is the first line of `consult status`: whether the project's consultation thread is registered, or how to create it. The report of
+// an update says it, so the person finds out the thread exists. Empty when the installed Bootstrap has no consultation thread or says nothing.
+func (a *App) ConsultNote(ctx context.Context) string {
+	res, err := a.Consult(ctx, "consult.status", nil, false)
+	if err != nil || !res.Supported {
+		return ""
+	}
+	return strings.TrimSpace(strings.SplitN(res.Output, "\n", 2)[0])
+}

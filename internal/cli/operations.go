@@ -46,6 +46,9 @@ func updateCmd(e *env) *cobra.Command {
 				switch res.Outcome {
 				case "already-current":
 					p.Line("Bootstrap %s is already installed. Nothing to do.", res.To)
+					if note := e.app.ConsultNote(cmd.Context()); note != "" {
+						p.Line("\n%s", note)
+					}
 				case "rolled-back":
 					p.Line("The interrupted update was rolled back.")
 				case "updated":
@@ -78,6 +81,9 @@ func updateCmd(e *env) *cobra.Command {
 						case m.Pending:
 							p.Line("\nThe inbox has something to migrate and it was not confirmed: gtt inbox migrate")
 						}
+					}
+					if note := e.app.ConsultNote(cmd.Context()); note != "" {
+						p.Line("\n%s", note)
 					}
 					if e.opts.Verbose {
 						p.Line("\nPreserved:\n  %s", strings.Join(res.Preserved, "\n  "))
