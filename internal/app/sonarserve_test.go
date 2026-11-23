@@ -609,3 +609,31 @@ func TestDaemonBindsLoopbackWritesNoSecretAndStops(t *testing.T) {
 }
 
 func jint(n int) string { b, _ := json.Marshal(n); return string(b) }
+
+// The Design view reads the governed documents: a served page of one project must ask for them (it did not, and the
+// view said "documents are not part of the portfolio view"), and a Bootstrap that does not declare the argument is read without it.
+func TestOneProjectIsReadWithItsDocumentsWhenTheBootstrapDeclaresThem(t *testing.T) {
+	s := serveFixture(t, true)
+	s.b.ops["sonar.snapshot"] = ports.Operation{Version: 1, Args: []ports.OperationArg{{Name: "docs"}}}
+	s.login()
+	if resp, _ := s.do("GET", "/api/snapshot", "", nil); resp.StatusCode != 200 {
+		t.Fatalf("snapshot: %d", resp.StatusCode)
+	}
+	reqs := s.requestsOf("sonar.snapshot")
+	if len(reqs) == 0 || reqs[0].Args["docs"] != "true" {
+		t.Errorf("a single project is read with its documents: %v", reqs)
+	}
+}
+
+func TestAnOlderBootstrapIsReadWithoutTheDocsArgument(t *testing.T) {
+	s := serveFixture(t, true) // its sonar.snapshot declares no arguments
+	s.login()
+	if resp, _ := s.do("GET", "/api/snapshot", "", nil); resp.StatusCode != 200 {
+		t.Fatalf("snapshot: %d", resp.StatusCode)
+	}
+	for _, r := range s.requestsOf("sonar.snapshot") {
+		if len(r.Args) != 0 {
+			t.Errorf("an undeclared argument would be refused by the Bootstrap: %v", r.Args)
+		}
+	}
+}

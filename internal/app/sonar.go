@@ -336,7 +336,7 @@ func (a *App) sonarPortfolio(ctx context.Context, paths []string, ro ResolveOpti
 			}
 		}
 		if row.State == "update" {
-			if snap, ok := a.readWithViewer(ctx, &viewer, ro, row); ok {
+			if snap, ok := a.readWithViewer(ctx, &viewer, ro, row, false); ok {
 				row.State, row.Reason = "read", "read with Bootstrap "+viewer.pkg.Release.Bootstrap.Version+" (the project has "+row.Version+"): gtt update gives it the hook and ideas"
 				// The page says so too: the snapshot carries who read it and what to run to get the complete one.
 				var doc map[string]any
@@ -498,7 +498,8 @@ type viewerPkg struct {
 // readWithViewer snapshots a project whose own Bootstrap has no Sonar, using the Bootstrap this CLI ships.
 // The snapshot only reads: nothing is written in the project. When the newer Bootstrap cannot be obtained
 // (offline, no cache) the project stays a row that says to update.
-func (a *App) readWithViewer(ctx context.Context, v *viewerPkg, ro ResolveOptions, row sonarRow) ([]byte, bool) {
+// withDocs adds the governed documents (the page of one project shows them).
+func (a *App) readWithViewer(ctx context.Context, v *viewerPkg, ro ResolveOptions, row sonarRow, withDocs bool) ([]byte, bool) {
 	if !v.tried {
 		v.tried = true
 		if pkg, err := a.resolve(ctx, ro.request()); err == nil && supportsSonar(ctx, a.Factory.At(pkg.Root)) {
@@ -513,7 +514,11 @@ func (a *App) readWithViewer(ctx context.Context, v *viewerPkg, ro ResolveOption
 		return nil, false
 	}
 	script := filepath.Join(v.pkg.Root, ".gtt", "scripts", "gtt-sonar.sh")
-	out, err := a.Runner.Run(ctx, ports.Command{Path: bash, Args: []string{script, "snapshot", "--json"}, Dir: row.Path})
+	args := []string{script, "snapshot", "--json"}
+	if withDocs {
+		args = append(args, "--docs")
+	}
+	out, err := a.Runner.Run(ctx, ports.Command{Path: bash, Args: args, Dir: row.Path})
 	if err != nil || out.ExitCode != 0 || !json.Valid(out.Stdout) {
 		return nil, false
 	}

@@ -325,6 +325,16 @@ func (s *SonarServer) enter(w http.ResponseWriter, r *http.Request) {
 // ------------------------------------------------------------------------------------------------ snapshots
 
 // supportsServe: the Bootstrap offers sonar.serve.v1 and the operations it names.
+// operationHasArg reports whether the Bootstrap declares the argument of the operation.
+func operationHasArg(ctx context.Context, b ports.Bootstrap, op, arg string) bool {
+	ops, err := b.Operations(ctx)
+	if err != nil {
+		return false
+	}
+	o, ok := ops[op]
+	return ok && o.HasArg(arg)
+}
+
 func supportsServe(ctx context.Context, b ports.Bootstrap) bool {
 	caps, err := b.Capabilities(ctx)
 	if err != nil {
@@ -366,7 +376,7 @@ func (s *SonarServer) snapshots(ctx context.Context) *snapSet {
 		wg.Add(1)
 		go func(i int, p string) {
 			defer wg.Done()
-			set.repos[i] = s.read(ctx, p)
+			set.repos[i] = s.read(ctx, p, len(paths) == 1)
 		}(i, p)
 	}
 	wg.Wait()
@@ -417,7 +427,10 @@ func staleEntry(path, name, reason string) map[string]any {
 
 // read asks one repo's own Bootstrap for its snapshot. A repo that cannot serve is shown all the same, read
 // only, with the release it needs; one that cannot be read at all is a row that says so.
-func (s *SonarServer) read(ctx context.Context, path string) *repoState {
+//
+// withDocs asks for the governed documents too (the Design view reads them): only when the page holds one
+// project, as the page itself says; a portfolio would carry up to 900 KB of them per project on every read.
+func (s *SonarServer) read(ctx context.Context, path string, withDocs bool) *repoState {
 	a := s.App
 	rs := &repoState{path: path, name: filepath.Base(path)}
 	row := a.sonarProbe(ctx, path)
@@ -433,7 +446,11 @@ func (s *SonarServer) read(ctx context.Context, path string) *repoState {
 	var data []byte
 	if row.State == "ok" {
 		rs.b = row.b
-		out, err := row.b.Execute(ctx, ports.OperationRequest{Operation: "sonar.snapshot"})
+		req := ports.OperationRequest{Operation: "sonar.snapshot"}
+		if withDocs && operationHasArg(ctx, row.b, "sonar.snapshot", "docs") { // an older Bootstrap does not declare it: it goes without
+			req.Args = map[string]string{"docs": "true"}
+		}
+		out, err := row.b.Execute(ctx, req)
 		if err == nil && out.OK() && json.Valid([]byte(out.Stdout)) {
 			data = []byte(out.Stdout)
 		} else {
@@ -442,7 +459,7 @@ func (s *SonarServer) read(ctx context.Context, path string) *repoState {
 		rs.serve = supportsServe(ctx, row.b)
 	} else {
 		var ok bool
-		data, ok = a.readWithViewer(ctx, &s.viewer, ResolveOptions{}, row)
+		data, ok = a.readWithViewer(ctx, &s.viewer, ResolveOptions{}, row, withDocs)
 		if !ok {
 			return finish(staleEntry(path, rs.name, row.Reason))
 		}
