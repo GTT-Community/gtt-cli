@@ -202,6 +202,14 @@ func (s *SonarServer) mapAct(q actRequest) (req ports.OperationRequest, cleanup 
 			return req, cleanup, "ref and answer are needed"
 		}
 		args["ref"], args["reply"] = ref, answer
+	case OpConsultSet:
+		url := q.text("url")
+		if strings.TrimSpace(url) == "" {
+			return req, cleanup, "the URL of the thread is needed"
+		}
+		args["url"] = strings.TrimSpace(url)
+		delete(args, "via") // the thread is the person's own state, not an act on the project: consult.set does not take via
+		req.ConfirmedByHuman = false
 	case OpSonarPrefs:
 		if len(q.Args["set"]) == 0 {
 			return req, cleanup, "set is needed"

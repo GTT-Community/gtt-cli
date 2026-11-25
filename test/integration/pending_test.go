@@ -37,7 +37,7 @@ func agentAsks(t *testing.T, root string, args ...string) {
 }
 
 func askBilling(t *testing.T, root string) {
-	agentAsks(t, root, "ask", "--type", "money", "--question", "Manual billing with an invoice in v1?", "--why", "Decides if online billing enters v1.",
+	agentAsks(t, root, "ask", "--type", "money", "--question", "Manual billing with an invoice in v1?", "--context", "The app can send an invoice by hand each month, or charge customers online from the first version.", "--why", "Decides if online billing enters v1.",
 		"--header", "Billing in v1", "--option", "Yes, manual with invoice | I build the invoice flow.", "--option", "No, online billing from v1 | I integrate the payment provider first.", "--recommended", "1")
 }
 

@@ -18,6 +18,7 @@ const (
 	OpInboxAdd      = "inbox.add"
 	OpPendingAnswer = "pending.answer"
 	OpSonarPrefs    = "sonar.prefs"
+	OpConsultSet    = "consult.set" // the person's own thread in Claude web: registered once from the page (no human authority: it is their state)
 )
 
 // Operations the MCP door reads: three declared operations that change nothing.
@@ -70,7 +71,7 @@ func mcpToolAllows(tool, op string) bool {
 // doorOps is the closed list per door. The Sonar server writes only what the human could write by hand,
 // through the operation the CLI would run; it never ratifies.
 var doorOps = map[string][]string{
-	DoorSonar: {OpBacklogSet, OpInboxAdd, OpPendingAnswer, OpSonarPrefs},
+	DoorSonar: {OpBacklogSet, OpInboxAdd, OpPendingAnswer, OpSonarPrefs, OpConsultSet},
 	DoorMCP:   {OpSonarSnapshot, OpFindingsList, OpCodeMap}, // the union of mcpToolOps; a test keeps them equal
 }
 

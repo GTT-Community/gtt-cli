@@ -24,6 +24,7 @@ func inboxProject(t *testing.T) string {
 
 const form1 = `Proposed Architecture Change
 
+In plain words: sessions now live in the server's memory and are lost on restart; we propose a shared store so they survive.
 Current decision: sessions live in memory
 Suggested change: sessions live in Redis
 Reason: horizontal scaling

@@ -348,6 +348,9 @@ func supportsServe(ctx context.Context, b ports.Bootstrap) bool {
 		return false
 	}
 	for _, op := range append([]string{"sonar.snapshot"}, doorOps[DoorSonar]...) {
+		if op == OpConsultSet {
+			continue // optional: a Bootstrap without it serves the page as before, and the page says the thread is registered from the terminal
+		}
 		if !supports(ctx, b, op) {
 			return false
 		}

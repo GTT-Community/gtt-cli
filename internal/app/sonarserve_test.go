@@ -365,6 +365,17 @@ func TestTheOtherThreeActsMapToTheirOperations(t *testing.T) {
 	if resp, _ := s.act("inbox.add", map[string]any{"text": "  "}); resp.StatusCode != 400 {
 		t.Errorf("an empty idea: %d", resp.StatusCode)
 	}
+	s.b.results["consult.set:apply"] = ok("thread registered\n")
+	if resp, out := s.act("consult.set", map[string]any{"url": " https://claude.ai/chat/0b6e1f2a-4c3d-4e5f-8a9b-1c2d3e4f5a6b "}); resp.StatusCode != 200 || out["ok"] != true {
+		t.Fatalf("consult.set: %d %v", resp.StatusCode, out)
+	}
+	r = s.requestsOf("consult.set")[0]
+	if r.Args["url"] != "https://claude.ai/chat/0b6e1f2a-4c3d-4e5f-8a9b-1c2d3e4f5a6b" || r.Args["via"] != "" || len(r.Args) != 1 || !r.Apply {
+		t.Errorf("consult.set: %+v", r)
+	}
+	if resp, _ := s.act("consult.set", map[string]any{"url": "  "}); resp.StatusCode != 400 {
+		t.Errorf("an empty thread URL: %d", resp.StatusCode)
+	}
 	if resp, out := s.act("sonar.prefs", map[string]any{"set": map[string]any{"view": "inbox"}}); resp.StatusCode != 200 || out["ok"] != true {
 		t.Fatalf("prefs: %d %v", resp.StatusCode, out)
 	}
