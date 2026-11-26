@@ -7,6 +7,8 @@ import (
 	"crypto/sha256"
 	"encoding/hex"
 	"encoding/json"
+	"errors"
+	"io/fs"
 	"os"
 	"path/filepath"
 	"sort"
@@ -27,6 +29,20 @@ type Meta struct {
 	Reason            string `json:"reason"`
 }
 
+// claimName calls claim with at and then with later instants until the name it
+// stands for is free: claim answers fs.ErrExist for a taken one. A clock can read
+// the same instant twice, and a recovery copy is never written over another.
+// Stepping forward keeps the names in the order the copies were made.
+func claimName(at time.Time, step time.Duration, claim func(time.Time) error) error {
+	for {
+		err := claim(at)
+		if !errors.Is(err, fs.ErrExist) {
+			return err
+		}
+		at = at.Add(step)
+	}
+}
+
 // Info describes one stored snapshot.
 type Info struct {
 	Dir      string `json:"dir"`
@@ -41,7 +57,17 @@ type Info struct {
 }
 
 // Store keeps snapshots under the user-level GTT home.
-type Store struct{ Home string }
+type Store struct {
+	Home  string
+	clock func() time.Time // nil means time.Now; tests freeze it
+}
+
+func (s Store) now() time.Time {
+	if s.clock != nil {
+		return s.clock().UTC()
+	}
+	return time.Now().UTC()
+}
 
 // Key identifies a project by its absolute path.
 func Key(projectRoot string) string {
@@ -55,9 +81,15 @@ func (s Store) dir(projectRoot string) string {
 
 // Save stores a Bootstrap snapshot document verbatim plus the CLI metadata.
 func (s Store) Save(projectRoot string, document []byte, meta Meta) (Info, error) {
-	stamp := time.Now().UTC().Format("20060102T150405.000000000Z")
-	dir := filepath.Join(s.dir(projectRoot), strings.ReplaceAll(stamp, ".", ""))
-	if err := os.MkdirAll(dir, 0o755); err != nil {
+	if err := os.MkdirAll(s.dir(projectRoot), 0o755); err != nil {
+		return Info{}, err
+	}
+	var dir string
+	if err := claimName(s.now(), time.Nanosecond, func(at time.Time) error {
+		stamp := at.Format("20060102T150405.000000000Z")
+		dir = filepath.Join(s.dir(projectRoot), strings.ReplaceAll(stamp, ".", ""))
+		return os.Mkdir(dir, 0o755) // fails when taken, also by another process
+	}); err != nil {
 		return Info{}, err
 	}
 	if err := os.WriteFile(filepath.Join(dir, "snapshot.json"), document, 0o644); err != nil {

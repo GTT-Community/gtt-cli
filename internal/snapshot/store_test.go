@@ -3,7 +3,9 @@ package snapshot
 import (
 	"os"
 	"path/filepath"
+	"slices"
 	"testing"
+	"time"
 )
 
 const document = `{"bootstrap":{"version":"1.2.0"},"ade":{"primary":"claude","participating":["claude","copilot"]},` +
@@ -52,6 +54,27 @@ func TestListIsPerProjectAndNewestFirst(t *testing.T) {
 	got := s.List(project)
 	if len(got) != 2 || got[0].Dir != second.Dir || got[1].Dir != first.Dir {
 		t.Errorf("want the two snapshots of this project, newest first: %+v", got)
+	}
+}
+
+// A coarse clock (Windows) can read the same instant twice. A recovery snapshot
+// is never overwritten, and the later save still lists as the newer one.
+func TestSavesAtTheSameInstantKeepEverySnapshot(t *testing.T) {
+	instant := time.Date(2026, 1, 2, 3, 4, 5, 999999999, time.UTC) // the next name crosses into the next second
+	s := Store{Home: t.TempDir(), clock: func() time.Time { return instant }}
+	project := t.TempDir()
+	reasons := []string{"first", "second", "third"}
+	for _, reason := range reasons {
+		if _, err := s.Save(project, []byte(document), Meta{Reason: reason}); err != nil {
+			t.Fatal(err)
+		}
+	}
+	var got []string
+	for _, info := range s.List(project) {
+		got = append(got, info.Meta.Reason)
+	}
+	if want := []string{"third", "second", "first"}; !slices.Equal(got, want) {
+		t.Errorf("got %v, want %v", got, want)
 	}
 }
 

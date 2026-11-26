@@ -2,7 +2,9 @@ package snapshot
 
 import (
 	"archive/zip"
+	"errors"
 	"io"
+	"io/fs"
 	"os"
 	"path/filepath"
 	"sort"
@@ -38,8 +40,14 @@ func (s Store) SaveDomain(projectRoot string) (string, error) {
 	if err := os.MkdirAll(dir, 0o755); err != nil {
 		return "", err
 	}
-	out := filepath.Join(dir, time.Now().UTC().Format("20060102T150405Z")+"-gtt-domain.zip")
-	tmp := out + ".tmp"
+	var out, tmp string
+	if err := claimName(s.now(), time.Second, func(at time.Time) (err error) {
+		out = filepath.Join(dir, at.Format("20060102T150405Z")+"-gtt-domain.zip")
+		tmp, err = claimZip(out)
+		return err
+	}); err != nil {
+		return "", err
+	}
 	if err := writeZip(tmp, projectRoot, files); err != nil {
 		os.Remove(tmp)
 		return "", err
@@ -50,6 +58,28 @@ func (s Store) SaveDomain(projectRoot string) (string, error) {
 	}
 	prune(dir)
 	return out, nil
+}
+
+// claimZip reserves out by creating its temporary file exclusively, and answers
+// fs.ErrExist when that name is being written or already holds a backup. The
+// order matters: only the holder of the temporary file may look for the backup.
+func claimZip(out string) (string, error) {
+	tmp := out + ".tmp"
+	f, err := os.OpenFile(tmp, os.O_WRONLY|os.O_CREATE|os.O_EXCL, 0o666)
+	if err != nil {
+		return "", err
+	}
+	if err := f.Close(); err != nil {
+		return "", err
+	}
+	if _, err := os.Lstat(out); !errors.Is(err, fs.ErrNotExist) {
+		os.Remove(tmp)
+		if err == nil {
+			err = fs.ErrExist
+		}
+		return "", err
+	}
+	return tmp, nil
 }
 
 func writeZip(dest, root string, files []string) (err error) {

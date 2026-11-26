@@ -2,9 +2,11 @@ package snapshot
 
 import (
 	"archive/zip"
+	"io"
 	"os"
 	"path/filepath"
 	"testing"
+	"time"
 )
 
 func put(t *testing.T, root, rel, body string) {
@@ -78,4 +80,46 @@ func TestSaveDomainKeepsTheLastFew(t *testing.T) {
 	if len(entries) != keepDomainBackups {
 		t.Errorf("kept %d, want %d", len(entries), keepDomainBackups)
 	}
+}
+
+func TestSaveDomainInTheSameSecondNeverReplacesABackup(t *testing.T) {
+	root, instant := t.TempDir(), time.Date(2026, 1, 2, 3, 4, 59, 0, time.UTC)
+	s := Store{Home: t.TempDir(), clock: func() time.Time { return instant }}
+	bodies := []string{"first\n", "second\n", "third\n"}
+	var zips []string
+	for _, body := range bodies {
+		put(t, root, "gtt-domain/backlog.md", body)
+		out, err := s.SaveDomain(root)
+		if err != nil {
+			t.Fatal(err)
+		}
+		zips = append(zips, out)
+	}
+	for i, path := range zips {
+		if got := zipped(t, path, "gtt-domain/backlog.md"); got != bodies[i] {
+			t.Errorf("backup %d holds %q, want %q", i, got, bodies[i])
+		}
+		if i > 0 && filepath.Base(path) <= filepath.Base(zips[i-1]) {
+			t.Errorf("a later backup must sort later, pruning relies on it: %s after %s", path, zips[i-1])
+		}
+	}
+}
+
+func zipped(t *testing.T, path, name string) string {
+	t.Helper()
+	zr, err := zip.OpenReader(path)
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer zr.Close()
+	f, err := zr.Open(name)
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer f.Close()
+	body, err := io.ReadAll(f)
+	if err != nil {
+		t.Fatal(err)
+	}
+	return string(body)
 }
